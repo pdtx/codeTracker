@@ -9,5 +9,13 @@
         <module name="codeTracker" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="codeTracker" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="codeTracker" options="-parameters" />
+    </option>
   </component>
 </project>
