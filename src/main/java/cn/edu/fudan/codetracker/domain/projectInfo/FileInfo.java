@@ -94,4 +94,15 @@ public class FileInfo {
         this.packageUuid = packageUuid;
     }
 
+    public CommonInfo getCommonInfo() {
+        return commonInfo;
+    }
+
+    public void setCommonInfo(CommonInfo commonInfo) {
+        this.commonInfo = commonInfo;
+    }
+
+    public void setTrackerInfo(String changeRelation, int version, String uuid) {
+        trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
 }

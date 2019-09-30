@@ -55,10 +55,10 @@ public class ScanServiceImpl implements ScanService {
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos());
 
         fileDao.insertFileInfoList(repoInfo.getFileInfos());
-        fieldDao.insertRawFileInfoList(repoInfo.getFileInfos());
+        fileDao.insertRawFileInfoList(repoInfo.getFileInfos());
 
-        classDao.insertFileInfoList(repoInfo.getClassInfos());
-        classDao.insertRawFileInfoList(repoInfo.getClassInfos());
+        classDao.insertClassInfoList(repoInfo.getClassInfos());
+        classDao.insertRawClassInfoList(repoInfo.getClassInfos());
 
         methodDao.insertMethodInfoList(repoInfo.getMethodInfos());
         methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos());
@@ -87,7 +87,7 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private String getRepoPathByUUID(String repoUuid) {
-        return "";
+        return "E:\\Lab\\project\\IssueTracker-Master";
     }
 
     /**

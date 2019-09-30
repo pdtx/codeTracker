@@ -23,8 +23,10 @@ public class PackageDao {
     }
 
     public void insertPackageInfoList(List<PackageInfo> packageInfos) {
+        packageMapper.insertPackageInfoList(packageInfos);
     }
 
     public void insertRawPackageInfoList(List<PackageInfo> packageInfos) {
+        packageMapper.insertRawPackageInfoList(packageInfos);
     }
 }

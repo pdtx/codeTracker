@@ -22,23 +22,29 @@ import java.util.*;
 
 public class FileInfoExtractor {
 
-    private final String PREFIX="";
+    private final String PREFIX="E:\\Lab\\project\\";
 
     private String projectName;
     private String moduleName;
     private String packageName;
     private Set<String> importNames;
-    private List<ClassInfo> classInfos;
     private String fileName;
-    private FileInfo fileInfo;
 
+    private FileInfo fileInfo;
+    private List<ClassInfo> classInfos;
+    private List<FieldInfo> fieldInfos;
+    private List<MethodInfo> methodInfos;
+
+    private CompilationUnit compilationUnit;
 
     public FileInfoExtractor(String path, String projectName) {
         this.projectName = projectName;
         importNames = new HashSet<>();
         classInfos = new ArrayList<>();
+        fieldInfos = new ArrayList<>();
+        methodInfos = new ArrayList<>();
         try {
-            CompilationUnit compilationUnit = JavaParser.parse(new File(path));
+            compilationUnit = JavaParser.parse(new File(path));
             parsePackageName(compilationUnit);
             String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
@@ -54,7 +60,6 @@ public class FileInfoExtractor {
                 importNames.add(importDeclaration.getName().asString());
             }
 
-            parseClassInterface(compilationUnit);
         }catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -85,9 +90,9 @@ public class FileInfoExtractor {
         }
     }
 
-    private void parseClassInterface(CompilationUnit cu) {
+    public void parseClassInterface() {
 
-        List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = cu.findAll(ClassOrInterfaceDeclaration.class);
+        List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
         for (ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarationList) {
             //ResolvedReferenceTypeDeclaration resolvedReferenceTypeDeclaration = classOrInterfaceDeclaration.resolve();
 
@@ -125,6 +130,8 @@ public class FileInfoExtractor {
 
 
             classInfos.add(classInfo);
+            fieldInfos.addAll(classInfo.getFiledInfos());
+            methodInfos.addAll(classInfo.getMethodInfos());
         }
     }
 
@@ -153,7 +160,7 @@ public class FileInfoExtractor {
 
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
             StringBuilder sb  = new StringBuilder();
-            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), classInfo.getPackageName());
+            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, packageName, fileInfo.getpackageUuid(), moduleName);
 
             //fullname
             methodInfo.setFullname(methodDeclaration.getNameAsString());
@@ -235,5 +242,13 @@ public class FileInfoExtractor {
 
     public FileInfo getFileInfo() {
         return fileInfo;
+    }
+
+    public List<FieldInfo> getFieldInfos() {
+        return fieldInfos;
+    }
+
+    public List<MethodInfo> getMethodInfos() {
+        return methodInfos;
     }
 }

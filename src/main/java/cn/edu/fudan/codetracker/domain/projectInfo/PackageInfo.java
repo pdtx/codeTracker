@@ -14,13 +14,13 @@ public class PackageInfo {
     private String moduleName;
     private List<ClassInfo> classInfos; // ?????
 
-    private String startCommit;
-    private String endCommit;
-    private String repoUuid;
-    private String branch;
-    private Date startCommitDate;
-    private Date endCommitDate;
+    private CommonInfo commonInfo;
+    private TrackerInfo trackerInfo;
 
+    // 根据具体情况 单独获取
+    private int version;
+    private String changeRelation;
+    private String rootUUID;
 
 
 
@@ -28,6 +28,10 @@ public class PackageInfo {
         this.moduleName = moduleName;
         this.packageName = packageName;
         this.classInfos = classInfos;
+    }
+
+    public void setTrackerInfo(TrackerInfo trackerInfo) {
+        this.trackerInfo = trackerInfo;
     }
 
     public String getModuleName() {
@@ -54,6 +58,13 @@ public class PackageInfo {
         this.classInfos = classInfos;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
     @Override
     public int hashCode() {
         StringBuilder sb = new StringBuilder();
@@ -65,5 +76,45 @@ public class PackageInfo {
             hash = hash * 131 + c;
         }
         return 0;
+    }
+
+    public CommonInfo getCommonInfo() {
+        return commonInfo;
+    }
+
+    public void setCommonInfo(CommonInfo commonInfo) {
+        this.commonInfo = commonInfo;
+    }
+
+    public TrackerInfo getTrackerInfo() {
+        return trackerInfo;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public String getChangeRelation() {
+        return changeRelation;
+    }
+
+    public void setChangeRelation(String changeRelation) {
+        this.changeRelation = changeRelation;
+    }
+
+    public String getRootUUID() {
+        return rootUUID;
+    }
+
+    public void setRootUUID(String rootUUID) {
+        this.rootUUID = rootUUID;
+    }
+
+    public void setTrackerInfo(String changeRelation, int version, String uuid) {
+        trackerInfo = new TrackerInfo(changeRelation, version, uuid);
     }
 }

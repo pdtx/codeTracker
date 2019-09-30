@@ -16,6 +16,12 @@ public class CommonInfo {
     private String repoUuid;
     private String branch;
 
+    private Date commitDate ;
+    private String commit;
+    private String committer;
+    private String commitMessage;
+    private String parentCommit;
+
     public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch) {
         this.startCommit = startCommit;
         this.startCommitDate = startCommitDate;
@@ -23,6 +29,20 @@ public class CommonInfo {
         this.endCommitDate = endCommitDate;
         this.repoUuid = repoUuid;
         this.branch = branch;
+    }
+
+    public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch, Date commitDate, String commit, String committer, String commitMessage, String parentCommit) {
+        this.startCommit = startCommit;
+        this.startCommitDate = startCommitDate;
+        this.endCommit = endCommit;
+        this.endCommitDate = endCommitDate;
+        this.repoUuid = repoUuid;
+        this.branch = branch;
+        this.commitDate = commitDate;
+        this.commit = commit;
+        this.committer = committer;
+        this.commitMessage = commitMessage;
+        this.parentCommit = parentCommit;
     }
 
     public String getStartCommit() {

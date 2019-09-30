@@ -29,7 +29,7 @@ public class OutputAnalysis {
     }
 
 
-    public List<String> analyzeMetaInfo() {
+   /* public List<String> analyzeMetaInfo() {
         File file = outputDir.contains("\\") ?
                 new File(outputDir + "\\" + commitId) :
                 new File(outputDir + "/" + commitId);
@@ -135,7 +135,7 @@ public class OutputAnalysis {
 
         analyzeDiffFile.packageRelationAnalyze(notChangedFileList);
     }
-
+*/
     private String deletePrefix(String curPathList, String preCommit) {
         String p = curPathList.replace(preCommit, "--------");
 

@@ -165,4 +165,23 @@ public class ClassInfo {
     }
 
 
+    public CommonInfo getCommonInfo() {
+        return commonInfo;
+    }
+
+    public void setCommonInfo(CommonInfo commonInfo) {
+        this.commonInfo = commonInfo;
+    }
+
+    public TrackerInfo getTrackerInfo() {
+        return trackerInfo;
+    }
+
+    public void setTrackerInfo(TrackerInfo trackerInfo) {
+        this.trackerInfo = trackerInfo;
+    }
+
+    public void setTrackerInfo(String changeRelation, int version, String uuid) {
+        trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
 }
