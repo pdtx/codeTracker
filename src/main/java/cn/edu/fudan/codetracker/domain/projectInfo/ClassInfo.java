@@ -12,9 +12,11 @@ public class ClassInfo {
     private String uuid;
     private String fullname;
     private String className;
+    private String fileName;
     private String packageName;
     private String moduleName;
     private String fileUuid;
+    private String packageUuid;
     private String modifier;
 
     private CommonInfo commonInfo;
@@ -29,14 +31,16 @@ public class ClassInfo {
     private List<FieldInfo> fieldInfos;
     private List<MethodInfo> methodInfos;
 
-    public ClassInfo(String fullname, String className, String packageName,
-                     String moduleName, String fileUuid, String modifier, int begin, int end) {
+    public ClassInfo(String fullname, String className, String fileName, String packageName,
+                     String moduleName, String fileUuid, String packageUuid, String modifier, int begin, int end) {
         uuid = UUID.randomUUID().toString();
         this.fullname = fullname;
         this.className = className;
+        this.fileName = fileName;
         this.packageName = packageName;
         this.moduleName = moduleName;
         this.fileUuid = fileUuid;
+        this.packageUuid = packageUuid;
         this.modifier = modifier;
         this.begin = begin;
         this.end = end;
@@ -183,5 +187,21 @@ public class ClassInfo {
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getPackageUuid() {
+        return packageUuid;
+    }
+
+    public void setPackageUuid(String packageUuid) {
+        this.packageUuid = packageUuid;
     }
 }

@@ -51,14 +51,14 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private void saveData(RepoInfoBuilder repoInfo) {
-        packageDao.insertPackageInfoList(repoInfo.getPackageInfos());
+/*        packageDao.insertPackageInfoList(repoInfo.getPackageInfos());
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos());
 
         fileDao.insertFileInfoList(repoInfo.getFileInfos());
         fileDao.insertRawFileInfoList(repoInfo.getFileInfos());
 
         classDao.insertClassInfoList(repoInfo.getClassInfos());
-        classDao.insertRawClassInfoList(repoInfo.getClassInfos());
+        classDao.insertRawClassInfoList(repoInfo.getClassInfos());*/
 
         methodDao.insertMethodInfoList(repoInfo.getMethodInfos());
         methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos());

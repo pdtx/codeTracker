@@ -3,6 +3,80 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.FieldMapper">
 
+    <insert id="insertFieldInfoList" parameterType="List">
+        insert into track_field
+        (
+        uuid,
+        simple_name,
+        modifier,
+        simple_type,
+        init_value,
+        class_uuid,
+        package_uuid,
+        start_commit,
+        start_commit_date,
+        end_commit,
+        end_commit_date,
+        repo_uuid,
+        branch
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.simpleName},
+            #{item.modifier},
+            #{item.simpleType},
+            #{item.initValue},
+            #{item.classUuid},
+            #{item.packageUuid},
+            #{item.commonInfo.startCommit},
+            #{item.commonInfo.startCommitDate},
+            #{item.commonInfo.endCommit},
+            #{item.commonInfo.endCommitDate},
+            #{item.commonInfo.repoUuid},
+            #{item.commonInfo.branch}
+            )
+        </foreach>
+    </insert>
 
+    <insert id="insertRawFieldInfoList" parameterType="List">
+        insert into raw_field
+        (
+        uuid,
+        simple_name,
+        simple_type,
+        modifier,
+        init_value,
+        class_uuid,
+        field_uuid,
+        version,
+        change_relation,
+        commitid,
+        committer,
+        commit_date,
+        commit_message,
+        parent_commit
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.simpleName},
+            #{item.modifier},
+            #{item.simpleType},
+            #{item.initValue},
+            #{item.classUuid},
+            #{item.trackerInfo.rootUUID},
+            #{item.trackerInfo.version},
+            #{item.trackerInfo.changeRelation},
+            #{item.commonInfo.commit},
+            #{item.commonInfo.committer},
+            #{item.commonInfo.commitDate},
+            #{item.commonInfo.commitMessage},
+            #{item.commonInfo.parentCommit}
+            )
+        </foreach>
+    </insert>
 
 </mapper>

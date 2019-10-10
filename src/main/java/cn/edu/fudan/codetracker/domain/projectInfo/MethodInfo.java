@@ -12,15 +12,14 @@ public class MethodInfo {
     private String uuid;
     private String fullname;
     private String signature;
+    private String className;
     private String content;
 
-    private String className;
     private String classUuid;
     private String fileName;
     private String packageName;
-    private String packageUuid;
     private String moduleName;
-
+    private String packageUuid;
 
     private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;

@@ -4,5 +4,78 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.ClassMapper">
 
 
+    <insert id="insertClassInfoList" parameterType="List">
+        insert into track_class
+        (
+        uuid,
+        fullname,
+        class_name,
+        file_name,
+        package_name,
+        module_name,
+        file_uuid,
+        package_uuid,
+        start_commit,
+        start_commit_date,
+        end_commit,
+        end_commit_date,
+        repo_uuid,
+        branch
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.fullname},
+            #{item.className},
+            #{item.fileName},
+            #{item.packageName},
+            #{item.moduleName},
+            #{item.fileUuid},
+            #{item.packageUuid},
+            #{item.commonInfo.startCommit},
+            #{item.commonInfo.startCommitDate},
+            #{item.commonInfo.endCommit},
+            #{item.commonInfo.endCommitDate},
+            #{item.commonInfo.repoUuid},
+            #{item.commonInfo.branch}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertRawClassInfoList" parameterType="List">
+        insert into raw_class
+        (
+        uuid,
+        fullname,
+        class_name,
+        file_uuid,
+        class_uuid,
+        version,
+        change_relation,
+        commitid,
+        committer,
+        commit_date,
+        commit_message,
+        parent_commit
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{item.fullname},
+            #{item.className},
+            #{item.fileUuid},
+            #{item.trackerInfo.rootUUID},
+            #{item.trackerInfo.version},
+            #{item.trackerInfo.changeRelation},
+            #{item.commonInfo.commit},
+            #{item.commonInfo.committer},
+            #{item.commonInfo.commitDate},
+            #{item.commonInfo.commitMessage},
+            #{item.commonInfo.parentCommit}
+            )
+        </foreach>
+    </insert>
 
 </mapper>

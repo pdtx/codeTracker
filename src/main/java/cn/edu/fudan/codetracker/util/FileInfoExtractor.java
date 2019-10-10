@@ -117,7 +117,7 @@ public class FileInfoExtractor {
             }
             // ？？？fullname 重新考虑
             String fullname = classOrInterfaceDeclaration.getNameAsString();
-            ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, packageName, moduleName, fileInfo.getUuid(),
+            ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, fileName, packageName, moduleName, fileInfo.getUuid(), fileInfo.getpackageUuid(),
                     sb.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
 
             classInfo.setExtendedList(extendNames);
@@ -149,7 +149,7 @@ public class FileInfoExtractor {
                 sb.append(modifier.asString());
                 sb.append(" ");
             }
-            FieldInfo fieldInfo = new FieldInfo(fieldDeclaration.toString(), sb.toString(), fieldDeclaration.getElementType().asString(), classUuid);
+            FieldInfo fieldInfo = new FieldInfo(fieldDeclaration.toString(), sb.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getpackageUuid());
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;

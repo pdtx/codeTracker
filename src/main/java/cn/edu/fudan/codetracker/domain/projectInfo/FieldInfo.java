@@ -5,8 +5,6 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectInfo;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class FieldInfo {
@@ -17,41 +15,20 @@ public class FieldInfo {
     private String simpleType;
     private String initValue;
     private String classUuid;
+    private String packageUuid;
 
     private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
-    public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid) {
+    public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid) {
         uuid = UUID.randomUUID().toString();
         this.simpleName = simpleName;
         this.modifier = modifier;
         this.simpleType = simpleType;
         this.classUuid = classUuid;
+        this.packageUuid = packageUuid;
     }
 
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public String getSimpleType() {
-        return simpleType;
-    }
-
-    public void setSimpleType(String simpleType) {
-        this.simpleType = simpleType;
-    }
-
-    public String getSimpleName() {
-        return simpleName;
-    }
-
-    public void setSimpleName(String simpleName) {
-        this.simpleName = simpleName;
-    }
 
 /*    @Override
     public int hashCode() {
@@ -66,6 +43,9 @@ public class FieldInfo {
                 this.simpleType.equals(obj.getSimpleType());
     }
 
+    /**
+     * getter and setter
+     * */
 
     public String getClassUuid() {
         return classUuid;
@@ -97,5 +77,45 @@ public class FieldInfo {
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
+
+    public String getInitValue() {
+        return initValue;
+    }
+
+    public void setInitValue(String initValue) {
+        this.initValue = initValue;
+    }
+
+    public String getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(String modifier) {
+        this.modifier = modifier;
+    }
+
+    public String getSimpleType() {
+        return simpleType;
+    }
+
+    public void setSimpleType(String simpleType) {
+        this.simpleType = simpleType;
+    }
+
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    public void setSimpleName(String simpleName) {
+        this.simpleName = simpleName;
+    }
+
+    public String getPackageUuid() {
+        return packageUuid;
+    }
+
+    public void setPackageUuid(String packageUuid) {
+        this.packageUuid = packageUuid;
     }
 }

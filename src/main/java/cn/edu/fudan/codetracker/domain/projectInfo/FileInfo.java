@@ -105,4 +105,12 @@ public class FileInfo {
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
     }
+
+    public TrackerInfo getTrackerInfo() {
+        return trackerInfo;
+    }
+
+    public void setTrackerInfo(TrackerInfo trackerInfo) {
+        this.trackerInfo = trackerInfo;
+    }
 }
