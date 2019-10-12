@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
+import cn.edu.fudan.codetracker.handle.OutputAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
@@ -46,7 +47,7 @@ public class ScanServiceImpl implements ScanService {
 
         for (int i = 1; i < commitList.size();i++) {
             String outputDir = "";
-            scan(repoPath, commitList.get(i), outputDir);
+            scan(repoPath, commitList.get(i), outputDir, jGitHelper);
         }
     }
 
@@ -72,13 +73,17 @@ public class ScanServiceImpl implements ScanService {
      * 后续扫描分析 diff 结果
      * */
     @Override
-    public boolean scan(String repoPath, String commitId, String outputDir) {
+    public boolean scan(String repoPath, String commitId, String outputDir, JGitHelper jGitHelper) {
+        if (jGitHelper != null) {
+            jGitHelper = new JGitHelper(repoPath);
+        }
 
         // 分析版本之间的关系
         CLDiffHelper.executeCLDiff(repoPath, commitId, outputDir);
 
-        // 抽取diff信息 建立追踪关系
-
+        // extra diff info and construct tracking relation
+        OutputAnalysis analysis = new OutputAnalysis(outputDir, jGitHelper);
+        analysis.analyzeMetaInfo();
 
         // 扫描结果记录入库
 

@@ -7,6 +7,7 @@ package cn.edu.fudan.codetracker.handle;
 
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.util.DirExplorer;
+import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -19,6 +20,8 @@ import java.util.Map;
 
 public class OutputAnalysis {
 
+    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+
     private String outputDir;
     private String commitId;
     private JGitHelper jGitHelper;
@@ -28,8 +31,8 @@ public class OutputAnalysis {
         this.jGitHelper = jGitHelper;
     }
 
-
-   /* public List<String> analyzeMetaInfo() {
+    // entry point of analyzing relations about two commits
+    public List<String> analyzeMetaInfo() {
         File file = outputDir.contains("\\") ?
                 new File(outputDir + "\\" + commitId) :
                 new File(outputDir + "/" + commitId);
@@ -43,16 +46,39 @@ public class OutputAnalysis {
             JSONArray actions = metaInfoJSON.getJSONArray("actions");
             Map<JSONObject, String> diffFileAction = new HashMap<>();
             for (int i = 0; i < fileInfoJsonArray.size(); i++) {
+                // only analyze java file
                 if (fileInfoJsonArray.getJSONObject(i).getString("file_short_name").contains(".java")) {
                     diffFileAction.put(fileInfoJsonArray.getJSONObject(i), actions.getString(i));
                 }
             }
 
+            ArrayList<String>  preFileList = new ArrayList<>();
+            ArrayList<String>  curFileList = new ArrayList<>();
+            // if preCommits include not only one record, then take into account merge
+            // 后续再优化 如果一个文件在两个parent上都有修改
             preCommits = metaInfoJSON.getJSONArray("parents");
             for (int i = 0; i < preCommits.size(); i++) {
+                // construct change file list according to preCommit
+                String preCommit = preCommits.getString(i);
+                for (Map.Entry<JSONObject, String> m : diffFileAction.entrySet()) {
+                    if (m.getKey().getString("parent_commit").equals(preCommit)) {
+                        String prevFilePath = metaPath.split("meta.json")[0] + "/" + m.getKey().getString("prev_file_path");
+                        preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                    }
+                    String currFilePath = metaPath.split("meta.json")[0] + "/" + m.getKey().getString("prev_file_path");
+                    curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                }
+                //RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, commitList.get(0), repoPath, jGitHelper, branch, null);
+
+                String preCommitter = jGitHelper.getAuthorName(preCommit);
+            }
+
+
+/*            for (int i = 0; i < preCommits.size(); i++) {
                 String preCommit = preCommits.getString(i);
                 String preCommitter = jGitHelper.getAuthorName(preCommit);
                 jGitHelper.checkout(preCommit);
+                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder();
                 ProjectInfoBuilder preProjectInfo = new ProjectInfoBuilder(projectName, preCommit, preCommitter, repoPath);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(preProjectInfo, curProjectInfo);
                 jGitHelper.checkout(commitId);
@@ -61,7 +87,7 @@ public class OutputAnalysis {
                 analyzeDiffFile.packageRelationAnalyze(notChangedFileList);
                 cqlSet.addAll(analyzeDiffFile.getCqlSet());
             }
-            return new ArrayList<>(cqlSet);
+            return new ArrayList<>(cqlSet);*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,34 +134,15 @@ public class OutputAnalysis {
             }
         }
 
-        for (String s : curPathList) {
-            String postfix = deletePrefix(s, preCommit);
-            for (String path : notChangedFileList) {
-                if (path.contains(postfix)) {
-                    deletePath.add(path);
-                    break;
-                }
-            }
-        }
-        for (String s : addFilesList) {
-            String postfix = deletePrefix(s, preCommit);
-            for (String path : notChangedFileList) {
-                if (path.contains(postfix)) {
-                    deletePath.add(path);
-                    break;
-                }
-            }
-        }
 
-        notChangedFileList.removeAll(deletePath);
 
-        analyzeDiffFile.addInfoConstruction(addFilesList);
+
+/*        analyzeDiffFile.addInfoConstruction(addFilesList);
         analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
         analyzeDiffFile.modifyInfoConstruction(prePathList, curPathList, diffPathList);
 
-        analyzeDiffFile.packageRelationAnalyze(notChangedFileList);
+        analyzeDiffFile.packageRelationAnalyze(notChangedFileList);*/
     }
-*/
     private String deletePrefix(String curPathList, String preCommit) {
         String p = curPathList.replace(preCommit, "--------");
 
@@ -161,5 +168,6 @@ public class OutputAnalysis {
                 (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(projectDir);
         return pathList;
     }
+
 
 }

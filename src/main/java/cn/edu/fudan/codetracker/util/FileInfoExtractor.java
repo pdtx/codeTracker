@@ -22,6 +22,7 @@ import java.util.*;
 
 public class FileInfoExtractor {
 
+    // should be defined in the properties
     private final String PREFIX="E:\\Lab\\project\\";
 
     private String projectName;
@@ -48,13 +49,13 @@ public class FileInfoExtractor {
             parsePackageName(compilationUnit);
             String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
-            // module Name 为 null
+            // module name is null
             moduleName = parseModuleName(singleDir);
 
-            // 后面需要根据packageName 与 moduleName 找到packageUUID
+            // for finding packageUUID base on  packageName and moduleName
             fileInfo = new FileInfo(fileName, packageName, moduleName, deletePrefix(path));
 
-            // import 包解析
+            // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
             for (ImportDeclaration importDeclaration :importDeclarations) {
                 importNames.add(importDeclaration.getName().asString());
@@ -69,7 +70,7 @@ public class FileInfoExtractor {
         return  path.substring(path.indexOf(PREFIX) + 1);
     }
 
-    // 有待改进
+    // need to be improved
     private String parseModuleName(String[] singleDir) {
         for (int i = 1; i < singleDir.length; i++) {
             if ("src".equals(singleDir[i]) || "main".equals(singleDir[i]) ||  "java".equals(singleDir[i])) {
