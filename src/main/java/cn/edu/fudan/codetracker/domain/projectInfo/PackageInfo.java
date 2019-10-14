@@ -30,6 +30,23 @@ public class PackageInfo {
         this.classInfos = classInfos;
     }
 
+    @Override
+    public int hashCode() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(moduleName);
+        sb.append(packageName);
+        char[] charArray = sb.toString().toCharArray();
+        int hash = 0;
+        for (char c : charArray) {
+            hash = hash * 131 + c;
+        }
+        return 0;
+    }
+
+
+    /**
+     * getter and setter
+     * */
     public void setTrackerInfo(TrackerInfo trackerInfo) {
         this.trackerInfo = trackerInfo;
     }
@@ -64,18 +81,6 @@ public class PackageInfo {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-    @Override
-    public int hashCode() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(moduleName);
-        sb.append(packageName);
-        char[] charArray = sb.toString().toCharArray();
-        int hash = 0;
-        for (char c : charArray) {
-            hash = hash * 131 + c;
-        }
-        return 0;
     }
 
     public CommonInfo getCommonInfo() {

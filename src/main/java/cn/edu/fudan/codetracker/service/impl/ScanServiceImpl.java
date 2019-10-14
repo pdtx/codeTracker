@@ -47,19 +47,19 @@ public class ScanServiceImpl implements ScanService {
 
         for (int i = 1; i < commitList.size();i++) {
             String outputDir = "";
-            scan(repoPath, commitList.get(i), outputDir, jGitHelper);
+            scan(repoPath, commitList.get(i), branch, outputDir, jGitHelper);
         }
     }
 
     private void saveData(RepoInfoBuilder repoInfo) {
-/*        packageDao.insertPackageInfoList(repoInfo.getPackageInfos());
+        packageDao.insertPackageInfoList(repoInfo.getPackageInfos());
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos());
 
         fileDao.insertFileInfoList(repoInfo.getFileInfos());
         fileDao.insertRawFileInfoList(repoInfo.getFileInfos());
 
         classDao.insertClassInfoList(repoInfo.getClassInfos());
-        classDao.insertRawClassInfoList(repoInfo.getClassInfos());*/
+        classDao.insertRawClassInfoList(repoInfo.getClassInfos());
 
         methodDao.insertMethodInfoList(repoInfo.getMethodInfos());
         methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos());
@@ -73,7 +73,10 @@ public class ScanServiceImpl implements ScanService {
      * 后续扫描分析 diff 结果
      * */
     @Override
-    public boolean scan(String repoPath, String commitId, String outputDir, JGitHelper jGitHelper) {
+    public boolean scan(String repoUuid, String commitId, String branch, String outputDir, JGitHelper jGitHelper) {
+
+        String repoPath = getRepoPathByUUID(repoUuid);
+
         if (jGitHelper != null) {
             jGitHelper = new JGitHelper(repoPath);
         }
@@ -82,7 +85,7 @@ public class ScanServiceImpl implements ScanService {
         CLDiffHelper.executeCLDiff(repoPath, commitId, outputDir);
 
         // extra diff info and construct tracking relation
-        OutputAnalysis analysis = new OutputAnalysis(outputDir, jGitHelper);
+        OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputDir, jGitHelper);
         analysis.analyzeMetaInfo();
 
         // 扫描结果记录入库

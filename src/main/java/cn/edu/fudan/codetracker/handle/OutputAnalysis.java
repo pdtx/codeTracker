@@ -22,11 +22,16 @@ public class OutputAnalysis {
 
     private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
+    private String repoUuid;
+    private String branch;
     private String outputDir;
     private String commitId;
     private JGitHelper jGitHelper;
 
-    public OutputAnalysis(String outputDir, JGitHelper jGitHelper) {
+
+    public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper) {
+        this.repoUuid = repoUuid;
+        this.branch = branch;
         this.outputDir = outputDir;
         this.jGitHelper = jGitHelper;
     }
@@ -52,42 +57,53 @@ public class OutputAnalysis {
                 }
             }
 
-            ArrayList<String>  preFileList = new ArrayList<>();
-            ArrayList<String>  curFileList = new ArrayList<>();
-            // if preCommits include not only one record, then take into account merge
-            // 后续再优化 如果一个文件在两个parent上都有修改
+            String pathPrefix = metaPath.replace("meta.json", "");
+            // if preCommits include not only one record, then take into account merge situation
             preCommits = metaInfoJSON.getJSONArray("parents");
+
+            String currFilePath;
+            String prevFilePath;
             for (int i = 0; i < preCommits.size(); i++) {
                 // construct change file list according to preCommit
                 String preCommit = preCommits.getString(i);
                 for (Map.Entry<JSONObject, String> m : diffFileAction.entrySet()) {
-                    if (m.getKey().getString("parent_commit").equals(preCommit)) {
-                        String prevFilePath = metaPath.split("meta.json")[0] + "/" + m.getKey().getString("prev_file_path");
-                        preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                    // three types of change relation handler ： ADD、DELETE、MODIFY
+                    if (! m.getKey().getString("file_full_name").endsWith(".java")) {
+                        continue;
                     }
-                    String currFilePath = metaPath.split("meta.json")[0] + "/" + m.getKey().getString("prev_file_path");
-                    curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                    ArrayList<String>  preFileList = new ArrayList<>();
+                    ArrayList<String>  curFileList = new ArrayList<>();
+                    List<String> addFilesList = new ArrayList<>();
+                    List<String> deleteFilesList = new ArrayList<>();
+                    List<String> diffPathList = new ArrayList<>();
+                    if (m.getKey().getString("parent_commit").equals(preCommit)) {
+                        if ("ADD".equals(m.getValue())) {
+                            currFilePath =  pathPrefix + "/" + m.getKey().getString("curr_file_path");
+                            addFilesList.add(isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                        }
+                        if ("DELETE".equals(m.getValue())) {
+                            prevFilePath = pathPrefix + pathUnixToWin(m.getKey().getString("prev_file_path"));
+                            deleteFilesList.add(isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                        }
+                        if ("MODIFY".equals(m.getValue())) {
+                            prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
+                            preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                            currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
+                            curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                            String diffPath = isWindows ? pathUnixToWin(currFilePath) : currFilePath;
+                            diffPathList.add(diffPath);
+                        }
+                        // RepoInfoBuilder need to refactor for parentCommit is not null; so
+                        RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
+                        RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, curFileList, jGitHelper, branch, preCommit);
+                        AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(preRepoInfo, curRepoInfo);
+                        analyzeDiffFile.addInfoConstruction(addFilesList);
+                        analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
+                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, curRepoInfo, diffPathList);
+                    }
                 }
-                //RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, commitList.get(0), repoPath, jGitHelper, branch, null);
-
-                String preCommitter = jGitHelper.getAuthorName(preCommit);
             }
 
-
-/*            for (int i = 0; i < preCommits.size(); i++) {
-                String preCommit = preCommits.getString(i);
-                String preCommitter = jGitHelper.getAuthorName(preCommit);
-                jGitHelper.checkout(preCommit);
-                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder();
-                ProjectInfoBuilder preProjectInfo = new ProjectInfoBuilder(projectName, preCommit, preCommitter, repoPath);
-                AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(preProjectInfo, curProjectInfo);
-                jGitHelper.checkout(commitId);
-                notChangedFileList = listJavaFiles(new File(repoPath));
-                analyzeMetaInfoFiles(diffFileAction, analyzeDiffFile, preCommit, metaPath);
-                analyzeDiffFile.packageRelationAnalyze(notChangedFileList);
-                cqlSet.addAll(analyzeDiffFile.getCqlSet());
-            }
-            return new ArrayList<>(cqlSet);*/
         } catch (Exception e) {
             e.printStackTrace();
         }

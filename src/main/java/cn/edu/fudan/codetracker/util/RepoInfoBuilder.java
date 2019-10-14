@@ -24,6 +24,7 @@ public class RepoInfoBuilder {
     private String commitMessage;
     private String branch;
     private String parentCommit;
+    private JGitHelper jGitHelper;
 
     private CommonInfo commonInfo;
 
@@ -37,41 +38,46 @@ public class RepoInfoBuilder {
     private Map<String, Map<String, PackageInfo>> moduleInfos;
     private List<PackageInfo> packageInfos;
 
-    // 旧API
-    public RepoInfoBuilder(String repoUuid, String commit, String committer, List<String> fileList) {
-        this.repoUuid = repoUuid;
-        this.commit = commit;
-        this.committer = committer;
-        packageInfos = new ArrayList<>();
-        moduleInfos = new HashMap<>();
-        analyze(fileList);
+    public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit) {
+       constructor(repoUuid, commit, fileList, jGitHelper, branch, parentCommit);
     }
 
     public RepoInfoBuilder(String repoUuid, String commit, String repoPath, JGitHelper jGitHelper, String branch, String parentCommit) {
+        File file = new File(repoPath);
+        constructor(repoUuid, commit, listJavaFiles(file), jGitHelper, branch, parentCommit);
+    }
+
+    public RepoInfoBuilder(RepoInfoBuilder repoInfo, List<String> addFilesList) {
+        constructor(repoInfo.getRepoUuid(), repoInfo.getCommit(), addFilesList, repoInfo.getJGitHelper(), repoInfo.getBranch(), repoInfo.getParentCommit());
+    }
+
+    private void constructor(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit){
         this.repoUuid = repoUuid;
         this.commit = commit;
         this.branch = branch;
-        fileInfos = new ArrayList<>();
-        classInfos = new ArrayList<>();
-        fieldInfos = new ArrayList<>();
-        methodInfos = new ArrayList<>();
-
-        try{
-            Date date = FORMATTER.parse(jGitHelper.getCommitTime(commit));
-
-            committer = jGitHelper.getAuthorName(commit);
-            commitMessage = jGitHelper.getMess(commit);
-            commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
-                    date, commit, committer, commitMessage, parentCommit);
-        }catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        packageInfos = new ArrayList<>();
-        moduleInfos = new HashMap<>();
-        File file = new File(repoPath);
-        analyze(listJavaFiles(file));
+        this.jGitHelper = jGitHelper;
+    // first time parentCommit is NULL
+        if (parentCommit == null) {
+        this.parentCommit = commit;
     }
+    fileInfos = new ArrayList<>();
+    classInfos = new ArrayList<>();
+    fieldInfos = new ArrayList<>();
+    methodInfos = new ArrayList<>();
+        try{
+        Date date = FORMATTER.parse(jGitHelper.getCommitTime(commit));
+
+        committer = jGitHelper.getAuthorName(commit);
+        commitMessage = jGitHelper.getMess(commit);
+        commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
+                date, commit, committer, commitMessage, parentCommit);
+    }catch (ParseException e) {
+        e.printStackTrace();
+    }
+    packageInfos = new ArrayList<>();
+    moduleInfos = new HashMap<>();
+    analyze(fileList);
+}
 
 
     private void analyze(List<String> fileList) {
@@ -124,28 +130,38 @@ public class RepoInfoBuilder {
             methodInfos.addAll(fileInfoExtractor.getMethodInfos());
         }
 
-        // 项目第一次分析 设置common Info
-        if (parentCommit == null) {
-            for (PackageInfo packageInfo1 : packageInfos) {
-                packageInfo1.setTrackerInfo("ADD",1,packageInfo1.getUuid());
+        boolean isFirst = parentCommit.equals(commit);
+        // 项目第一次分析 设置tracker Info
+            if (isFirst) {
+                for (PackageInfo packageInfo1 : packageInfos) {
+                    packageInfo1.setTrackerInfo("ADD",1,packageInfo1.getUuid());
+                }
             }
             for (FileInfo fileInfo : fileInfos) {
                 fileInfo.setCommonInfo(commonInfo);
-                fileInfo.setTrackerInfo("ADD",1,fileInfo.getUuid());
+                if (isFirst) {
+                    fileInfo.setTrackerInfo("ADD",1,fileInfo.getUuid());
+                }
             }
             for (ClassInfo classInfo : classInfos) {
                 classInfo.setCommonInfo(commonInfo);
-                classInfo.setTrackerInfo("ADD",1,classInfo.getUuid());
+                if (isFirst) {
+                    classInfo.setTrackerInfo("ADD",1,classInfo.getUuid());
+                }
             }
             for (FieldInfo fieldInfo : fieldInfos) {
                 fieldInfo.setCommonInfo(commonInfo);
-                fieldInfo.setTrackerInfo("ADD",1,fieldInfo.getUuid());
+                if (isFirst) {
+                    fieldInfo.setTrackerInfo("ADD",1,fieldInfo.getUuid());
+                }
             }
             for (MethodInfo methodInfo : methodInfos) {
                 methodInfo.setCommonInfo(commonInfo);
-                methodInfo.setTrackerInfo("ADD",1,methodInfo.getUuid());
+                if (isFirst) {
+                    methodInfo.setTrackerInfo("ADD",1,methodInfo.getUuid());
+                }
             }
-        }
+
     }
 
     private String findPackageUUIDbyModuleAndPackage(String moduleName, String packageName) {
@@ -167,7 +183,7 @@ public class RepoInfoBuilder {
     /**
      * getter and setter
      * */
-    public String getrepoUuid() {
+    public String getRepoUuid() {
         return repoUuid;
     }
 
@@ -210,5 +226,18 @@ public class RepoInfoBuilder {
 
     public List<FieldInfo> getFieldInfos() {
         return fieldInfos;
+    }
+
+    public JGitHelper getJGitHelper() {
+        return jGitHelper;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    @org.jetbrains.annotations.Contract(pure = true)
+    private String getParentCommit() {
+        return this.parentCommit;
     }
 }

@@ -5,8 +5,6 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectInfo;
 
-import java.util.Date;
-
 public class TrackerInfo {
 
 
