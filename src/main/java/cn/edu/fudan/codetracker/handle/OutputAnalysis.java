@@ -110,7 +110,7 @@ public class OutputAnalysis {
         return null;
     }
 
-    private void analyzeMetaInfoFiles(Map<JSONObject, String> diffFileAction, AnalyzeDiffFile analyzeDiffFile, String preCommit, String metaPath) {
+ /*   private void analyzeMetaInfoFiles(Map<JSONObject, String> diffFileAction, AnalyzeDiffFile analyzeDiffFile, String preCommit, String metaPath) {
         String prevFilePath;
         String currFilePath;
         //Map<String, String> preCurrentFileMap = new HashMap<>();
@@ -153,12 +153,13 @@ public class OutputAnalysis {
 
 
 
-/*        analyzeDiffFile.addInfoConstruction(addFilesList);
+*//*        analyzeDiffFile.addInfoConstruction(addFilesList);
         analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
         analyzeDiffFile.modifyInfoConstruction(prePathList, curPathList, diffPathList);
 
-        analyzeDiffFile.packageRelationAnalyze(notChangedFileList);*/
+        analyzeDiffFile.packageRelationAnalyze(notChangedFileList);*//*
     }
+*/
     private String deletePrefix(String curPathList, String preCommit) {
         String p = curPathList.replace(preCommit, "--------");
 

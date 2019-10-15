@@ -20,6 +20,7 @@ public class CommonInfo {
     private String commit;
     private String committer;
     private String commitMessage;
+    // parentCommit : just parent commit not previous version
     private String parentCommit;
 
     public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch) {
