@@ -79,11 +79,11 @@ public class ClassInfo {
         this.implementedList = implementedList;
     }
 
-    public List<FieldInfo> getFiledInfos() {
+    public List<FieldInfo> getFieldInfos() {
         return fieldInfos;
     }
 
-    public void setFiledInfos(List<FieldInfo> filedInfos) {
+    public void setFieldInfos(List<FieldInfo> filedInfos) {
         this.fieldInfos = filedInfos;
     }
 
@@ -185,9 +185,6 @@ public class ClassInfo {
         this.trackerInfo = trackerInfo;
     }
 
-    public void setTrackerInfo(String changeRelation, int version, String uuid) {
-        trackerInfo = new TrackerInfo(changeRelation, version, uuid);
-    }
 
     public String getFileName() {
         return fileName;

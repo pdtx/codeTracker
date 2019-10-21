@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
+import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.ClassMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -31,4 +32,7 @@ public class ClassDao {
     }
 
 
+    public TrackerInfo getLastedTrackerInfoByFullname(String fullname) {
+        return classMapper.getLastedTrackerInfoByFullname(fullname);
+    }
 }

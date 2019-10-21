@@ -99,7 +99,8 @@ public class OutputAnalysis {
                         AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(preRepoInfo, curRepoInfo);
                         analyzeDiffFile.addInfoConstruction(addFilesList);
                         analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
-                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, curRepoInfo, diffPathList);
+                        //analyzeDiffFile.modifyInfoConstruction(preRepoInfo, curRepoInfo, diffPathList);
+                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, preFileList, curRepoInfo, curFileList, diffPathList);
                     }
                 }
             }

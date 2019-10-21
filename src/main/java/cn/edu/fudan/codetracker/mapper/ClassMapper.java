@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.mapper;
 
 import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
+import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface ClassMapper {
     void insertClassInfoList(List<ClassInfo> classInfos);
 
     void insertRawClassInfoList(List<ClassInfo> classInfos);
+
+    TrackerInfo getLastedTrackerInfoByFullname(String fullname);
 }

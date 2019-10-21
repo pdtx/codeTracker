@@ -133,31 +133,31 @@ public class RepoInfoBuilder {
         // 项目第一次分析 设置tracker Info
             if (isFirst) {
                 for (PackageInfo packageInfo1 : packageInfos) {
-                    packageInfo1.setTrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, packageInfo1.getUuid());
+                    packageInfo1.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, packageInfo1.getUuid()));
                 }
             }
             for (FileInfo fileInfo : fileInfos) {
                 fileInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    fileInfo.setTrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fileInfo.getUuid());
+                    fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fileInfo.getUuid()));
                 }
             }
             for (ClassInfo classInfo : classInfos) {
                 classInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    classInfo.setTrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, classInfo.getUuid());
+                    classInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, classInfo.getUuid()));
                 }
             }
             for (FieldInfo fieldInfo : fieldInfos) {
                 fieldInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    fieldInfo.setTrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fieldInfo.getUuid());
+                    fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fieldInfo.getUuid()));
                 }
             }
             for (MethodInfo methodInfo : methodInfos) {
                 methodInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    methodInfo.setTrackerInfo(RelationShip.ADD.name(), FIRST_VERSION,methodInfo.getUuid());
+                    methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION,methodInfo.getUuid()));
                 }
             }
 

@@ -123,7 +123,7 @@ public class FileInfoExtractor {
 
             classInfo.setExtendedList(extendNames);
             classInfo.setImplementedList(implementedNames);
-            classInfo.setFiledInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid()));
+            classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid()));
             classInfo.setMethodInfos(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
 
             // 解析构造函数
@@ -131,7 +131,7 @@ public class FileInfoExtractor {
 
 
             classInfos.add(classInfo);
-            fieldInfos.addAll(classInfo.getFiledInfos());
+            fieldInfos.addAll(classInfo.getFieldInfos());
             methodInfos.addAll(classInfo.getMethodInfos());
         }
     }
