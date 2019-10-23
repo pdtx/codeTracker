@@ -18,5 +18,9 @@ public interface ClassMapper {
 
     void insertRawClassInfoList(List<ClassInfo> classInfos);
 
-    TrackerInfo getLastedTrackerInfoByFullname(String fullname);
+    TrackerInfo getTrackerInfo(String filePath, String className);
+
+    void setDeleteInfo(List<ClassInfo> classInfosList);
+
+    void setChangeInfo(List<ClassInfo> classInfosList);
 }

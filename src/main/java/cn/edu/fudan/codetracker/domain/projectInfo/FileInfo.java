@@ -5,7 +5,6 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectInfo;
 
-import java.util.Date;
 import java.util.UUID;
 
 public class FileInfo {
@@ -13,10 +12,11 @@ public class FileInfo {
 
     private String uuid;
     private String fileName;
-    private String path;
+    private String filePath;
     private String packageName;
     private String moduleName;
 
+    // 指示属于哪个版本的package，与raw_package的UUID字段关联
     private String packageUuid;
 
     private TrackerInfo trackerInfo;
@@ -24,24 +24,29 @@ public class FileInfo {
     
 
 
-    public FileInfo(String fileName, String path, String packageName, String moduleName, String packageUuid) {
+    public FileInfo(String fileName, String filePath, String packageName, String moduleName, String packageUuid) {
         uuid = UUID.randomUUID().toString();
         this.fileName = fileName;
-        this.path = path;
+        this.filePath = filePath;
         this.packageName = packageName;
         this.moduleName = moduleName;
         this.packageUuid = packageUuid;
 
     }
 
-    public FileInfo(String fileName, String packageName, String moduleName, String path) {
+/*    public FileInfo(String fileName, String packageName, String moduleName, String filePath, String) {
         uuid = UUID.randomUUID().toString();
         this.fileName = fileName;
         this.packageName = packageName;
         this.moduleName = moduleName;
-        this.path = path;
-    }
+        this.filePath = filePath;
+    }*/
 
+    // filePath 可以唯一指定一个file
+    @Override
+    public int hashCode() {
+        return filePath.hashCode();
+    }
 
     /**
      * getter and setter
@@ -62,12 +67,12 @@ public class FileInfo {
         this.fileName = fileName;
     }
 
-    public String getPath() {
-        return path;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public String getPackageName() {
@@ -86,11 +91,11 @@ public class FileInfo {
         this.moduleName = moduleName;
     }
 
-    public String getpackageUuid() {
+    public String getPackageUuid() {
         return packageUuid;
     }
 
-    public void setpackageUuid(String packageUuid) {
+    public void setPackageUuid(String packageUuid) {
         this.packageUuid = packageUuid;
     }
 

@@ -18,9 +18,9 @@ public class PackageInfo {
     private TrackerInfo trackerInfo;
 
     // 根据具体情况 单独获取
-    private int version;
+/*    private int version;
     private String changeRelation;
-    private String rootUUID;
+    private String rootUUID;*/
 
 
 
@@ -43,6 +43,10 @@ public class PackageInfo {
         return 0;
     }
 
+/*    @Override
+    public int hashCode() {
+        return uuid.hashCode();
+    }*/
 
     /**
      * getter and setter
@@ -95,7 +99,7 @@ public class PackageInfo {
         return trackerInfo;
     }
 
-    public int getVersion() {
+/*    public int getVersion() {
         return version;
     }
 
@@ -117,7 +121,7 @@ public class PackageInfo {
 
     public void setRootUUID(String rootUUID) {
         this.rootUUID = rootUUID;
-    }
+    }*/
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);

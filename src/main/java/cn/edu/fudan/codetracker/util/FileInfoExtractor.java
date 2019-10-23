@@ -30,6 +30,7 @@ public class FileInfoExtractor {
     private String packageName;
     private Set<String> importNames;
     private String fileName;
+    private String filePath;
 
     private FileInfo fileInfo;
     private List<ClassInfo> classInfos;
@@ -45,15 +46,16 @@ public class FileInfoExtractor {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         try {
+            // 根据操作系统修改
             compilationUnit = JavaParser.parse(new File(path));
             parsePackageName(compilationUnit);
             String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-
+            filePath = (path.replace(PREFIX + projectName + '\\',"")).replace('\\','/');
             // for finding packageUUID base on  packageName and moduleName
-            fileInfo = new FileInfo(fileName, packageName, moduleName, deletePrefix(path));
+            fileInfo = new FileInfo(fileName, filePath, packageName, moduleName, deletePrefix(path));
 
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
@@ -67,7 +69,7 @@ public class FileInfoExtractor {
     }
 
     private String deletePrefix(String path) {
-        return  path.substring(path.indexOf(PREFIX) + 1);
+        return  path.substring(path.indexOf(PREFIX + projectName) + 1);
     }
 
     // need to be improved
@@ -118,12 +120,12 @@ public class FileInfoExtractor {
             }
             // ？？？fullname 重新考虑
             String fullname = classOrInterfaceDeclaration.getNameAsString();
-            ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, fileName, packageName, moduleName, fileInfo.getUuid(), fileInfo.getpackageUuid(),
+            ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, filePath, fileName, packageName, moduleName, fileInfo.getUuid(), fileInfo.getPackageUuid(),
                     sb.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
 
             classInfo.setExtendedList(extendNames);
             classInfo.setImplementedList(implementedNames);
-            classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid()));
+            classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid(),classOrInterfaceName ) );
             classInfo.setMethodInfos(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
 
             // 解析构造函数
@@ -140,7 +142,7 @@ public class FileInfoExtractor {
         return null;
     }
 
-    private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, String classUuid) {
+    private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, String classUuid, String className) {
         List<FieldInfo> fieldInfos = new ArrayList<>();
 
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
@@ -150,7 +152,8 @@ public class FileInfoExtractor {
                 sb.append(modifier.asString());
                 sb.append(" ");
             }
-            FieldInfo fieldInfo = new FieldInfo(fieldDeclaration.toString(), sb.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getpackageUuid());
+            FieldInfo fieldInfo = new FieldInfo(fieldDeclaration.toString(), sb.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getPackageUuid(),
+                    moduleName, packageName, fileName, filePath, className);
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;
@@ -161,7 +164,7 @@ public class FileInfoExtractor {
 
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
             StringBuilder sb  = new StringBuilder();
-            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, packageName, fileInfo.getpackageUuid(), moduleName);
+            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
 
             //fullname
             methodInfo.setFullname(methodDeclaration.getNameAsString());

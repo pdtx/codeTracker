@@ -29,15 +29,16 @@ public class OutputAnalysis {
     private JGitHelper jGitHelper;
 
 
-    public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper) {
+    public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
         this.repoUuid = repoUuid;
         this.branch = branch;
         this.outputDir = outputDir;
         this.jGitHelper = jGitHelper;
+        this.commitId = commitId;
     }
 
     // entry point of analyzing relations about two commits
-    public List<String> analyzeMetaInfo() {
+    public AnalyzeDiffFile analyzeMetaInfo() {
         File file = outputDir.contains("\\") ?
                 new File(outputDir + "\\" + commitId) :
                 new File(outputDir + "/" + commitId);
@@ -76,6 +77,7 @@ public class OutputAnalysis {
                     List<String> addFilesList = new ArrayList<>();
                     List<String> deleteFilesList = new ArrayList<>();
                     List<String> diffPathList = new ArrayList<>();
+                    List<String> fileNameList = new ArrayList<>();
                     if (m.getKey().getString("parent_commit").equals(preCommit)) {
                         if ("ADD".equals(m.getValue())) {
                             currFilePath =  pathPrefix + "/" + m.getKey().getString("curr_file_path");
@@ -91,6 +93,7 @@ public class OutputAnalysis {
                             currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
                             curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
                             String diffPath = isWindows ? pathUnixToWin(currFilePath) : currFilePath;
+                            fileNameList.add(m.getKey().getString("file_full_name"));
                             diffPathList.add(diffPath);
                         }
                         // RepoInfoBuilder need to refactor for parentCommit is not null; so
@@ -100,7 +103,9 @@ public class OutputAnalysis {
                         analyzeDiffFile.addInfoConstruction(addFilesList);
                         analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
                         //analyzeDiffFile.modifyInfoConstruction(preRepoInfo, curRepoInfo, diffPathList);
-                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, preFileList, curRepoInfo, curFileList, diffPathList);
+                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);
+
+                        return analyzeDiffFile;
                     }
                 }
             }

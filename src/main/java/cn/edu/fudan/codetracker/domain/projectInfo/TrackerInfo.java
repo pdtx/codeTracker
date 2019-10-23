@@ -24,6 +24,11 @@ public class TrackerInfo {
         this.rootUUID = uuid;
     }
 
+    public TrackerInfo( int version, String uuid) {
+        this.version = version;
+        this.rootUUID = uuid;
+    }
+
     public int getVersion() {
         return version;
     }

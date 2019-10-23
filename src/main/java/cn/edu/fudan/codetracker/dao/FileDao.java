@@ -6,11 +6,14 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectInfo.FileInfo;
+import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.FileMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class FileDao {
@@ -27,5 +30,27 @@ public class FileDao {
     @Autowired
     public void setFileMapper(FileMapper fileMapper) {
         this.fileMapper = fileMapper;
+    }
+
+    public TrackerInfo getTrackerInfo(String path) {
+        return fileMapper.getTrackerInfo(path);
+    }
+
+    public void setAddInfo(Set<FileInfo> fileInfos) {
+        List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
+        insertFileInfoList(fileInfoList);
+        insertRawFileInfoList(fileInfoList);
+    }
+
+    public void setDeleteInfo(Set<FileInfo> fileInfos) {
+        List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
+        fileMapper.setDeleteInfo(fileInfoList);
+        insertRawFileInfoList(fileInfoList);
+    }
+
+    public void setChangeInfo(Set<FileInfo> fileInfos) {
+        List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
+        fileMapper.setChangeInfo(fileInfoList);
+        insertRawFileInfoList(fileInfoList);
     }
 }

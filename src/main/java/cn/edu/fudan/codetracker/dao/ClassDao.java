@@ -6,12 +6,15 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
+import cn.edu.fudan.codetracker.domain.projectInfo.PackageInfo;
 import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.ClassMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class ClassDao {
@@ -32,7 +35,25 @@ public class ClassDao {
     }
 
 
-    public TrackerInfo getLastedTrackerInfoByFullname(String fullname) {
-        return classMapper.getLastedTrackerInfoByFullname(fullname);
+    public TrackerInfo getTrackerInfo(String filePath, String className) {
+        return classMapper.getTrackerInfo(filePath, className);
+    }
+
+    public void setAddInfo(Set<ClassInfo> classInfos) {
+        List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
+        insertClassInfoList(classInfosList);
+        insertRawClassInfoList(classInfosList);
+    }
+
+    public void setDeleteInfo(Set<ClassInfo> classInfos) {
+        List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
+        classMapper.setDeleteInfo(classInfosList);
+        insertRawClassInfoList(classInfosList);
+    }
+
+    public void setChangeInfo(Set<ClassInfo> classInfos) {
+        List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
+        classMapper.setChangeInfo(classInfosList);
+        insertRawClassInfoList(classInfosList);
     }
 }

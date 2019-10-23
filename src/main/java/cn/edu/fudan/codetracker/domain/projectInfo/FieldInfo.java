@@ -17,16 +17,29 @@ public class FieldInfo {
     private String classUuid;
     private String packageUuid;
 
+
+    private String moduleName;
+    private String packageName;
+    private String fileName;
+    private String className;
+    private String filePath;
+
     private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
-    public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid) {
+    public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
+                     String fileName, String filePath, String className) {
         uuid = UUID.randomUUID().toString();
         this.simpleName = simpleName;
         this.modifier = modifier;
         this.simpleType = simpleType;
         this.classUuid = classUuid;
         this.packageUuid = packageUuid;
+        this.moduleName = moduleName;
+        this.packageName = packageName;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.className = className;
     }
 
 
@@ -41,6 +54,11 @@ public class FieldInfo {
         return this.simpleName.equals(obj.getSimpleName()) &&
                 this.modifier.equals(obj.getModifier()) &&
                 this.simpleType.equals(obj.getSimpleType());
+    }
+
+    @Override
+    public int hashCode() {
+        return uuid.hashCode();
     }
 
     /**
@@ -117,5 +135,47 @@ public class FieldInfo {
 
     public void setPackageUuid(String packageUuid) {
         this.packageUuid = packageUuid;
+    }
+
+
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }

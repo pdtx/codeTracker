@@ -6,13 +6,14 @@
 package cn.edu.fudan.codetracker.handle;
 
 
-import cn.edu.fudan.codetracker.dao.ClassDao;
+import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.projectInfo.*;
-import cn.edu.fudan.codetracker.util.FileInfoExtractor;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,23 +21,73 @@ import java.util.*;
 
 public class AnalyzeDiffFile {
 
+    private PackageDao packageDao;
+    private FileDao fileDao;
+    private ClassDao classDao;
+    private FieldDao fieldDao;
+    private MethodDao methodDao;
+
     private RepoInfoBuilder preRepoInfo;
     private RepoInfoBuilder curRepoInfo;
-    private List<PackageInfo> packageInfoList;
+
+    private Map<String, Set<PackageInfo>> packageInfos;
+    private Map<String, Set<FileInfo>> fileInfos;
+    private Map<String, Set<ClassInfo>> classInfos;
+    private Map<String, Set<MethodInfo>> methodInfos;
+    private Map<String, Set<FieldInfo>> fieldInfos;
+
+    // hash，value 修改后
+    private Map<Integer, TrackerInfo> modifyPackageUUID;
+/*
+    private Map<Integer, TrackerInfo> changeClass;
+    private Map<Integer, TrackerInfo> changeMethod;
+*/
+
+
+/*    private List<PackageInfo> packageInfoList;
     private List<FileInfo> fileInfoList;
     private List<ClassInfo> classInfoList;
     private List<MethodInfo> methodInfoList;
-    private List<FieldInfo> fieldInfoList;
+    private List<FieldInfo> fieldInfoList;*/
 
 
     AnalyzeDiffFile(RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo) {
         this.preRepoInfo = preRepoInfo;
         this.curRepoInfo = curRepoInfo;
-        packageInfoList = new ArrayList<>();
+
+        packageInfos = new HashMap<>();
+        fileInfos = new HashMap<>();
+        classInfos = new HashMap<>();
+        methodInfos = new HashMap<>();
+        fieldInfos = new HashMap<>();
+        init(packageInfos);
+        init(fileInfos);
+        init(classInfos);
+        init(methodInfos);
+        init(fieldInfos);
+
+        packageDao = new PackageDao();
+        fileDao = new FileDao();
+        classDao = new ClassDao();
+        fieldDao = new FieldDao();
+        methodDao = new MethodDao();
+
+        // key 修改前，value 修改后
+        modifyPackageUUID = new HashMap<>();
+/*        packageInfoList = new ArrayList<>();
         fileInfoList = new ArrayList<>();
         classInfoList = new ArrayList<>();
         methodInfoList = new ArrayList<>();
-        fieldInfoList = new ArrayList<>();
+        fieldInfoList = new ArrayList<>();*/
+    }
+
+    private <T> void init(Map<String, Set<T>> map) {
+        Set<T> add = new HashSet<>();
+        Set<T> delete = new HashSet<>();
+        Set<T> change = new HashSet<>();
+        map.put(RelationShip.ADD.name(), add);
+        map.put(RelationShip.DELETE.name(), delete);
+        map.put(RelationShip.CHANGE.name(), change);
     }
 
 
@@ -48,13 +99,51 @@ public class AnalyzeDiffFile {
      * package relation need to be modified
      * */
     void addInfoConstruction(List<String> addFilesList) {
+
         RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true);
 
-        packageInfoList.addAll(addRepoInfo.getPackageInfos());
-        fileInfoList.addAll(addRepoInfo.getFileInfos());
-        classInfoList.addAll(addRepoInfo.getClassInfos());
-        methodInfoList.addAll(addRepoInfo.getMethodInfos());
-        fieldInfoList.addAll(addRepoInfo.getFieldInfos());
+        // 更新packageUUID
+        for (PackageInfo packageInfo : addRepoInfo.getPackageInfos()) {
+            TrackerInfo trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
+            if (trackerInfo != null) {
+                modifyPackageUUID.put(packageInfo.hashCode(), trackerInfo);
+                packageInfo.setTrackerInfo(new TrackerInfo( RelationShip.CHANGE.name(), trackerInfo.getVersion(),trackerInfo.getRootUUID()));
+                packageInfos.get(RelationShip.CHANGE.name()).add(packageInfo);
+            } else {
+                packageInfos.get(RelationShip.ADD.name()).add(packageInfo);
+            }
+        }
+        fileInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getFileInfos());
+        classInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getClassInfos());
+        methodInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getMethodInfos());
+        fieldInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getFieldInfos());
+/*        for (FileInfo fileInfo : addRepoInfo.getFileInfos()) {
+            if (modifyPackageUUID.containsKey(fileInfo.getPackageUuid())) {
+                fileInfo.setPackageUuid(modifyPackageUUID.get(fileInfo.getPackageUuid()));
+            }
+            fileInfos.get(RelationShip.ADD.name()).add(fileInfo);
+        }
+
+        for (ClassInfo classInfo : addRepoInfo.getClassInfos()) {
+            if (modifyPackageUUID.containsKey(classInfo.getPackageUuid())) {
+                classInfo.setPackageUuid(modifyPackageUUID.get(classInfo.getPackageUuid()));
+            }
+            classInfos.get(RelationShip.ADD.name()).add(classInfo);
+        }
+
+        for (MethodInfo methodInfo : addRepoInfo.getMethodInfos()) {
+            if (modifyPackageUUID.containsKey(methodInfo.getPackageUuid())) {
+                methodInfo.setPackageUuid(modifyPackageUUID.get(methodInfo.getPackageUuid()));
+            }
+            methodInfos.get(RelationShip.ADD.name()).add(methodInfo);
+        }
+
+        for (FieldInfo fieldInfo : addRepoInfo.getFieldInfos()) {
+            if (modifyPackageUUID.containsKey(fieldInfo.getPackageUuid())) {
+                fieldInfo.setPackageUuid(modifyPackageUUID.get(fieldInfo.getPackageUuid()));
+            }
+            fieldInfos.get(RelationShip.ADD.name()).add(fieldInfo);
+        }*/
     }
 
     /**
@@ -64,67 +153,93 @@ public class AnalyzeDiffFile {
      *   no data needs to be insert
      * */
     void deleteInfoConstruction(List<String> deleteFilesList) {
-        RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(preRepoInfo, deleteFilesList, false);
+        // 删除的数据也作为一条插入
+        // 基本数据和删除的前一样 relation 为delete表示在这个版本删除 删除人是谁 相关的删除信息等
+        // 用curRepoInfo 来初始化 表示在current 这个版本删除
+        RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false);
 
         TrackerInfo trackerInfo;
         String relation = RelationShip.DELETE.name();
         for (PackageInfo packageInfo : deleteRepoInfo.getPackageInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            packageInfo.setTrackerInfo(trackerInfo);
+            // 判断这个package是不是delete 需要判断这个package下是否还有file
+            if (isPackageDelete(packageInfo)) {
+                packageInfos.get(RelationShip.DELETE.name()).add(packageInfo);
+            } else {
+                int hashCode = packageInfo.hashCode();
+                if (! modifyPackageUUID.containsKey(hashCode)) {
+                    trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
+                    modifyPackageUUID.put(hashCode, trackerInfo);
+                    packageInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                    packageInfos.get(RelationShip.CHANGE.name()).add(packageInfo);
+                }
+            }
         }
 
         for (FileInfo fileInfo : deleteRepoInfo.getFileInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            fileInfo.setTrackerInfo(trackerInfo);
+            trackerInfo = fileDao.getTrackerInfo(fileInfo.getFilePath());
+            trackerInfo.setChangeRelation(relation);
+            fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            fileInfos.get(RelationShip.DELETE.name()).add(fileInfo);
         }
 
         for (ClassInfo classInfo : deleteRepoInfo.getClassInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            classInfo.setTrackerInfo(trackerInfo);
+            trackerInfo = classDao.getTrackerInfo(classInfo.getFilePath(), classInfo.getClassName());
+            trackerInfo.setChangeRelation(relation);
+            classInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            classInfos.get(RelationShip.DELETE.name()).add(classInfo);
         }
 
         for (MethodInfo methodInfo : deleteRepoInfo.getMethodInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            methodInfo.setTrackerInfo(trackerInfo);
+            trackerInfo = methodDao.getTrackerInfo(methodInfo.getFilePath(), methodInfo.getClassName(), methodInfo.getSignature());
+            trackerInfo.setChangeRelation(relation);
+            methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            methodInfos.get(RelationShip.DELETE.name()).add(methodInfo);
         }
 
         for (FieldInfo fieldInfo : deleteRepoInfo.getFieldInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            fieldInfo.setTrackerInfo(trackerInfo);
+            trackerInfo = fieldDao.getTrackerInfo(fieldInfo.getModuleName(), fieldInfo.getPackageName(), fieldInfo.getFileName(), fieldInfo.getClassName(), fieldInfo.getSimpleName());
+            trackerInfo.setChangeRelation(relation);
+            fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            fieldInfos.get(RelationShip.DELETE.name()).add(fieldInfo);
         }
 
-        // rewrite method hashCode and equals
-        packageInfoList.addAll(deleteRepoInfo.getPackageInfos());
-        fileInfoList.addAll(deleteRepoInfo.getFileInfos());
-        classInfoList.addAll(deleteRepoInfo.getClassInfos());
-        methodInfoList.addAll(deleteRepoInfo.getMethodInfos());
-        fieldInfoList.addAll(deleteRepoInfo.getFieldInfos());
-
-
         //setTrackerInfo(deleteRepoInfo, RelationShip.DELETE);
+    }
+
+    /**
+     *      重写
+     * */
+    private boolean isPackageDelete(PackageInfo packageInfo) {
+        return false;
     }
 
     /**
      *   no matter how，package、file will always be "change"
      *   according to diffPath
      * */
-    void modifyInfoConstruction(RepoInfoBuilder preRepoInfo, List<String> preFileList, RepoInfoBuilder curRepoInfo, List<String> curFileList, List<String> diffPathList) {
+    void modifyInfoConstruction(RepoInfoBuilder preRepoInfo, List<String> fileNameList, RepoInfoBuilder curRepoInfo, List<String> diffPathList) {
         if (diffPathList == null || diffPathList.size() == 0) {
             return;
         }
         String relation = RelationShip.CHANGE.name();
         TrackerInfo trackerInfo;
         for (PackageInfo packageInfo : curRepoInfo.getPackageInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            packageInfo.setTrackerInfo(trackerInfo);
+            int hashCode = packageInfo.hashCode();
+            if (! modifyPackageUUID.containsKey(hashCode)) {
+                trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
+                modifyPackageUUID.put(hashCode, trackerInfo);
+                packageInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                packageInfos.get(relation).add(packageInfo);
+            }
         }
 
         for (FileInfo fileInfo : curRepoInfo.getFileInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            fileInfo.setTrackerInfo(trackerInfo);
+            trackerInfo = fileDao.getTrackerInfo(fileInfo.getFilePath());
+            fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            fileInfos.get(relation).add(fileInfo);
         }
-        packageInfoList.addAll(curRepoInfo.getPackageInfos());
-        fileInfoList.addAll(curRepoInfo.getFileInfos());
+
+
 
         /////////////// class /////////////////////////
 /*        //add class
@@ -163,6 +278,7 @@ public class AnalyzeDiffFile {
                 e.printStackTrace();
                 continue;
             }
+            String filePath = fileNameList.get(i);
             JSONArray diffDetail = JSONArray.parseArray(input);
             String changeRelation;
             String domainType;
@@ -170,9 +286,6 @@ public class AnalyzeDiffFile {
             String range;
             int begin,end;
             for (int j = 0; j < diffDetail.size(); j++) {
-                FileInfoExtractor preFileInfoExtractor = new FileInfoExtractor(preFileList.get(0), null);
-                FileInfoExtractor curFileInfoExtractor = new FileInfoExtractor(curFileList.get(0), null);
-
                 JSONObject oneDiff = diffDetail.getJSONObject(j);
                 domainType = oneDiff.getString("type1").toLowerCase();
                 changeRelation = oneDiff.getString("type2").toLowerCase();
@@ -183,77 +296,127 @@ public class AnalyzeDiffFile {
                 description = oneDiff.getString("description");
                 range = oneDiff.getString("range");
 
+                ////////////////////////////////// class //////////////////
                 // find class: rename
-                // class
                 if (domainType.equals("ClassOrInterface".toLowerCase())) {
                     switch (changeRelation){
                         case "insert":
-                            handle(curRepoInfo, range, RelationShip.ADD.name());
+                            handleClass(curRepoInfo, filePath, range, RelationShip.ADD.name());
                             break;
                         case "change":
                             //before change
                             begin = rangeAnalyzeBegin(range.split("-")[0]);
                             end = rangeAnalyzeEnd(range.split("-")[0]);
-                            ClassInfo preClassInfo = findClassInfoByRange(preFileInfoExtractor.getClassInfos(), begin, end);
+                            ClassInfo preClassInfo = findClassInfoByRange(preRepoInfo.getClassInfos(), filePath, begin, end);
                             // 必须得到root uuid 以及 version 否则无法关联起来
-                            TrackerInfo preTrackerInfo = getPreTrackerInfo(preClassInfo);
+                            TrackerInfo preTrackerInfo = classDao.getTrackerInfo(preClassInfo.getFilePath(), preClassInfo.getClassName());
                             //after change
                             begin = rangeAnalyzeBegin(range.split("-")[1]);
                             end = rangeAnalyzeEnd(range.split("-")[1]);
-                            ClassInfo curClassInfo = findClassInfoByRange(curFileInfoExtractor.getClassInfos(), begin, end);
+                            ClassInfo curClassInfo = findClassInfoByRange(curRepoInfo.getClassInfos(), filePath, begin, end);
                             if (curClassInfo != null) {
                                 curClassInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID()));
                                 // 直接入库
-                                classInfoList.add(curClassInfo);
+                                classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
+                                curRepoInfo.getClassInfos().remove(curClassInfo);
                             }
                             break;
                         case "delete":
-                            handle(preRepoInfo, range, RelationShip.DELETE.name());
+                            handleClass(preRepoInfo, filePath, range, RelationShip.DELETE.name());
                     }
                     continue;
                 }
 
-                // field 暂时不完成
-                if ("member".equals(domainType) && !description.toLowerCase().contains("method")) {
+                // field
+/*                if ("member".equals(domainType) && !description.toLowerCase().contains("method")) {
                     continue;
+                }*/
+                // add
+                for (FieldInfo curFieldInfo : curRepoInfo.getFieldInfos()) {
+                    FieldInfo preFieldInfo = findFieldInfoByName(curFieldInfo.getSimpleName(), preRepoInfo.getFieldInfos(), filePath);
+                    if (preFieldInfo == null) {
+                        curFieldInfo.setTrackerInfo(RelationShip.ADD.name(), 1, curFieldInfo.getUuid());
+                        fieldInfos.get(RelationShip.ADD.name()).add(curFieldInfo);
+                        // 减少后续查找时间
+                        curRepoInfo.getFieldInfos().remove(curFieldInfo);
+                    }
+                }
+
+                for (FieldInfo  preFieldInfo: preRepoInfo.getFieldInfos()) {
+                    FieldInfo  curFieldInfo = findFieldInfoByName(preFieldInfo.getSimpleName(), curRepoInfo.getFieldInfos(), filePath);
+                    trackerInfo = fieldDao.getTrackerInfo(preFieldInfo.getModuleName(), preFieldInfo.getPackageName(), preFieldInfo.getFileName(), preFieldInfo.getClassName(), preFieldInfo.getSimpleName());
+                    if (curFieldInfo == null) {
+                        preFieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                        fieldInfos.get(RelationShip.DELETE.name()).add(preFieldInfo);
+                        //preRepoInfo.getFieldInfos().remove(preFieldInfo);
+                    } else {
+                        curFieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
+                        fieldInfos.get(RelationShip.CHANGE.name()).add(curFieldInfo);
+                        //curRepoInfo.getFieldInfos().remove(curFieldInfo);
+                    }
                 }
 
                 // method change declaration
                 if ("member".equals(domainType) && description.toLowerCase().contains("method")) {
                     switch (changeRelation){
                         case "insert":
-                            handleMethod(curFileInfoExtractor.getMethodInfos(), range, RelationShip.ADD.name());
+                            handleMethod(curRepoInfo.getMethodInfos(), filePath, range, RelationShip.ADD.name());
                             break;
                         case "change":
                             //before change
                             begin = rangeAnalyzeBegin(range.split("-")[0]);
                             end = rangeAnalyzeEnd(range.split("-")[0]);
-                            MethodInfo preMethodInfo = findMethodInfoByRange(preFileInfoExtractor.getMethodInfos(), begin, end);
-                            ClassInfo preClassInfo = findClassInfoByRange(preRepoInfo.getClassInfos(), begin, end);
+                            MethodInfo preMethodInfo = findMethodInfoByRange(preRepoInfo.getMethodInfos(), filePath, begin, end);
                             // 必须得到root uuid 以及 version 否则无法关联起来
-                            TrackerInfo preTrackerInfo = getPreTrackerInfo(preClassInfo);
+                            trackerInfo = methodDao.getTrackerInfo(preMethodInfo.getFilePath(), preMethodInfo.getClassName(), preMethodInfo.getSignature());
                             //after change
                             begin = rangeAnalyzeBegin(range.split("-")[1]);
                             end = rangeAnalyzeEnd(range.split("-")[1]);
-                            ClassInfo curClassInfo = findClassInfoByRange(curRepoInfo.getClassInfos(), begin, end);
-                            if (curClassInfo != null) {
-                                curClassInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID()));
+                            MethodInfo curMethodInfo = findMethodInfoByRange(curRepoInfo.getMethodInfos(), filePath, begin, end);
+                            if (curMethodInfo != null) {
+                                curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
                                 // 直接入库
-                                classInfoList.add(curClassInfo);
+                                methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
                             }
                             break;
                         case "delete":
-                            handleMethod(preFileInfoExtractor.getMethodInfos(), range, RelationShip.DELETE.name());
+                            handleMethod(preRepoInfo.getMethodInfos(), filePath, range, RelationShip.DELETE.name());
                     }
                 }
 
                 // statement
+                MethodInfo curMethodInfo = null;
                 if ("statement".equals(domainType)) {
-
+                    switch (changeRelation){
+                        case "insert":
+                            begin = rangeAnalyzeBegin(range);
+                            end = rangeAnalyzeEnd(range);
+                            curMethodInfo = findMethodInfoByRange(curRepoInfo.getMethodInfos(), filePath, begin, end);
+                            break;
+                        case "delete":
+                            begin = rangeAnalyzeBegin(range);
+                            end = rangeAnalyzeEnd(range);
+                            MethodInfo preMethodInfo = findMethodInfoByRange(preRepoInfo.getMethodInfos(), filePath, begin, end);
+                            for (MethodInfo methodInfo : curRepoInfo.getMethodInfos()) {
+                                if (methodInfo.getFullname().equals(preMethodInfo.getFullname())) {
+                                    curMethodInfo = methodInfo;
+                                    break;
+                                }
+                            }
+                            break;
+                        case "change":
+                            begin = rangeAnalyzeBegin(range.split("-")[1]);
+                            end = rangeAnalyzeEnd(range.split("-")[1]);
+                            // 根据begin 与 end 找到 method
+                            curMethodInfo = findMethodInfoByRange(curRepoInfo.getMethodInfos(), filePath, begin, end);
+                    }
+                    if (curMethodInfo != null && !methodInfos.get(RelationShip.CHANGE.name()).contains(curMethodInfo)) {
+                        trackerInfo = methodDao.getTrackerInfo(curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature());
+                        curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
+                        methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
+                        curRepoInfo.getMethodInfos().remove(curMethodInfo);// 减少下次搜索时间
+                    }
                 }
-
-
-                // 查找所有的method 以及处理其关系
 
             }
 
@@ -261,55 +424,67 @@ public class AnalyzeDiffFile {
 
     }
 
-    private void handleMethod(List<MethodInfo> methodInfos, String range, String relation) {
+    private FieldInfo findFieldInfoByName(String fieldName, List<FieldInfo> fieldInfos, String filePath) {
+        for (FieldInfo fieldInfo : fieldInfos) {
+            if (filePath.equals(fieldInfo.getFilePath()) && fieldName.equals(fieldInfo.getSimpleName())) {
+                return fieldInfo;
+            }
+        }
+        return null;
+    }
+
+
+    private void handleMethod(List<MethodInfo> methodInfoList, String filePath, String range, String relation) {
         int begin = rangeAnalyzeBegin(range);
         int end = rangeAnalyzeEnd(range);
-        MethodInfo methodInfo = findMethodInfoByRange(methodInfos, begin, end);
-
-        if (relation.equals(RelationShip.ADD.name())) {
-            methodInfo.setTrackerInfo(new TrackerInfo(relation, 1, methodInfo.getUuid()));
-            methodInfoList.add(methodInfo);
+        MethodInfo methodInfo = findMethodInfoByRange(methodInfoList, filePath, begin, end);
+        if (methodInfo == null) {
+            return;
         }
 
-        // ??????
+        // add
+        if (relation.equals(RelationShip.ADD.name())) {
+            methodInfo.setTrackerInfo(new TrackerInfo(relation, 1, methodInfo.getUuid()));
+            methodInfos.get(RelationShip.ADD.name()).add(methodInfo);
+        }
+
+        // delete: 只有changeRelation 改变
         if (relation.equals(RelationShip.DELETE.name())) {
-            methodInfo.setTrackerInfo(new TrackerInfo(relation));
-            methodInfoList.add(methodInfo);
+            TrackerInfo trackerInfo = methodDao.getTrackerInfo(methodInfo.getFilePath(), methodInfo.getClassName(), methodInfo.getSignature());
+            methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            methodInfos.get(RelationShip.DELETE.name()).add(methodInfo);
         }
 
     }
 
-    private MethodInfo findMethodInfoByRange(List<MethodInfo> methodInfos, int begin, int end) {
+    private MethodInfo findMethodInfoByRange( List<MethodInfo> methodInfos, String filePath,int begin, int end) {
         for (MethodInfo methodInfo : methodInfos) {
-            if (methodInfo.getBegin() <= begin && methodInfo.getEnd() >= end) {
+            if (filePath.equals(methodInfo.getFilePath()) && methodInfo.getBegin() <= begin && methodInfo.getEnd() >= end) {
                 return methodInfo;
             }
         }
         return null;
     }
 
-    private TrackerInfo getPreTrackerInfo(ClassInfo preClassInfo) {
-        ClassDao classDao = new ClassDao();
-        return classDao.getLastedTrackerInfoByFullname(preClassInfo.getFullname());
-    }
-
-    private void handle(RepoInfoBuilder repoInfo, String range, String relation) {
+    /**
+     * fileInfoExtractor 查找的更准确，但是package信息不准确
+     *
+     * */
+    private void handleClass(RepoInfoBuilder repoInfo, String path, String range, String relation) {
         //根据range当前版本的method
         int begin = rangeAnalyzeBegin(range);
         int end = rangeAnalyzeEnd(range);
-        ClassInfo classInfo = findClassInfoByRange(repoInfo.getClassInfos(), begin, end);
+        ClassInfo classInfo = findClassInfoByRange(repoInfo.getClassInfos(), path, begin, end);
         if (classInfo != null) {
             setTrackerInfo(classInfo, relation);
             repoInfo.getClassInfos().remove(classInfo);
         }
     }
 
-    private ClassInfo findClassInfoByRange(List<ClassInfo> classInfos, int begin, int end) {
-        //
-        // 不准 重新写 那么多classInfo 可能有很多个符合情况
+    private ClassInfo findClassInfoByRange(List<ClassInfo> classInfos, String path, int begin, int end) {
         // 应该先找到对应非file
         for (ClassInfo classInfo : classInfos) {
-            if (classInfo.getBegin() <= begin && classInfo.getEnd() >= end) {
+            if (path.equals(classInfo.getFilePath()) && classInfo.getBegin() <= begin && classInfo.getEnd() >= end) {
                 return classInfo;
             }
         }
@@ -318,38 +493,38 @@ public class AnalyzeDiffFile {
 
     private void setTrackerInfo(ClassInfo classInfo, String relation) {
         final int FIRST_VERSION = 1;
-        TrackerInfo trackerInfo;
-        trackerInfo = new TrackerInfo(relation);
-        classInfo.setTrackerInfo(trackerInfo);
-
-        for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            methodInfo.setTrackerInfo(trackerInfo);
-        }
-        for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-            trackerInfo = new TrackerInfo(relation);
-            fieldInfo.setTrackerInfo(trackerInfo);
-        }
 
         if (relation.equals(RelationShip.ADD.name())) {
-            classInfo.getTrackerInfo().setVersion(FIRST_VERSION);
-            classInfo.getTrackerInfo().setRootUUID(classInfo.getUuid());
+            classInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+            classInfos.get(relation).add(classInfo);
             for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
-                methodInfo.getTrackerInfo().setVersion(FIRST_VERSION);
-                methodInfo.getTrackerInfo().setRootUUID(classInfo.getUuid());
+                methodInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+                methodInfos.get(relation).add(methodInfo);
             }
             for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-                fieldInfo.getTrackerInfo().setVersion(FIRST_VERSION);
-                fieldInfo.getTrackerInfo().setRootUUID(classInfo.getUuid());
+                fieldInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+                fieldInfos.get(relation).add(fieldInfo);
+            }
+        } else {
+            TrackerInfo trackerInfo = classDao.getTrackerInfo(classInfo.getFilePath(), classInfo.getClassName());
+            classInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+            classInfos.get(relation).add(classInfo);
+
+            for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
+                trackerInfo = methodDao.getTrackerInfo(methodInfo.getFilePath(), methodInfo.getClassName(), methodInfo.getSignature());
+                methodInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                methodInfos.get(relation).add(methodInfo);
+            }
+
+            for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
+                trackerInfo = fieldDao.getTrackerInfo(fieldInfo.getModuleName(), fieldInfo.getPackageName(), fieldInfo.getFileName(), fieldInfo.getClassName(), fieldInfo.getSimpleName());
+                fieldInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                fieldInfos.get(relation).add(fieldInfo);
             }
         }
-
-        classInfoList.add(classInfo);
-        methodInfoList.addAll(classInfo.getMethodInfos());
-        fieldInfoList.addAll(classInfo.getFieldInfos());
     }
 
-    private ClassInfo findClassInfoByName(ClassInfo preClassInfo, List<ClassInfo> classInfos) {
+/*    private ClassInfo findClassInfoByName(ClassInfo preClassInfo, List<ClassInfo> classInfos) {
         for (ClassInfo classInfo : classInfos) {
             if (classInfo.getClassName().equals(preClassInfo.getClassName())
                     && classInfo.getPackageName().equals(preClassInfo.getPackageName())
@@ -358,7 +533,7 @@ public class AnalyzeDiffFile {
             }
         }
         return null;
-    }
+    }*/
 
     private int rangeAnalyzeBegin(String range) {
         // range ：(87,102)
@@ -369,64 +544,52 @@ public class AnalyzeDiffFile {
         return Integer.valueOf(range.substring(0,range.length() - 1).split(",")[1]);
     }
 
-
-    private void setTrackerInfo(RepoInfoBuilder repoInfo,RelationShip changeRelation) {
-        TrackerInfo trackerInfo;
-
-        for (PackageInfo packageInfo : repoInfo.getPackageInfos()) {
-            trackerInfo = new TrackerInfo(changeRelation.name());
-            packageInfo.setTrackerInfo(trackerInfo);
-        }
-
-        for (FileInfo fileInfo : repoInfo.getFileInfos()) {
-            trackerInfo = new TrackerInfo(changeRelation.name());
-            fileInfo.setTrackerInfo(trackerInfo);
-        }
-
-        for (ClassInfo classInfo : repoInfo.getClassInfos()) {
-            trackerInfo = new TrackerInfo(changeRelation.name());
-            classInfo.setTrackerInfo(trackerInfo);
-        }
-
-        for (MethodInfo methodInfo : repoInfo.getMethodInfos()) {
-            trackerInfo = new TrackerInfo(changeRelation.name());
-            methodInfo.setTrackerInfo(trackerInfo);
-        }
-
-        for (FieldInfo fieldInfo : repoInfo.getFieldInfos()) {
-            trackerInfo = new TrackerInfo(changeRelation.name());
-            fieldInfo.setTrackerInfo(trackerInfo);
-        }
-
-        // need to rewrite method hashCode and equals
-        packageInfoList.addAll(repoInfo.getPackageInfos());
-        fileInfoList.addAll(repoInfo.getFileInfos());
-        classInfoList.addAll(repoInfo.getClassInfos());
-        methodInfoList.addAll(repoInfo.getMethodInfos());
-        fieldInfoList.addAll(repoInfo.getFieldInfos());
-    }
-
     /**
      * getter and setter
      * */
-    public List<PackageInfo> getPackageInfoList() {
-        return packageInfoList;
+/*    @Autowired
+    public void setPackageDao(PackageDao packageDao) {
+        this.packageDao = packageDao;
     }
 
-    public List<FileInfo> getFileInfoList() {
-        return fileInfoList;
+    @Autowired
+    public void setFileDao(FileDao fileDao) {
+        this.fileDao = fileDao;
     }
 
-    public List<ClassInfo> getClassInfoList() {
-        return classInfoList;
+    @Autowired
+    public void setClassDao(ClassDao classDao) {
+        this.classDao = classDao;
     }
 
-    public List<MethodInfo> getMethodInfoList() {
-        return methodInfoList;
+    @Autowired
+    public void setFieldDao(FieldDao fieldDao) {
+        this.fieldDao = fieldDao;
     }
 
-    public List<FieldInfo> getFieldInfoList() {
-        return fieldInfoList;
+    @Autowired
+    public void setMethodDao(MethodDao methodDao) {
+        this.methodDao = methodDao;
+    }*/
+
+    public Map<String, Set<PackageInfo>> getPackageInfos() {
+        return packageInfos;
+    }
+
+    public Map<String, Set<FileInfo>> getFileInfos() {
+        return fileInfos;
+    }
+
+    public Map<String, Set<ClassInfo>> getClassInfos() {
+        return classInfos;
+    }
+
+    public Map<String, Set<MethodInfo>> getMethodInfos() {
+        return methodInfos;
+    }
+
+    public Map<String, Set<FieldInfo>> getFieldInfos() {
+        return fieldInfos;
     }
 
 }

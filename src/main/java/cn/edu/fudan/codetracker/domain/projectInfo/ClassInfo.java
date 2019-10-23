@@ -13,6 +13,7 @@ public class ClassInfo {
     private String fullname;
     private String className;
     private String fileName;
+    private String filePath;
     private String packageName;
     private String moduleName;
     private String fileUuid;
@@ -23,7 +24,7 @@ public class ClassInfo {
     private TrackerInfo trackerInfo;
 
 
-    private String filePath;
+
     private int begin;
     private int end;
     private List<String> extendedList;
@@ -31,11 +32,12 @@ public class ClassInfo {
     private List<FieldInfo> fieldInfos;
     private List<MethodInfo> methodInfos;
 
-    public ClassInfo(String fullname, String className, String fileName, String packageName,
+    public ClassInfo(String fullname, String className, String filePath, String fileName, String packageName,
                      String moduleName, String fileUuid, String packageUuid, String modifier, int begin, int end) {
         uuid = UUID.randomUUID().toString();
         this.fullname = fullname;
         this.className = className;
+        this.filePath = filePath;
         this.fileName = fileName;
         this.packageName = packageName;
         this.moduleName = moduleName;
@@ -104,6 +106,15 @@ public class ClassInfo {
         return sb.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return (filePath + className).hashCode();
+    }
+
+
+    /**
+     * getter and setter
+     * */
     public String getFilePath() {
         return filePath;
     }
@@ -184,7 +195,6 @@ public class ClassInfo {
     public void setTrackerInfo(TrackerInfo trackerInfo) {
         this.trackerInfo = trackerInfo;
     }
-
 
     public String getFileName() {
         return fileName;

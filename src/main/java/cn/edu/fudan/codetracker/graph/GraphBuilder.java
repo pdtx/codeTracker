@@ -168,7 +168,7 @@ public class GraphBuilder implements AutoCloseable{
                 "                for (Recommendation info : list) {\n" +
                 "                    completeReco.completeCode(info);\n" +
                 "                    String repoName = getCode.getRepoName(info.getRepoid());\n" +
-                "                    String fileName = getCode.getFileName(info.getLocation());\n" +
+                "                    String fileName = getCode.getFilePath(info.getLocation());\n" +
                 "                    System.out.println(\"repoName: \" + repoName);\n" +
                 "                    if(repoName!=null){\n" +
                 "                        System.out.println(test);\n" +
@@ -193,7 +193,7 @@ public class GraphBuilder implements AutoCloseable{
                 "                for (Recommendation info : list) {\n" +
                 "                    completeReco.completeCode(info);\n" +
                 "                    String repoName = getCode.getRepoName(info.getRepoid());\n" +
-                "                    String fileName = getCode.getFileName(info.getLocation());\n" +
+                "                    String fileName = getCode.getFilePath(info.getLocation());\n" +
                 "                    info.setReponame(repoName);\n" +
                 "                    info.setFilename(fileName);\n" +
                 "                    System.out.println(\"repoName: \" + repoName);\n" +

@@ -6,6 +6,8 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
+import cn.edu.fudan.codetracker.domain.projectInfo.RelationShip;
+import cn.edu.fudan.codetracker.handle.AnalyzeDiffFile;
 import cn.edu.fudan.codetracker.handle.OutputAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
@@ -85,10 +87,27 @@ public class ScanServiceImpl implements ScanService {
         CLDiffHelper.executeCLDiff(repoPath, commitId, outputDir);
 
         // extra diff info and construct tracking relation
-        OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputDir, jGitHelper);
-        analysis.analyzeMetaInfo();
-
+        OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputDir, jGitHelper, commitId);
+        AnalyzeDiffFile analyzeDiffFile = analysis.analyzeMetaInfo();
         // 扫描结果记录入库
+        //add
+        packageDao.setAddInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.ADD.name()));
+        fileDao.setAddInfo(analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name()));
+        classDao.setAddInfo(analyzeDiffFile.getClassInfos().get(RelationShip.ADD.name()));
+        methodDao.setAddInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.ADD.name()));
+        fieldDao.setAddInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.ADD.name()));
+        //delete
+        packageDao.setDeleteInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.DELETE.name()));
+        fileDao.setDeleteInfo(analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name()));
+        classDao.setDeleteInfo(analyzeDiffFile.getClassInfos().get(RelationShip.DELETE.name()));
+        methodDao.setDeleteInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.DELETE.name()));
+        fieldDao.setDeleteInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.DELETE.name()));
+        //change
+        packageDao.setChangeInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.CHANGE.name()));
+        fileDao.setChangeInfo(analyzeDiffFile.getFileInfos().get(RelationShip.CHANGE.name()));
+        classDao.setChangeInfo(analyzeDiffFile.getClassInfos().get(RelationShip.CHANGE.name()));
+        methodDao.setChangeInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.CHANGE.name()));
+        fieldDao.setChangeInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.CHANGE.name()));
 
 
         return false;

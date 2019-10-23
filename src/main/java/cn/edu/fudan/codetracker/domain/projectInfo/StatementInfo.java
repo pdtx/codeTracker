@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class    StatementInfo implements Neo4jInformation{
+public class StatementInfo {
 
     private String uuid;
     private String body;
@@ -24,14 +24,8 @@ public class    StatementInfo implements Neo4jInformation{
     }
 
     @Override
-    public List<String> toNeo4jNode(String label) {
-/*        List<String> cqlNodeList = new ArrayList<>();
-        String cql = "CREATE (`" + uuid + "`:" + label + ":statement" + "{" +
-                "body:\"" + body.replace("\"", "\\\"") +
-                "\"})";
-        cqlNodeList.add(cql);
-        return cqlNodeList;*/
-        return null;
+    public int hashCode() {
+        return uuid.hashCode();
     }
 
     public Map<String,String> StatToNeo4jNode(String label) {
@@ -44,10 +38,6 @@ public class    StatementInfo implements Neo4jInformation{
         return cqlListPara;
     }
 
-    @Override
-    public List<String> toNeo4jRelation(String node1_label_name, String node2_label_name) {
-        return null;
-    }
     public String getUuid() {
         return uuid;
     }

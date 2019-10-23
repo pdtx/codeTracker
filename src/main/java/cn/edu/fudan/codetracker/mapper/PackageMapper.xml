@@ -16,6 +16,11 @@
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
     </resultMap>-->
 
+    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo">
+        <id property="version" column="version"/>
+        <id property="rootUUID" column="uuid"/>
+    </resultMap>
+
     <insert id="insertPackageInfoList" parameterType="List">
         insert into track_package
         (
@@ -27,7 +32,8 @@
         end_commit,
         end_commit_date,
         repo_uuid,
-        branch
+        branch,
+        version
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -40,7 +46,8 @@
             #{item.commonInfo.endCommit},
             #{item.commonInfo.endCommitDate},
             #{item.commonInfo.repoUuid},
-            #{item.commonInfo.branch}
+            #{item.commonInfo.branch},
+            #{item.trackerInfo.version}
             )
         </foreach>
     </insert>
@@ -73,5 +80,36 @@
             )
         </foreach>
     </insert>
+
+    <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
+        select version,uuid from track_package where module_name = #{moduleName} and package_name = #{packageName}
+    </select>
+
+    <update id="updateChangeInfo" parameterType="List">
+        update track_package
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="end_commit = case" suffix="end,">
+                <foreach collection="list" item="item">
+                        when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommit}
+                </foreach>
+            </trim>
+            <trim prefix="end_commit_data = case" suffix="end,">
+                <foreach collection="list" item="item">
+                        when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommitDate}
+                </foreach>
+            </trim>
+            <trim prefix="version = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.rootUUID}
+                </foreach>
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" separator="or" item="item">
+                uuid = #{item.trackerInfo.rootUUID}
+            </foreach>
+        </where>
+    </update>
+
 
 </mapper>

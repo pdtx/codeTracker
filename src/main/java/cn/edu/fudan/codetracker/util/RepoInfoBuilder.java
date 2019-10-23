@@ -118,7 +118,7 @@ public class RepoInfoBuilder {
             }
 
 
-            fileInfoExtractor.getFileInfo().setpackageUuid(packageUUID);
+            fileInfoExtractor.getFileInfo().setPackageUuid(packageUUID);
             fileInfoExtractor.parseClassInterface();
 
 

@@ -12,13 +12,15 @@ public class MethodInfo {
     private String uuid;
     private String fullname;
     private String signature;
-    private String className;
     private String content;
 
     private String classUuid;
-    private String fileName;
-    private String packageName;
     private String moduleName;
+    private String packageName;
+    private String fileName;
+    // filePath eg: scan-service/src/main/java/cn/edu/fudan/scanservice/tools/FindBugScanOperation.java
+    private String filePath;
+    private String className;
     private String packageUuid;
 
     private CommonInfo commonInfo;
@@ -30,17 +32,21 @@ public class MethodInfo {
     private int end;
     private List<StatementInfo> statementInfos;
 
-    public MethodInfo(String className, String classUuid, String fileName, String packageName, String packageUuid, String moduleName) {
+    public MethodInfo(String className, String classUuid, String fileName, String filePath, String packageName, String packageUuid, String moduleName) {
         uuid = UUID.randomUUID().toString();
         this.className = className;
         this.classUuid = classUuid;
         this.fileName = fileName;
+        this.filePath = filePath;
         this.packageName = packageName;
         this.packageUuid = packageUuid;
         this.moduleName = moduleName;
     }
 
-
+    @Override
+    public int hashCode() {
+        return (filePath + className + signature).hashCode();
+    }
 
     /**
      * getter and setter
@@ -93,12 +99,12 @@ public class MethodInfo {
         this.classUuid = classUuid;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public String getPackageName() {
@@ -184,5 +190,13 @@ public class MethodInfo {
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

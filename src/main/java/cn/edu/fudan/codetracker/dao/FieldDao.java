@@ -5,12 +5,16 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
 import cn.edu.fudan.codetracker.domain.projectInfo.FieldInfo;
+import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.FieldMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class FieldDao {
@@ -28,5 +32,27 @@ public class FieldDao {
     @Autowired
     public void setFieldMapper(FieldMapper fieldMapper) {
         this.fieldMapper = fieldMapper;
+    }
+
+    public TrackerInfo getTrackerInfo(String moduleName, String packageName, String fileName, String className, String simpleName) {
+        return fieldMapper.getTrackerInfo(moduleName, packageName, fileName, className, simpleName);
+    }
+
+    public void setAddInfo(Set<FieldInfo> fieldInfos) {
+        List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
+        insertFieldInfoList(fieldInfoList);
+        insertRawFieldInfoList(fieldInfoList);
+    }
+
+    public void setDeleteInfo(Set<FieldInfo> fieldInfos) {
+        List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
+        fieldMapper.setDeleteInfo(fieldInfoList);
+        insertRawFieldInfoList(fieldInfoList);
+    }
+
+    public void setChangeInfo(Set<FieldInfo> fieldInfos) {
+        List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
+        fieldMapper.setChangeInfo(fieldInfoList);
+        insertRawFieldInfoList(fieldInfoList);
     }
 }
