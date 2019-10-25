@@ -15,7 +15,7 @@ public interface MethodMapper {
 
     TrackerInfo getTrackerInfo(String filePath, String className, String signature);
 
-    void setDeleteInfo(List<MethodInfo> methodInfoArrayList);
+    void updateChangeInfo(List<MethodInfo> methodInfoArrayList);
 
-    void setChangeInfo(List<MethodInfo> methodInfoArrayList);
+    List<MethodInfo> getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature);
 }

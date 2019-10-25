@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.projectInfo.PackageInfo;
 import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.PackageMapper;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -38,19 +39,25 @@ public class PackageDao {
         return packageMapper.getTrackerInfo(moduleName, packageName);
     }
 
-    public void setAddInfo(Set<PackageInfo> packageInfos) {
+    public void setAddInfo(@NotNull Set<PackageInfo> packageInfos) {
+        if (packageInfos.size() == 0)
+            return;
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         insertPackageInfoList(packageInfoList);
         insertRawPackageInfoList(packageInfoList);
     }
 
-    public void setDeleteInfo(Set<PackageInfo> packageInfos) {
+    public void setDeleteInfo(@NotNull Set<PackageInfo> packageInfos) {
+        if (packageInfos.size() == 0)
+            return;
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         //packageMapper.updateDeleteInfo(packageInfoList);
         insertRawPackageInfoList(packageInfoList);
     }
 
-    public void setChangeInfo(Set<PackageInfo> packageInfos) {
+    public void setChangeInfo(@NotNull Set<PackageInfo> packageInfos) {
+        if (packageInfos.size() == 0)
+            return;
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         packageMapper.updateChangeInfo(packageInfoList);
         insertRawPackageInfoList(packageInfoList);

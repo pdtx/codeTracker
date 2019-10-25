@@ -96,4 +96,33 @@
         </foreach>
     </insert>
 
+    <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
+        select version,uuid from track_field where file_path = #{filePath} and class_name = #{className} and simple_name = #{simpleName} order by version desc limit 1
+    </select>
+
+    <update id="updateChangeInfo" parameterType="List">
+        update track_field
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="end_commit = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommit}
+                </foreach>
+            </trim>
+            <trim prefix="end_commit_date = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommitDate}
+                </foreach>
+            </trim>
+            <trim prefix="version = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                </foreach>
+            </trim>
+        </trim>
+        where uuid in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.trackerInfo.rootUUID}
+        </foreach>
+    </update>
 </mapper>

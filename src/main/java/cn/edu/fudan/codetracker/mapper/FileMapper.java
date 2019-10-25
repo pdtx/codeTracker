@@ -22,7 +22,7 @@ public interface FileMapper {
 
     TrackerInfo getTrackerInfo(String path);
 
-    void setDeleteInfo(List<FileInfo> fileInfoList);
+    //void setDeleteInfo(List<FileInfo> fileInfoList);
 
-    void setChangeInfo(List<FileInfo> fileInfoList);
+    void updateChangeInfo(List<FileInfo> fileInfoList);
 }

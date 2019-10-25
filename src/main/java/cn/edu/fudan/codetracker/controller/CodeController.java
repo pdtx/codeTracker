@@ -7,10 +7,10 @@ package cn.edu.fudan.codetracker.controller;
 
 import cn.edu.fudan.codetracker.graph.GraphBuilder;
 import cn.edu.fudan.codetracker.service.ScanService;
-import org.omg.CORBA.OBJ_ADAPTER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,6 +46,11 @@ public class CodeController {
         List<String> commitList = mockCommitList();
         scanService.firstScan("123", commitList,"master");
         return null;
+    }
+
+    @GetMapping(value = {"/repo/{repoId}/{module}/{package}/{class}"})
+    public Object getMethodHistory(@PathVariable("repoId")String repoId,@PathVariable("module") String moduleName,@PathVariable("package") String packageName,@PathVariable("class") String className, @RequestParam("signature") String signature) {
+        return scanService.getMethodHistory(repoId, moduleName, packageName, className, signature);
     }
 
     @Autowired

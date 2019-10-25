@@ -53,7 +53,8 @@ public class FileInfoExtractor {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            filePath = (path.replace(PREFIX + projectName + '\\',"")).replace('\\','/');
+            String [] s = (path.replace(PREFIX + projectName + '\\',"")).replace('\\','/').split("/" + moduleName + "/");
+            filePath = moduleName + "/" + s[s.length - 1];
             // for finding packageUUID base on  packageName and moduleName
             fileInfo = new FileInfo(fileName, filePath, packageName, moduleName, deletePrefix(path));
 
@@ -126,7 +127,11 @@ public class FileInfoExtractor {
             classInfo.setExtendedList(extendNames);
             classInfo.setImplementedList(implementedNames);
             classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid(),classOrInterfaceName ) );
-            classInfo.setMethodInfos(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
+
+            // 构造函数也属于函数
+            List<MethodInfo> methodInfos = parseConstructors(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class), classInfo);
+            methodInfos.addAll(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
+            classInfo.setMethodInfos(methodInfos);
 
             // 解析构造函数
             //classInfo.getMethodInfos().addAll(parseConstructor(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class)));
@@ -134,13 +139,52 @@ public class FileInfoExtractor {
 
             classInfos.add(classInfo);
             fieldInfos.addAll(classInfo.getFieldInfos());
-            methodInfos.addAll(classInfo.getMethodInfos());
+            this.methodInfos.addAll(classInfo.getMethodInfos());
         }
     }
 
-    private Collection<? extends MethodInfo> parseConstructor(List<ConstructorDeclaration> all) {
-        return null;
+    private List<MethodInfo> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassInfo classInfo) {
+        List<MethodInfo> methodInfos = new ArrayList<>(2);
+        for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
+            StringBuilder sb  = new StringBuilder();
+            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
+
+            //fullname
+            methodInfo.setFullname(constructorDeclaration.getNameAsString());
+
+
+            sb.append(constructorDeclaration.getNameAsString());
+            // parameters
+            for (Parameter parameter : constructorDeclaration.getParameters()) {
+                sb.append(" ");
+                sb.append(parameter.toString());
+            }
+
+            // signature
+            methodInfo.setSignature(sb.toString());
+
+            // modifier
+            sb.setLength(0);
+            for (Modifier modifier : constructorDeclaration.getModifiers()) {
+                sb.append(modifier.asString());
+                sb.append(" ");
+            }
+
+            methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+            methodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
+            methodInfo.setModifier(sb.toString());
+            //primitiveType
+            methodInfo.setPrimitiveType(classInfo.getClassName());
+            methodInfo.setContent(constructorDeclaration.getBody().toString());
+            //statementInfo
+            //methodInfo.setStatementInfo(parseStmt(methodDeclaration.getBody()));
+
+            methodInfos.add(methodInfo);
+        }
+
+        return methodInfos;
     }
+
 
     private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, String classUuid, String className) {
         List<FieldInfo> fieldInfos = new ArrayList<>();
@@ -192,7 +236,7 @@ public class FileInfoExtractor {
             methodInfo.setModifier(sb.toString());
             //primitiveType
             methodInfo.setPrimitiveType(methodDeclaration.getType().asString());
-
+            methodInfo.setContent(methodDeclaration.getBody().toString());
             //statementInfo
             //methodInfo.setStatementInfo(parseStmt(methodDeclaration.getBody()));
 

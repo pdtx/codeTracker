@@ -8,6 +8,24 @@
         <id property="rootUUID" column="uuid"/>
     </resultMap>
 
+    <resultMap id="rawMethodInfo" type="cn.edu.fudan.codetracker.domain.projectInfo.MethodInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="fullname" column="fullname"/>
+        <result property="signature" column="signature"/>
+        <result property="content" column="content"/>
+        <association property="commonInfo" javaType="cn.edu.fudan.codetracker.domain.projectInfo.CommonInfo">
+            <id property="commit" column="commitid"/>
+            <result property="committer" column="committer"/>
+            <result property="commitMessage" column="commit_message"/>
+            <result property="commitDate" column="commit_date"/>
+        </association>
+        <association property="trackerInfo" javaType="cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo">
+            <id property="version" column="version"/>
+            <id property="changeRelation" column="change_relation"/>
+        </association>
+    </resultMap>
+
+
     <insert id="insertMethodInfoList" parameterType="List">
         insert into track_method
         (
@@ -16,6 +34,7 @@
         signature,
         class_name,
         file_name,
+        file_path,
         package_name,
         module_name,
         class_uuid,
@@ -36,6 +55,7 @@
             #{item.fullname},
             #{item.signature},
             #{item.className},
+            #{item.fileName},
             #{item.filePath},
             #{item.packageName},
             #{item.moduleName},
@@ -67,7 +87,8 @@
         committer,
         commit_date,
         commit_message,
-        parent_commit
+        parent_commit,
+        content
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -83,9 +104,50 @@
             #{item.commonInfo.committer},
             #{item.commonInfo.commitDate},
             #{item.commonInfo.commitMessage},
-            #{item.commonInfo.parentCommit}
+            #{item.commonInfo.parentCommit},
+            #{item.content}
             )
         </foreach>
     </insert>
+
+    <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
+        select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1
+    </select>
+
+    <update id="updateChangeInfo" parameterType="List">
+        update track_method
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="end_commit = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommit}
+                </foreach>
+            </trim>
+            <trim prefix="end_commit_date = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommitDate}
+                </foreach>
+            </trim>
+            <trim prefix="version = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                </foreach>
+            </trim>
+        </trim>
+        where uuid in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.trackerInfo.rootUUID}
+        </foreach>
+    </update>
+
+<!--    <select id="getMethodHistory" parameterType="String" resultType="List">
+        select * from raw_method where repo_uuid = #{repoId} and module_name = #{moduleName}
+            and package_name = #{packageName} and  class_name = #{className} and signature = #{signature} order by version
+    </select>-->
+
+    <select id="getMethodHistory" parameterType="String" resultMap = "rawMethodInfo">
+        select uuid,fullname,signature,content,commitid,committer,commit_message,commit_date,version,change_relation from raw_method where method_uuid in ( select uuid from track_method where repo_uuid = #{repoId} and module_name = #{moduleName}
+            and package_name = #{packageName} and  class_name = #{className} and signature = #{signature} ) order by version
+    </select>
 
 </mapper>

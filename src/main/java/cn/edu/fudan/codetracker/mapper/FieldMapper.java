@@ -15,10 +15,9 @@ public interface FieldMapper {
 
     void insertRawFieldInfoList(List<FieldInfo> fieldInfos);
 
-    TrackerInfo getTrackerInfo(String moduleName, String packageName, String fileName, String className, String simpleName);
+    TrackerInfo getTrackerInfo(String filePath, String className, String simpleName);
 
-    void setChangeInfo(List<FieldInfo> fieldInfos);
+    void updateChangeInfo(List<FieldInfo> fieldInfos);
 
-    void setDeleteInfo(List<FieldInfo> fieldInfos);
 
 }

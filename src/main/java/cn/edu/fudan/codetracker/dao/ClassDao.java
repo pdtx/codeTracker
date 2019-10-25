@@ -9,6 +9,7 @@ import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
 import cn.edu.fudan.codetracker.domain.projectInfo.PackageInfo;
 import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.ClassMapper;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -40,20 +41,26 @@ public class ClassDao {
     }
 
     public void setAddInfo(Set<ClassInfo> classInfos) {
+        if (classInfos.size() == 0)
+            return;
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
         insertClassInfoList(classInfosList);
         insertRawClassInfoList(classInfosList);
     }
 
     public void setDeleteInfo(Set<ClassInfo> classInfos) {
+        if (classInfos.size() == 0)
+            return;
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
-        classMapper.setDeleteInfo(classInfosList);
+        //classMapper.setDeleteInfo(classInfosList);
         insertRawClassInfoList(classInfosList);
     }
 
     public void setChangeInfo(Set<ClassInfo> classInfos) {
+        if (classInfos.size() == 0)
+            return;
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
-        classMapper.setChangeInfo(classInfosList);
+        classMapper.updateChangeInfo(classInfosList);
         insertRawClassInfoList(classInfosList);
     }
 }

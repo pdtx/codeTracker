@@ -34,25 +34,31 @@ public class FieldDao {
         this.fieldMapper = fieldMapper;
     }
 
-    public TrackerInfo getTrackerInfo(String moduleName, String packageName, String fileName, String className, String simpleName) {
-        return fieldMapper.getTrackerInfo(moduleName, packageName, fileName, className, simpleName);
+    public TrackerInfo getTrackerInfo(String filePath, String className, String simpleName) {
+        return fieldMapper.getTrackerInfo( filePath, className, simpleName);
     }
 
     public void setAddInfo(Set<FieldInfo> fieldInfos) {
+        if (fieldInfos.size() == 0)
+            return;
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
         insertFieldInfoList(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
     }
 
     public void setDeleteInfo(Set<FieldInfo> fieldInfos) {
+        if (fieldInfos.size() == 0)
+            return;
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
-        fieldMapper.setDeleteInfo(fieldInfoList);
+        //fieldMapper.setDeleteInfo(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
     }
 
     public void setChangeInfo(Set<FieldInfo> fieldInfos) {
+        if (fieldInfos.size() == 0)
+            return;
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
-        fieldMapper.setChangeInfo(fieldInfoList);
+        fieldMapper.updateChangeInfo(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
     }
 }

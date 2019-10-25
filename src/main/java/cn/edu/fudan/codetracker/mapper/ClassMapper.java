@@ -20,7 +20,5 @@ public interface ClassMapper {
 
     TrackerInfo getTrackerInfo(String filePath, String className);
 
-    void setDeleteInfo(List<ClassInfo> classInfosList);
-
-    void setChangeInfo(List<ClassInfo> classInfosList);
+    void updateChangeInfo(List<ClassInfo> classInfosList);
 }

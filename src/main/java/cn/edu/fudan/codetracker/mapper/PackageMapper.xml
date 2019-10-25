@@ -82,7 +82,7 @@
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_package where module_name = #{moduleName} and package_name = #{packageName}
+        select version,uuid from track_package where module_name = #{moduleName} and package_name = #{packageName} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">
@@ -93,22 +93,22 @@
                         when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommit}
                 </foreach>
             </trim>
-            <trim prefix="end_commit_data = case" suffix="end,">
+            <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="list" item="item">
                         when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommitDate}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">
                 <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.rootUUID}
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
                 </foreach>
             </trim>
         </trim>
-        <where>
-            <foreach collection="list" separator="or" item="item">
-                uuid = #{item.trackerInfo.rootUUID}
-            </foreach>
-        </where>
+        where uuid in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.trackerInfo.rootUUID}
+        </foreach>
     </update>
 
 

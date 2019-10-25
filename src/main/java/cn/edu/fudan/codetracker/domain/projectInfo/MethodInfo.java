@@ -9,6 +9,19 @@ import java.util.*;
 
 public class MethodInfo {
 
+    public MethodInfo() {
+    }
+
+    public MethodInfo(String uuid, String fullname, String signature, String content, String commit,
+                      String committer, String commitMessage, java.sql.Timestamp commitDate, Integer version, String relation) {
+        this.uuid = uuid;
+        this.fullname = fullname;
+        this.signature = signature;
+        this.content = content;
+        this.commonInfo = new CommonInfo(commit, committer, commitMessage, commitDate);
+        this.trackerInfo = new TrackerInfo(version, relation);
+    }
+
     private String uuid;
     private String fullname;
     private String signature;
@@ -31,6 +44,8 @@ public class MethodInfo {
     private int begin;
     private int end;
     private List<StatementInfo> statementInfos;
+
+
 
     public MethodInfo(String className, String classUuid, String fileName, String filePath, String packageName, String packageUuid, String moduleName) {
         uuid = UUID.randomUUID().toString();

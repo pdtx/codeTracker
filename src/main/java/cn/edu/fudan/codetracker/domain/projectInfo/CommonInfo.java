@@ -16,6 +16,17 @@ public class CommonInfo {
     private String repoUuid;
     private String branch;
 
+    public CommonInfo() {
+
+    }
+
+    public CommonInfo( String commit, String committer, String commitMessage, Date commitDate) {
+        this.commitDate = commitDate;
+        this.commit = commit;
+        this.committer = committer;
+        this.commitMessage = commitMessage;
+    }
+
     private Date commitDate ;
     private String commit;
     private String committer;
@@ -23,14 +34,14 @@ public class CommonInfo {
     // parentCommit : just parent commit not previous version
     private String parentCommit;
 
-    public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch) {
+/*    public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch) {
         this.startCommit = startCommit;
         this.startCommitDate = startCommitDate;
         this.endCommit = endCommit;
         this.endCommitDate = endCommitDate;
         this.repoUuid = repoUuid;
         this.branch = branch;
-    }
+    }*/
 
     public CommonInfo(String startCommit, Date startCommitDate, String endCommit, Date endCommitDate, String repoUuid, String branch, Date commitDate, String commit, String committer, String commitMessage, String parentCommit) {
         this.startCommit = startCommit;
@@ -94,4 +105,23 @@ public class CommonInfo {
         this.branch = branch;
     }
 
+    public Date getCommitDate() {
+        return commitDate;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public String getCommitter() {
+        return committer;
+    }
+
+    public String getCommitMessage() {
+        return commitMessage;
+    }
+
+    public String getParentCommit() {
+        return parentCommit;
+    }
 }

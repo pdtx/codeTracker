@@ -38,20 +38,30 @@ public class MethodDao {
     }
 
     public void setAddInfo(Set<MethodInfo> methodInfos) {
+        if (methodInfos.isEmpty())
+            return;
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
         insertMethodInfoList(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);
     }
 
     public void setDeleteInfo(Set<MethodInfo> methodInfos) {
+        if (methodInfos.isEmpty())
+            return;
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
-        methodMapper.setDeleteInfo(methodInfoArrayList);
+        //methodMapper.setDeleteInfo(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);
     }
 
     public void setChangeInfo(Set<MethodInfo> methodInfos) {
+        if (methodInfos.isEmpty())
+            return;
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
-        methodMapper.setChangeInfo(methodInfoArrayList);
+        methodMapper.updateChangeInfo(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);
+    }
+
+    public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
+        return  methodMapper.getMethodHistory(repoId, moduleName, packageName, className, signature);
     }
 }

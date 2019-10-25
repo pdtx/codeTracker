@@ -5,6 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.handle;
 
+import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.util.DirExplorer;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
@@ -38,7 +39,8 @@ public class OutputAnalysis {
     }
 
     // entry point of analyzing relations about two commits
-    public AnalyzeDiffFile analyzeMetaInfo() {
+    public List<AnalyzeDiffFile> analyzeMetaInfo(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao) {
+        List<AnalyzeDiffFile> analyzeDiffFiles = new ArrayList<>(2);
         File file = outputDir.contains("\\") ?
                 new File(outputDir + "\\" + commitId) :
                 new File(outputDir + "/" + commitId);
@@ -64,56 +66,93 @@ public class OutputAnalysis {
 
             String currFilePath;
             String prevFilePath;
+            ArrayList<String>  preFileList = new ArrayList<>();
+            ArrayList<String>  curFileList = new ArrayList<>();
+            List<String> addFilesList = new ArrayList<>();
+            List<String> deleteFilesList = new ArrayList<>();
+            List<String> diffPathList = new ArrayList<>();
+            List<String> fileNameList = new ArrayList<>();
+            String preCommit ;
             for (int i = 0; i < preCommits.size(); i++) {
                 // construct change file list according to preCommit
-                String preCommit = preCommits.getString(i);
+                preCommit = preCommits.getString(i);
                 for (Map.Entry<JSONObject, String> m : diffFileAction.entrySet()) {
                     // three types of change relation handler ： ADD、DELETE、MODIFY
-                    if (! m.getKey().getString("file_full_name").endsWith(".java")) {
-                        continue;
-                    }
-                    ArrayList<String>  preFileList = new ArrayList<>();
-                    ArrayList<String>  curFileList = new ArrayList<>();
-                    List<String> addFilesList = new ArrayList<>();
-                    List<String> deleteFilesList = new ArrayList<>();
-                    List<String> diffPathList = new ArrayList<>();
-                    List<String> fileNameList = new ArrayList<>();
-                    if (m.getKey().getString("parent_commit").equals(preCommit)) {
+                    if (m.getKey().getString("parent_commit").equals(preCommit) &&
+                            m.getKey().getString("file_full_name").endsWith(".java")) {
                         if ("ADD".equals(m.getValue())) {
-                            currFilePath =  pathPrefix + "/" + m.getKey().getString("curr_file_path");
-                            addFilesList.add(isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                            try {
+                                String path;
+                                if (m.getKey().containsKey("curr_file_path")) {
+                                    path = m.getKey().getString("curr_file_path") ;
+                                }else {
+                                    path = m.getKey().getString("prev_file_path") ;
+                                    System.out.println("==========ADD1====================");
+                                    System.out.println(metaPath);
+                                    System.out.println("===========ADD1===================");
+                                }
+                                currFilePath =  pathPrefix + "/" + path;
+                                addFilesList.add(isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                            }catch (NullPointerException e) {
+                                System.out.println("==========ADD2====================");
+                                System.out.println(metaPath);
+                                System.out.println("===========ADD2===================");
+                            }
+
                         }
                         if ("DELETE".equals(m.getValue())) {
-                            prevFilePath = pathPrefix + pathUnixToWin(m.getKey().getString("prev_file_path"));
-                            deleteFilesList.add(isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                            try {
+                                String path;
+                                if (m.getKey().containsKey("prev_file_path")) {
+                                    path = m.getKey().getString("prev_file_path") ;
+                                }else {
+                                    path = m.getKey().getString("curr_file_path") ;
+                                    System.out.println("==========DELETE1====================");
+                                    System.out.println(metaPath);
+                                    System.out.println("===========DELETE1===================");
+                                }
+                                prevFilePath = pathPrefix + "/" +   path;
+                                deleteFilesList.add(isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                            }catch (NullPointerException e) {
+                                System.out.println("============DELETE2==================");
+                                System.out.println(metaPath);
+                                System.out.println("=============DELETE2=================");
+                            }
                         }
                         if ("MODIFY".equals(m.getValue())) {
                             prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
                             preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
                             currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
                             curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
-                            String diffPath = isWindows ? pathUnixToWin(currFilePath) : currFilePath;
-                            fileNameList.add(m.getKey().getString("file_full_name"));
-                            diffPathList.add(diffPath);
-                        }
-                        // RepoInfoBuilder need to refactor for parentCommit is not null; so
-                        RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
-                        RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, curFileList, jGitHelper, branch, preCommit);
-                        AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(preRepoInfo, curRepoInfo);
-                        analyzeDiffFile.addInfoConstruction(addFilesList);
-                        analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
-                        //analyzeDiffFile.modifyInfoConstruction(preRepoInfo, curRepoInfo, diffPathList);
-                        analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);
 
-                        return analyzeDiffFile;
+
+                            if (m.getKey().containsKey("diffPath")) {
+                                String diffPath = m.getKey().getString("diffPath");
+                                //diffPath = isWindows ? pathUnixToWin(diffPath) : diffPath;
+                                fileNameList.add(m.getKey().getString("file_full_name"));
+                                diffPathList.add(isWindows ? pathUnixToWin(diffPath) : diffPath);
+                            }else {
+                                System.out.println("==========change====================");
+                                System.out.println(metaPath);
+                                System.out.println("===========change===================");
+                            }
+                        }
                     }
                 }
+                // RepoInfoBuilder need to refactor for parentCommit is not null; so
+                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
+                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, curFileList, jGitHelper, branch, preCommit);
+                AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(packageDao, fileDao, classDao, fieldDao, methodDao, preRepoInfo, curRepoInfo);
+                analyzeDiffFile.addInfoConstruction(addFilesList);
+                analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
+                analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);
+                analyzeDiffFiles.add(analyzeDiffFile);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return analyzeDiffFiles;
     }
 
  /*   private void analyzeMetaInfoFiles(Map<JSONObject, String> diffFileAction, AnalyzeDiffFile analyzeDiffFile, String preCommit, String metaPath) {
@@ -166,13 +205,13 @@ public class OutputAnalysis {
         analyzeDiffFile.packageRelationAnalyze(notChangedFileList);*//*
     }
 */
-    private String deletePrefix(String curPathList, String preCommit) {
+/*    private String deletePrefix(String curPathList, String preCommit) {
         String p = curPathList.replace(preCommit, "--------");
 
         String s[] = p.split("--------");
         System.out.println(s);
         return pathUnixToWin(s[1]);
-    }
+    }*/
 
     private String pathUnixToWin(String path) {
         return path.replace("/", "\\");

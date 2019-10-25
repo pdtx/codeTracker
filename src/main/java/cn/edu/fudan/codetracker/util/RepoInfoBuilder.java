@@ -56,8 +56,10 @@ public class RepoInfoBuilder {
         this.branch = branch;
         this.jGitHelper = jGitHelper;
         // first time parentCommit is NULL
-        if (parentCommit == null) {
+        if (parentCommit == null || parentCommit.length() == 0) {
             this.parentCommit = commit;
+        } else {
+            this.parentCommit = parentCommit;
         }
         fileInfos = new ArrayList<>();
         classInfos = new ArrayList<>();
@@ -68,14 +70,14 @@ public class RepoInfoBuilder {
             committer = jGitHelper.getAuthorName(commit);
             commitMessage = jGitHelper.getMess(commit);
             commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
-                    date, commit, committer, commitMessage, parentCommit);
+                    date, commit, committer, commitMessage, this.parentCommit);
         }catch (ParseException e) {
             e.printStackTrace();
         }
         packageInfos = new ArrayList<>();
         moduleInfos = new HashMap<>();
         analyze(fileList);
-}
+    }
 
 
     private void analyze(List<String> fileList) {

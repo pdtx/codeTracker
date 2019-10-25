@@ -13,6 +13,9 @@ public class TrackerInfo {
     private String changeRelation;
     private String rootUUID;
 
+    public TrackerInfo() {
+
+    }
 
     public TrackerInfo(String changeRelation) {
         this.changeRelation = changeRelation;
@@ -27,6 +30,7 @@ public class TrackerInfo {
     public TrackerInfo( int version, String uuid) {
         this.version = version;
         this.rootUUID = uuid;
+        this.changeRelation = uuid;
     }
 
     public int getVersion() {
