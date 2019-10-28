@@ -1,4 +1,4 @@
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 public enum RelationShip {
 

@@ -7,13 +7,11 @@ package cn.edu.fudan.codetracker.handle;
 
 
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.projectInfo.*;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;

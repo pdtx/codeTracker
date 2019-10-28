@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-06-06 17:19
  **/
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import java.util.UUID;
 

@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="GROUP_BY_SEVERITY" value="true" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="ed1d38f8-c334-479d-bae8-0bd645592b58" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/CodeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/CodeController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/ClassDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/ClassDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/FieldDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/FieldDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/FileDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/FileDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/MethodDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/MethodDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/PackageDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/PackageDao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/ClassInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/ClassInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/CommonInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/FieldInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/FieldInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/FileInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/MethodInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/PackageInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/PackageInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/RelationShip.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/RelationShip.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/StatementInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/StatementInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/TrackerInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/OutputAnalysis.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/OutputAnalysis.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FieldMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FieldMapper.java" afterDir="false" />
@@ -22,8 +29,8 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FileMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FileMapper.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/ScanService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/ScanService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/ScanServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/ScanServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/FileInfoExtractor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/FileInfoExtractor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/RepoInfoBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/RepoInfoBuilder.java" afterDir="false" />
@@ -42,26 +49,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/OutputAnalysis.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/TrackerInfo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-7">
-              <caret line="102" column="60" lean-forward="true" selection-start-line="102" selection-start-column="60" selection-end-line="102" selection-end-column="60" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="421">
-              <caret line="29" column="35" lean-forward="true" selection-start-line="29" selection-start-column="35" selection-end-line="29" selection-end-column="35" />
-              <folding>
-                <element signature="e#315#316#0" expanded="true" />
-                <element signature="e#367#368#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="275">
+              <caret line="15" column="18" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -69,8 +60,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="457" selection-start-line="457" selection-end-line="457" />
+            <state relative-caret-position="11000">
+              <caret line="455" selection-start-line="455" selection-end-line="455" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="imports" expanded="true" />
@@ -90,10 +81,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/CommonInfo.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="350">
-              <caret line="18" column="93" selection-start-line="18" selection-start-column="23" selection-end-line="18" selection-end-column="93" />
+              <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -101,7 +92,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/CodeController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
+            <state relative-caret-position="1200">
               <caret line="52" column="97" selection-start-line="52" selection-start-column="88" selection-end-line="52" selection-end-column="97" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -113,8 +104,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/FileInfoExtractor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1125">
-              <caret line="99" column="105" lean-forward="true" selection-start-line="99" selection-start-column="105" selection-end-line="99" selection-end-column="105" />
+            <state relative-caret-position="2025">
+              <caret line="99" column="105" selection-start-line="99" selection-start-column="105" selection-end-line="99" selection-end-column="105" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -125,7 +116,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/ScanServiceImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="114">
+            <state relative-caret-position="1025">
               <caret line="56" selection-start-line="56" selection-end-line="56" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -146,11 +137,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/MethodInfo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="16" column="80" selection-start-line="16" selection-start-column="80" selection-end-line="16" selection-end-column="80" />
+            <state relative-caret-position="25">
+              <caret line="5" column="8" selection-start-line="5" selection-start-column="8" selection-end-line="5" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -158,7 +149,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="475">
+            <state relative-caret-position="375">
               <caret line="19" column="30" selection-start-line="19" selection-start-column="30" selection-end-line="19" selection-end-column="30" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -172,6 +163,20 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1200">
               <caret line="64" column="29" selection-start-line="64" selection-start-column="29" selection-end-line="64" selection-end-column="29" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/ClassInfo.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1850">
+              <caret line="96" column="38" selection-start-line="96" selection-start-column="27" selection-end-line="96" selection-end-column="38" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+                <element signature="e#2450#2451#0" expanded="true" />
+                <element signature="e#2496#2497#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -270,10 +275,11 @@
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/ScanServiceImpl.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/MethodDao.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.xml" />
+        <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java" />
-        <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java" />
+        <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/MethodInfo.java" />
       </list>
     </option>
   </component>
@@ -285,10 +291,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1912" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="x" value="-10" />
+    <option name="y" value="-10" />
+    <option name="width" value="1940" />
+    <option name="height" value="1100" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
@@ -298,6 +304,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -356,7 +364,7 @@
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="java" type="462c0819:PsiDirectoryNode" />
               <item name="codetracker" type="462c0819:PsiDirectoryNode" />
-              <item name="projectInfo" type="462c0819:PsiDirectoryNode" />
+              <item name="projectinfo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="codeTracker" type="b2602c69:ProjectViewProjectNode" />
@@ -433,8 +441,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -451,6 +457,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.37866667" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -524,17 +531,20 @@
       <workItem from="1570861371434" duration="25209000" />
       <workItem from="1571016316711" duration="22068000" />
       <workItem from="1571121159060" duration="16339000" />
-      <workItem from="1571624879591" duration="128855000" />
+      <workItem from="1571624879591" duration="131457000" />
+      <workItem from="1572163914239" duration="726000" />
+      <workItem from="1572227413985" duration="268000" />
+      <workItem from="1572227717001" duration="1349000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="354835000" />
+    <option name="totallyTimeSpent" value="359780000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24413647" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.31903484" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -542,9 +552,10 @@
       <window_info id="UI Designer" order="5" />
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info id="Web" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Inspection Results" weight="0.4858357" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.329718" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5737527" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.49291784" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.35357916" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -631,53 +642,53 @@
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="trackerInfo == null" language="JAVA" />
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>248</line>
+          <line>246</line>
           <properties />
           <option name="timeStamp" value="36" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="trackerInfo == null" language="JAVA" />
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>256</line>
+          <line>254</line>
           <properties />
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>395</line>
+          <line>393</line>
           <properties />
           <option name="timeStamp" value="81" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>508</line>
+          <line>506</line>
           <properties />
           <option name="timeStamp" value="82" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>257</line>
+          <line>255</line>
           <properties />
           <option name="timeStamp" value="83" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="curFieldInfo == null || trackerInfo == null" language="JAVA" />
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>331</line>
+          <line>329</line>
           <properties />
           <option name="timeStamp" value="86" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="trackerInfo == null" language="JAVA" />
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>327</line>
+          <line>325</line>
           <properties />
           <option name="timeStamp" value="87" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="trackerInfo == null" language="JAVA" />
           <url>file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java</url>
-          <line>457</line>
+          <line>455</line>
           <properties />
           <option name="timeStamp" value="89" />
         </line-breakpoint>
@@ -830,21 +841,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/RelationShip.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/RelationShip.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="50">
           <caret line="2" column="12" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/Neo4jInformation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="100">
-          <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/StatementInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/Neo4jInformation.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/StatementInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="400">
           <caret line="28" column="5" lean-forward="true" selection-start-line="28" selection-start-column="5" selection-end-line="28" selection-end-column="5" />
@@ -884,14 +889,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/domainInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="7" column="23" selection-start-line="7" selection-start-column="23" selection-end-line="7" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/FieldInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/domainInfo.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/FieldInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="222">
           <caret line="17" column="16" selection-start-line="17" selection-start-column="16" selection-end-line="17" selection-end-column="16" />
@@ -935,7 +934,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/FileInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/FileInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="155">
           <caret line="14" column="27" selection-start-line="14" selection-start-column="19" selection-end-line="14" selection-end-column="27" />
@@ -985,7 +984,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/PackageInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/PackageInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="25">
           <caret line="17" column="36" lean-forward="true" selection-start-line="17" selection-start-column="36" selection-end-line="17" selection-end-column="36" />
@@ -1053,18 +1052,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/ClassInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="440">
-          <caret line="96" column="38" selection-start-line="96" selection-start-column="27" selection-end-line="96" selection-end-column="38" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="e#2450#2451#0" expanded="true" />
-            <element signature="e#2496#2497#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/ScanService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="325">
@@ -1098,10 +1085,62 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="122">
+          <caret line="20" column="47" selection-start-line="20" selection-start-column="47" selection-end-line="20" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3475">
+          <caret line="148" column="116" selection-start-line="148" selection-start-column="116" selection-end-line="148" selection-end-column="116" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/OutputAnalysis.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-7">
-          <caret line="102" column="60" lean-forward="true" selection-start-line="102" selection-start-column="60" selection-end-line="102" selection-end-column="60" />
+        <state relative-caret-position="2150">
+          <caret line="102" column="60" selection-start-line="102" selection-start-column="60" selection-end-line="102" selection-end-column="60" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/TrackerInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="15" column="18" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11000">
+          <caret line="455" selection-start-line="455" selection-end-line="455" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#28949#28950#0" expanded="true" />
+            <element signature="e#28984#28985#0" expanded="true" />
+            <element signature="e#29040#29041#0" expanded="true" />
+            <element signature="e#29072#29073#0" expanded="true" />
+            <element signature="e#29130#29131#0" expanded="true" />
+            <element signature="e#29163#29164#0" expanded="true" />
+            <element signature="e#29223#29224#0" expanded="true" />
+            <element signature="e#29257#29258#0" expanded="true" />
+            <element signature="e#29315#29316#0" expanded="true" />
+            <element signature="e#29348#29349#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/FileInfoExtractor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2025">
+          <caret line="99" column="105" selection-start-line="99" selection-start-column="105" selection-end-line="99" selection-end-column="105" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -1110,7 +1149,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/ScanServiceImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
+        <state relative-caret-position="1025">
           <caret line="56" selection-start-line="56" selection-end-line="56" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -1130,82 +1169,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="122">
-          <caret line="20" column="47" selection-start-line="20" selection-start-column="47" selection-end-line="20" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3475">
-          <caret line="148" column="116" selection-start-line="148" selection-start-column="116" selection-end-line="148" selection-end-column="116" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/CodeController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="52" column="97" selection-start-line="52" selection-start-column="88" selection-end-line="52" selection-end-column="97" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/handle/AnalyzeDiffFile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="457" selection-start-line="457" selection-end-line="457" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="imports" expanded="true" />
-            <element signature="e#28949#28950#0" expanded="true" />
-            <element signature="e#28984#28985#0" expanded="true" />
-            <element signature="e#29040#29041#0" expanded="true" />
-            <element signature="e#29072#29073#0" expanded="true" />
-            <element signature="e#29130#29131#0" expanded="true" />
-            <element signature="e#29163#29164#0" expanded="true" />
-            <element signature="e#29223#29224#0" expanded="true" />
-            <element signature="e#29257#29258#0" expanded="true" />
-            <element signature="e#29315#29316#0" expanded="true" />
-            <element signature="e#29348#29349#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/CommonInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="18" column="93" selection-start-line="18" selection-start-column="23" selection-end-line="18" selection-end-column="93" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/TrackerInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="421">
-          <caret line="29" column="35" lean-forward="true" selection-start-line="29" selection-start-column="35" selection-end-line="29" selection-end-column="35" />
-          <folding>
-            <element signature="e#315#316#0" expanded="true" />
-            <element signature="e#367#368#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/util/FileInfoExtractor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1125">
-          <caret line="99" column="105" lean-forward="true" selection-start-line="99" selection-start-column="105" selection-end-line="99" selection-end-column="105" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
+        <state relative-caret-position="375">
           <caret line="19" column="30" selection-start-line="19" selection-start-column="30" selection-end-line="19" selection-end-column="30" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -1220,10 +1186,39 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectInfo/MethodInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/CodeController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="16" column="80" selection-start-line="16" selection-start-column="80" selection-end-line="16" selection-end-column="80" />
+        <state relative-caret-position="1200">
+          <caret line="52" column="97" selection-start-line="52" selection-start-column="88" selection-end-line="52" selection-end-column="97" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/MethodInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="25">
+          <caret line="5" column="8" selection-start-line="5" selection-start-column="8" selection-end-line="5" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/CommonInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="350">
+          <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/projectinfo/ClassInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1850">
+          <caret line="96" column="38" selection-start-line="96" selection-start-column="27" selection-end-line="96" selection-end-column="38" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#2450#2451#0" expanded="true" />
+            <element signature="e#2496#2497#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

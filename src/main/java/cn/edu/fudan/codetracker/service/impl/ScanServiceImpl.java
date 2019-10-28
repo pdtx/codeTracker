@@ -6,7 +6,7 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.projectInfo.RelationShip;
+import cn.edu.fudan.codetracker.domain.projectinfo.RelationShip;
 import cn.edu.fudan.codetracker.handle.AnalyzeDiffFile;
 import cn.edu.fudan.codetracker.handle.OutputAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;

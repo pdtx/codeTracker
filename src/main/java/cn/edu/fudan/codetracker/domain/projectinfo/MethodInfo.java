@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-05-26 20:51
  **/
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import java.util.*;
 
@@ -12,7 +12,10 @@ public class MethodInfo {
     public MethodInfo() {
     }
 
-    public MethodInfo(String uuid, String fullname, String signature, String content, String commit,
+     // mybatis 无需这种构造函数 只需要无参构造函数就行
+    // 反射机制需要调用类的无参构造函数
+    // mybatis 通过反射实现数据注入
+/*    public MethodInfo(String uuid, String fullname, String signature, String content, String commit,
                       String committer, String commitMessage, java.sql.Timestamp commitDate, Integer version, String relation) {
         this.uuid = uuid;
         this.fullname = fullname;
@@ -20,7 +23,7 @@ public class MethodInfo {
         this.content = content;
         this.commonInfo = new CommonInfo(commit, committer, commitMessage, commitDate);
         this.trackerInfo = new TrackerInfo(version, relation);
-    }
+    }*/
 
     private String uuid;
     private String fullname;

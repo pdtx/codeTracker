@@ -5,11 +5,9 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
-import cn.edu.fudan.codetracker.domain.projectInfo.ClassInfo;
-import cn.edu.fudan.codetracker.domain.projectInfo.PackageInfo;
-import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.ClassInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.ClassMapper;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

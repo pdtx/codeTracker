@@ -6,7 +6,7 @@
 package cn.edu.fudan.codetracker.util;
 
 
-import cn.edu.fudan.codetracker.domain.projectInfo.*;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 
 import java.io.File;

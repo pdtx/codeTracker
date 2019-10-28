@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-05-26 20:38
  **/
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import java.util.*;
 

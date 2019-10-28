@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-09-26 21:50
  **/
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 public class TrackerInfo {
 

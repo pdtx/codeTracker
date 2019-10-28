@@ -5,7 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.util;
 
-import cn.edu.fudan.codetracker.domain.projectInfo.*;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;

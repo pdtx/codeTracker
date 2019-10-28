@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.FileMapper">
 
-    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo">
+    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
         <id property="rootUUID" column="uuid"/>
     </resultMap>

@@ -3,10 +3,9 @@
  * @author: fancying
  * @create: 2019-05-26 21:22
  **/
-package cn.edu.fudan.codetracker.domain.projectInfo;
+package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class StatementInfo {

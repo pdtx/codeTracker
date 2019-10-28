@@ -1,9 +1,8 @@
 package cn.edu.fudan.codetracker.mapper;
 
-import cn.edu.fudan.codetracker.domain.projectInfo.PackageInfo;
-import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.PackageInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import org.springframework.stereotype.Repository;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

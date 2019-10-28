@@ -16,7 +16,7 @@
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
     </resultMap>-->
 
-    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo">
+    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
         <id property="rootUUID" column="uuid"/>
     </resultMap>

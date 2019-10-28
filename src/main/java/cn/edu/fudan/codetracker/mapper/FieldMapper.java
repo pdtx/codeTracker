@@ -1,11 +1,10 @@
 package cn.edu.fudan.codetracker.mapper;
 
-import cn.edu.fudan.codetracker.domain.projectInfo.FieldInfo;
-import cn.edu.fudan.codetracker.domain.projectInfo.TrackerInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.FieldInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface FieldMapper {
