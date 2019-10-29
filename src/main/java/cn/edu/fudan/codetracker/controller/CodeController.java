@@ -5,7 +5,6 @@
  **/
 package cn.edu.fudan.codetracker.controller;
 
-import cn.edu.fudan.codetracker.graph.GraphBuilder;
 import cn.edu.fudan.codetracker.service.ScanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,23 +22,6 @@ public class CodeController {
 
 
     private ScanService scanService;
-
-
-
-
-    @GetMapping(value = {"/code"})
-    public Object getDetail(@RequestParam("methodName") String name) {
-
-        final String uri = "bolt://10.141.221.84:7687";
-
-        final String user = "neo4j";
-
-        final String password = "1";
-
-         GraphBuilder graphBuilder = new GraphBuilder(uri, user, password);
-
-        return graphBuilder.getMess(name);
-    }
 
     @GetMapping(value = {"/scan"})
     public Object scan() {

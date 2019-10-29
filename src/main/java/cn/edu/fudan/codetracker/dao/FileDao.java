@@ -37,24 +37,27 @@ public class FileDao {
     }
 
     public void setAddInfo(Set<FileInfo> fileInfos) {
-        if (fileInfos.isEmpty())
+        if (fileInfos.isEmpty()) {
             return;
+        }
         List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
         insertFileInfoList(fileInfoList);
         insertRawFileInfoList(fileInfoList);
     }
 
     public void setDeleteInfo(Set<FileInfo> fileInfos) {
-        if (fileInfos.isEmpty())
+        if (fileInfos.isEmpty()) {
             return;
+        }
         List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
         //fileMapper.setDeleteInfo(fileInfoList);
         insertRawFileInfoList(fileInfoList);
     }
 
     public void setChangeInfo(Set<FileInfo> fileInfos) {
-        if (fileInfos.isEmpty())
+        if (fileInfos.isEmpty()) {
             return;
+        }
         List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
         fileMapper.updateChangeInfo(fileInfoList);
         insertRawFileInfoList(fileInfoList);

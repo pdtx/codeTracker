@@ -25,7 +25,11 @@ public class JGitHelper {
     private String repoPath;
     private Git git;
 
-    // repoPath 加上了 .git 目录
+    /**
+     *
+     * repoPath 加上了 .git 目录
+     *
+     */
     public JGitHelper(String repoPath) {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {

@@ -38,24 +38,27 @@ public class MethodDao {
     }
 
     public void setAddInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty())
+        if (methodInfos.isEmpty()) {
             return;
+        }
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
         insertMethodInfoList(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);
     }
 
     public void setDeleteInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty())
+        if (methodInfos.isEmpty()) {
             return;
+        }
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
         //methodMapper.setDeleteInfo(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);
     }
 
     public void setChangeInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty())
+        if (methodInfos.isEmpty()) {
             return;
+        }
         List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
         methodMapper.updateChangeInfo(methodInfoArrayList);
         insertRawMethodInfoList(methodInfoArrayList);

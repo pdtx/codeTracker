@@ -39,24 +39,27 @@ public class ClassDao {
     }
 
     public void setAddInfo(Set<ClassInfo> classInfos) {
-        if (classInfos.size() == 0)
+        if (classInfos.size() == 0) {
             return;
+        }
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
         insertClassInfoList(classInfosList);
         insertRawClassInfoList(classInfosList);
     }
 
     public void setDeleteInfo(Set<ClassInfo> classInfos) {
-        if (classInfos.size() == 0)
+        if (classInfos.size() == 0) {
             return;
+        }
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
         //classMapper.setDeleteInfo(classInfosList);
         insertRawClassInfoList(classInfosList);
     }
 
     public void setChangeInfo(Set<ClassInfo> classInfos) {
-        if (classInfos.size() == 0)
+        if (classInfos.size() == 0) {
             return;
+        }
         List<ClassInfo> classInfosList = new ArrayList<>(classInfos);
         classMapper.updateChangeInfo(classInfosList);
         insertRawClassInfoList(classInfosList);

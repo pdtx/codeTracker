@@ -90,8 +90,9 @@ public class RepoInfoBuilder {
             String moduleName = fileInfoExtractor.getModuleName();
             String packageName = fileInfoExtractor.getPackageName();
             // 特殊情况处理 ： 以 .java 处理 但是是空文件
-            if (packageName == null)
+            if (packageName == null) {
                 continue;
+            }
             String packageUUID ;
             // module 出现过
             if (modulePackage.containsKey(moduleName)) {
@@ -167,8 +168,9 @@ public class RepoInfoBuilder {
 
     private String findPackageUUIDbyModuleAndPackage(String moduleName, String packageName) {
         for (PackageInfo packageInfo : packageInfos) {
-            if (packageInfo.getPackageName().equals(packageName) && packageInfo.getModuleName().equals(moduleName))
+            if (packageInfo.getPackageName().equals(packageName) && packageInfo.getModuleName().equals(moduleName)) {
                 return packageInfo.getUuid();
+            }
         }
         return null;
     }

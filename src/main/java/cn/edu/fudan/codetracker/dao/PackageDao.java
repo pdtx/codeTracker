@@ -40,24 +40,27 @@ public class PackageDao {
     }
 
     public void setAddInfo(@NotNull Set<PackageInfo> packageInfos) {
-        if (packageInfos.size() == 0)
+        if (packageInfos.size() == 0) {
             return;
+        }
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         insertPackageInfoList(packageInfoList);
         insertRawPackageInfoList(packageInfoList);
     }
 
     public void setDeleteInfo(@NotNull Set<PackageInfo> packageInfos) {
-        if (packageInfos.size() == 0)
+        if (packageInfos.size() == 0) {
             return;
+        }
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         //packageMapper.updateDeleteInfo(packageInfoList);
         insertRawPackageInfoList(packageInfoList);
     }
 
     public void setChangeInfo(@NotNull Set<PackageInfo> packageInfos) {
-        if (packageInfos.size() == 0)
+        if (packageInfos.size() == 0) {
             return;
+        }
         List<PackageInfo> packageInfoList = new ArrayList<>(packageInfos);
         packageMapper.updateChangeInfo(packageInfoList);
         insertRawPackageInfoList(packageInfoList);

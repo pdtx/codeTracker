@@ -38,24 +38,27 @@ public class FieldDao {
     }
 
     public void setAddInfo(Set<FieldInfo> fieldInfos) {
-        if (fieldInfos.size() == 0)
+        if (fieldInfos.size() == 0) {
             return;
+        }
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
         insertFieldInfoList(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
     }
 
     public void setDeleteInfo(Set<FieldInfo> fieldInfos) {
-        if (fieldInfos.size() == 0)
+        if (fieldInfos.size() == 0) {
             return;
+        }
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
         //fieldMapper.setDeleteInfo(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
     }
 
     public void setChangeInfo(Set<FieldInfo> fieldInfos) {
-        if (fieldInfos.size() == 0)
+        if (fieldInfos.size() == 0) {
             return;
+        }
         List<FieldInfo> fieldInfoList = new ArrayList<>(fieldInfos);
         fieldMapper.updateChangeInfo(fieldInfoList);
         insertRawFieldInfoList(fieldInfoList);
