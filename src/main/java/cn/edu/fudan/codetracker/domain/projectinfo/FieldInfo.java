@@ -43,17 +43,23 @@ public class FieldInfo {
     }
 
 
-/*    @Override
-    public int hashCode() {
-        return 10;
-    }*/
-
     @Override
-    public boolean equals(Object o) {
-        FieldInfo obj = (FieldInfo) o;
-        return this.simpleName.equals(obj.getSimpleName()) &&
-                this.modifier.equals(obj.getModifier()) &&
-                this.simpleType.equals(obj.getSimpleType());
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if(obj == null){
+            return false;
+        }
+
+        if(obj instanceof FieldInfo){
+            FieldInfo fieldInfo = (FieldInfo) obj;
+            return this.simpleName.equals(fieldInfo.getSimpleName()) &&
+                    this.modifier.equals(fieldInfo.getModifier()) &&
+                    this.simpleType.equals(fieldInfo.getSimpleType());
+        }
+        return false;
     }
 
     @Override

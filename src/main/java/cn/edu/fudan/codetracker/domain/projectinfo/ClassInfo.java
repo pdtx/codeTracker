@@ -111,6 +111,22 @@ public class ClassInfo {
         return (filePath + className).hashCode();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if(o == null){
+            return false;
+        }
+
+        if(o instanceof ClassInfo){
+            ClassInfo classInfo = (ClassInfo) o;
+            return this.uuid.equals(classInfo.uuid);
+        }
+        return false;
+    }
 
     /**
      * getter and setter

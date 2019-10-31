@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-06-06 16:41
  **/
-package cn.edu.fudan.codetracker.handle;
+package cn.edu.fudan.codetracker.handler;
 
 
 import cn.edu.fudan.codetracker.dao.*;
@@ -256,36 +256,6 @@ public class AnalyzeDiffFile {
             fileInfos.get(relation).add(fileInfo);
         }
 
-
-
-        /////////////// class /////////////////////////
-/*        //add class
-        for (ClassInfo curClassInfo : curRepoInfo.getClassInfos()) {
-            ClassInfo preClassInfo = findClassInfoByName(curClassInfo, preRepoInfo.getClassInfos());
-            if (preClassInfo == null) {
-                setTrackerInfo(curClassInfo, RelationShip.ADD.name());
-                classInfoList.add(curClassInfo);
-                curRepoInfo.getClassInfos().remove(curClassInfo);
-                classInfoList.add(curClassInfo);
-            }
-        }
-
-        // delete class and modify
-        for (ClassInfo preClassInfo : preRepoInfo.getClassInfos()) {
-            ClassInfo curClassInfo = findClassInfoByName(preClassInfo, curRepoInfo.getClassInfos());
-            if (curClassInfo == null) {
-                // class 、field、method relation will be
-                setTrackerInfo(preClassInfo, RelationShip.DELETE.name());
-                preRepoInfo.getClassInfos().remove(preClassInfo);
-                classInfoList.add(preClassInfo);
-                continue;
-            }
-            trackerInfo = new TrackerInfo(RelationShip.CHANGE.name());
-            curClassInfo.setTrackerInfo(trackerInfo);
-        }
-        classInfoList.addAll(curRepoInfo.getClassInfos());
-        /////////////// class /////////////////////////*/
-
         Set<String> uuidList = new HashSet<>();
         boolean isFirst = true;
         for (int i = 0; i < diffPathList.size(); i++) {
@@ -373,6 +343,9 @@ public class AnalyzeDiffFile {
                             break;
                         case "delete":
                             handleClass(preRepoInfo, filePath, range, RelationShip.DELETE.name());
+                            break;
+                        default:
+                            System.out.println("relation error method");
                     }
                     continue;
                 }
@@ -405,6 +378,9 @@ public class AnalyzeDiffFile {
                                 MethodInfo curMethodInfo = findMethodInfoByRange(curRepoInfo.getMethodInfos(), filePath, begin, end);
                                 if (curMethodInfo != null) {
                                     curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
+                                    //curMethodInfo.setDiff(oneDiff);
+                                    curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
+                                    //curMethodInfo.getJsonArray().add(oneDiff);
                                     // 直接入库
                                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
                                 }
@@ -418,6 +394,9 @@ public class AnalyzeDiffFile {
                             break;
                         case "delete":
                             handleMethod(preRepoInfo.getMethodInfos(), filePath, range, RelationShip.DELETE.name());
+                            break;
+                        default :
+                                System.out.println("relation null");
                     }
                 }
 
@@ -450,10 +429,14 @@ public class AnalyzeDiffFile {
                             }catch (ArrayIndexOutOfBoundsException e) {
                                 System.out.println(diffPathList.get(i));
                             }
+                            break;
+                        default:
+                                System.out.println("relation error statement");
                     }
                     if (curMethodInfo != null && !methodInfos.get(RelationShip.CHANGE.name()).contains(curMethodInfo)) {
                         trackerInfo = methodDao.getTrackerInfo(curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature());
                         curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
+                        curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
                         methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
                         //curRepoInfo.getMethodInfos().remove(curMethodInfo);// 减少下次搜索时间
                     }
@@ -533,17 +516,17 @@ public class AnalyzeDiffFile {
     }
 
     private void setTrackerInfo(ClassInfo classInfo, String relation) {
-        final int FIRST_VERSION = 1;
+        final int firstVersion = 1;
 
         if (relation.equals(RelationShip.ADD.name())) {
-            classInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+            classInfo.setTrackerInfo(new TrackerInfo(relation, firstVersion, classInfo.getUuid()));
             classInfos.get(relation).add(classInfo);
             for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
-                methodInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+                methodInfo.setTrackerInfo(new TrackerInfo(relation, firstVersion, classInfo.getUuid()));
                 methodInfos.get(relation).add(methodInfo);
             }
             for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-                fieldInfo.setTrackerInfo(new TrackerInfo(relation, FIRST_VERSION, classInfo.getUuid()));
+                fieldInfo.setTrackerInfo(new TrackerInfo(relation, firstVersion, classInfo.getUuid()));
                 fieldInfos.get(relation).add(fieldInfo);
             }
         } else {
@@ -565,17 +548,6 @@ public class AnalyzeDiffFile {
         }
     }
 
-/*    private ClassInfo findClassInfoByName(ClassInfo preClassInfo, List<ClassInfo> classInfos) {
-        for (ClassInfo classInfo : classInfos) {
-            if (classInfo.getClassName().equals(preClassInfo.getClassName())
-                    && classInfo.getPackageName().equals(preClassInfo.getPackageName())
-                    && classInfo.getModuleName().equals(preClassInfo.getModuleName())) {
-                return classInfo;
-            }
-        }
-        return null;
-    }*/
-
     private int rangeAnalyzeBegin(String range) {
         // range ：(87,102)
         return Integer.valueOf(range.substring(1,range.length() - 1).split(",")[0]);
@@ -588,30 +560,6 @@ public class AnalyzeDiffFile {
     /**
      * getter and setter
      * */
-/*    @Autowired
-    public void setPackageDao(PackageDao packageDao) {
-        this.packageDao = packageDao;
-    }
-
-    @Autowired
-    public void setFileDao(FileDao fileDao) {
-        this.fileDao = fileDao;
-    }
-
-    @Autowired
-    public void setClassDao(ClassDao classDao) {
-        this.classDao = classDao;
-    }
-
-    @Autowired
-    public void setFieldDao(FieldDao fieldDao) {
-        this.fieldDao = fieldDao;
-    }
-
-    @Autowired
-    public void setMethodDao(MethodDao methodDao) {
-        this.methodDao = methodDao;
-    }*/
 
     public Map<String, Set<PackageInfo>> getPackageInfos() {
         return packageInfos;

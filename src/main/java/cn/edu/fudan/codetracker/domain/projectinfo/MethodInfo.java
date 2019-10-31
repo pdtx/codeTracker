@@ -5,6 +5,9 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.*;
 
 public class MethodInfo {
@@ -46,6 +49,7 @@ public class MethodInfo {
     private String primitiveType;
     private int begin;
     private int end;
+    private JSONObject diff;
     private List<StatementInfo> statementInfos;
 
 
@@ -59,6 +63,8 @@ public class MethodInfo {
         this.packageName = packageName;
         this.packageUuid = packageUuid;
         this.moduleName = moduleName;
+        diff = new JSONObject();
+        diff.put("data",new JSONArray());
     }
 
     @Override
@@ -216,5 +222,13 @@ public class MethodInfo {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public JSONObject getDiff() {
+        return diff;
+    }
+
+    public void setDiff(JSONObject diff) {
+        this.diff = diff;
     }
 }

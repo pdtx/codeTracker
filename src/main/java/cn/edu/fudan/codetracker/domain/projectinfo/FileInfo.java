@@ -42,10 +42,29 @@ public class FileInfo {
         this.filePath = filePath;
     }*/
 
-    // filePath 可以唯一指定一个file
+    /**
+     *filePath 可以唯一指定一个file
+     */
     @Override
     public int hashCode() {
         return filePath.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if(obj == null){
+            return false;
+        }
+
+        if(obj instanceof FileInfo){
+            FileInfo fileInfo = (FileInfo) obj;
+            return this.filePath.equals(fileInfo.filePath);
+        }
+        return false;
     }
 
     /**

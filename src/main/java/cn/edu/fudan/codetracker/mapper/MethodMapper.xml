@@ -13,6 +13,9 @@
         <result property="fullname" column="fullname"/>
         <result property="signature" column="signature"/>
         <result property="content" column="content"/>
+        <result property="begin" column="method_begin"/>
+        <result property="end" column="method_end"/>
+        <result property="diff" column="diff" typeHandler="cn.edu.fudan.codetracker.handler.JsonTypeHandler"/>
         <association property="commonInfo" javaType="cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo">
             <id property="commit" column="commitid"/>
             <result property="committer" column="committer"/>
@@ -88,7 +91,10 @@
         commit_date,
         commit_message,
         parent_commit,
-        content
+        content,
+        method_begin,
+        method_end,
+        diff
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -105,7 +111,10 @@
             #{item.commonInfo.commitDate},
             #{item.commonInfo.commitMessage},
             #{item.commonInfo.parentCommit},
-            #{item.content}
+            #{item.content},
+            #{item.begin},
+            #{item.end},
+            #{item.diff,jdbcType=OTHER,typeHandler=cn.edu.fudan.codetracker.handler.JsonTypeHandler}
             )
         </foreach>
     </insert>
@@ -146,7 +155,7 @@
     </select>-->
 
     <select id="getMethodHistory" parameterType="String" resultMap = "rawMethodInfo">
-        select uuid,fullname,signature,content,commitid,committer,commit_message,commit_date,version,change_relation from raw_method where method_uuid in ( select uuid from track_method where repo_uuid = #{repoId} and module_name = #{moduleName}
+        select uuid,fullname,signature,content,commitid,committer,commit_message,commit_date,version,change_relation,method_begin,method_end,diff from raw_method where method_uuid in ( select uuid from track_method where repo_uuid = #{repoId} and module_name = #{moduleName}
             and package_name = #{packageName} and  class_name = #{className} and signature = #{signature} ) order by version
     </select>
 
