@@ -5,13 +5,12 @@
  **/
 package cn.edu.fudan.codetracker.controller;
 
+import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.service.ScanService;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,18 @@ public class CodeController {
         scanService.firstScan("123", commitList,"master");
         return null;
     }
+    /**
+     * @param requestParam 包含： repoId、branch、duration
+     */
+    @PostMapping(value = {"/project/"})
+    public ResponseBean scan(@RequestBody JSONObject requestParam) {
+        try {
+            scanService.firstScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("duration"));
+            return new ResponseBean(200, "start scan", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
 
     @GetMapping(value = {"/repo/{repoId}/{module}/{package}/{class}"})
     public Object getMethodHistory(@PathVariable("repoId")String repoId,@PathVariable("module") String moduleName,@PathVariable("package") String packageName,@PathVariable("class") String className, @RequestParam("signature") String signature) {
@@ -43,22 +54,6 @@ public class CodeController {
 
     private static List<String> mockCommitList() {
         List<String> list = new ArrayList<>();
-
-
-/*        list.add("44a0b67ba8bcdfef6251030367a7502886d9fbb3");
-        list.add("881ed977bd0c63e1e84b5b46e8bb1b0fb00ccd93");
-        list.add("ef6cc9a15f1fb7c87bf1e428011946d80b14abdb");
-        list.add("3addb10427974a17b10bbbbef721328bd2a90403");
-        list.add("8ce3f93f56b0c80b2b3253c27757f01a3b2840fc");
-        list.add("b08b88410619cd018b2884aa763b0762b94c5545");
-        list.add("b00a2b54f55cb999a09143f6c2e11353a9b3cc8f");
-        list.add("58eb9a9e87f224c551d5b72cb06176c9419e7f67");
-        list.add("a6fb29ea324e87bead0471096dac9cd7cbb91a41");
-        list.add("0270d3ed338dde4b88aaaa698d7e5ba12c9a3caa");
-        list.add("f868d8f411db57b33be905c686d55c25820ea298");
-        list.add("8b6293deb05cd6c0cff93fb6beff5faf878e4507");
-        list.add("581b3a00a9bb2240e46cf432d5a4cf39885fb3e9");*/
-
 
         list.add("e99455dd2c0e2e76aae2b3b174c2d407107fff87");
         list.add("9bfd231ccc544c0fd945fcb352bcdffd9344a6f2");

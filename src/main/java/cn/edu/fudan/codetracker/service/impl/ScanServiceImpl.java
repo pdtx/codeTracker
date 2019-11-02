@@ -5,8 +5,9 @@
  **/
 package cn.edu.fudan.codetracker.service.impl;
 
+import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.projectinfo.RelationShip;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.handler.AnalyzeDiffFile;
 import cn.edu.fudan.codetracker.handler.OutputAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
@@ -14,6 +15,7 @@ import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import cn.edu.fudan.codetracker.util.cldiff.CLDiffHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,28 +29,30 @@ public class ScanServiceImpl implements ScanService {
     private FieldDao fieldDao;
     private MethodDao methodDao;
 
+    private RestInterfaceManager restInterface;
 
-
-
+    @Value("outputDir")
+    private String outputDir;
 
     /**
      * 第一次扫描 存储项目结构
      * */
     @Override
-    public void firstScan(String repoUuid, List<String> commitList, String branch) {
-        String repoPath = getRepoPathByUUID(repoUuid);
+    public void firstScan(String repoUuid, String branch, String duration) {
+        String repoPath = restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         RepoInfoBuilder repoInfo;
-        if (commitList.size() >= 1) {
-            repoInfo = new RepoInfoBuilder(repoUuid, commitList.get(0), repoPath, jGitHelper, branch, null);
-            repoInfo.setCommitter(jGitHelper.getAuthorName(commitList.get(0)));
-            // 入库
-            saveData(repoInfo);
-        }
-        //String [] path = repoPath.replace('\\','/').split("/");
-        for (int i = 1; i < commitList.size();i++) {
-            String outputDir = "E:\\Lab\\project\\new";
-            scan(repoUuid , commitList.get(i), branch, outputDir, jGitHelper);
+        boolean isInit = false;
+        for (String commit : commitList) {
+            if (isInit) {
+                scan(repoUuid , commit, branch, outputDir, jGitHelper);
+            } else {
+                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
+                repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
+                saveData(repoInfo);
+                isInit = true;
+            }
         }
     }
 
@@ -87,7 +91,7 @@ public class ScanServiceImpl implements ScanService {
     @Override
     public boolean scan(String repoUuid, String commitId, String branch, String outputDir, JGitHelper jGitHelper) {
 
-        String repoPath = getRepoPathByUUID(repoUuid);
+        String repoPath = getRepoPathByUuid(repoUuid);
 
         if (jGitHelper != null) {
             jGitHelper = new JGitHelper(repoPath);
@@ -131,7 +135,30 @@ public class ScanServiceImpl implements ScanService {
         return false;
     }
 
-    private String getRepoPathByUUID(String repoUuid) {
+    @Override
+    public void firstScan(String repoUuid, List<String> commitList, String branch) {
+        scan(repoUuid, commitList, branch);
+    }
+
+    public void scan(String repoUuid, List<String> commitList, String branch) {
+        String repoPath = getRepoPathByUuid(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        RepoInfoBuilder repoInfo;
+        if (commitList.size() >= 1) {
+            repoInfo = new RepoInfoBuilder(repoUuid, commitList.get(0), repoPath, jGitHelper, branch, null);
+            repoInfo.setCommitter(jGitHelper.getAuthorName(commitList.get(0)));
+            // 入库
+            saveData(repoInfo);
+        }
+        //String [] path = repoPath.replace('\\','/').split("/");
+        for (int i = 1; i < commitList.size();i++) {
+            String outputDir = "E:\\Lab\\project\\new";
+            scan(repoUuid , commitList.get(i), branch, outputDir, jGitHelper);
+        }
+    }
+
+    private String getRepoPathByUuid(String repoUuid) {
+
         return "E:\\Lab\\project\\IssueTracker-Master";
     }
 
@@ -163,4 +190,8 @@ public class ScanServiceImpl implements ScanService {
         this.methodDao = methodDao;
     }
 
+    @Autowired
+    public void setRestInterface(RestInterfaceManager restInterface) {
+        this.restInterface = restInterface;
+    }
 }

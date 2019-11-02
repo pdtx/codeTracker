@@ -8,8 +8,10 @@ package cn.edu.fudan.codetracker.jgit;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -17,6 +19,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JGitHelper {
 
@@ -24,6 +28,8 @@ public class JGitHelper {
     private RevWalk revWalk;
     private String repoPath;
     private Git git;
+
+    private final int durationLength = 21;
 
     /**
      *
@@ -163,6 +169,88 @@ public class JGitHelper {
         System.out.println(jGitHelper.getAuthorName(commitId));
         System.out.println(jGitHelper.getCommitTime(commitId));
         System.out.println(jGitHelper.getMess(commitId));
+    }
+
+
+    public List<String> getCommitListByBranchAndDuration(String branchName, String duration) {
+        List<String> commitList = new ArrayList<>(32);
+        if (duration.length() < durationLength) {
+            throw new RuntimeException("duration error!");
+        }
+        String start = duration.substring(0,10);
+        String end = duration.substring(11,21);
+
+        RevWalk walk = new RevWalk(repository);
+
+        try {
+            List<Ref> branches = git.branchList().call();
+        } catch (GitAPIException g) {
+
+        }
+
+
+        if (! gitCheckout(branchName)) {
+            return null;
+        }
+
+/*        String branchName = branchName.getName();
+
+        try {
+            Iterable<RevCommit> commits = git.log().all().call();
+            for (RevCommit commit : commits) {
+                boolean foundInThisBranch = false;
+
+                RevCommit targetCommit = walk.parseCommit(repo.resolve(
+                        commit.getName()));
+                for (Map.Entry<String, Ref> e : repo.getAllRefs().entrySet()) {
+                    if (e.getKey().startsWith(Constants.R_HEADS)) {
+                        if (walk.isMergedInto(targetCommit, walk.parseCommit(
+                                e.getValue().getObjectId()))) {
+                            String foundInBranch = e.getValue().getName();
+                            if (branchName.equals(foundInBranch)) {
+                                foundInThisBranch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (foundInThisBranch) {
+                    System.out.println(commit.getName());
+                    System.out.println(commit.getAuthorIdent().getName());
+                    System.out.println(new Date(commit.getCommitTime() * 1000L));
+                    System.out.println(commit.getFullMessage());
+                }
+            }
+        } catch (Exception e) {
+            e.getMessage();
+        }*/
+
+
+        
+
+        return commitList;
+
+    }
+
+    private boolean gitCheckout(String version) {
+        try {
+            CheckoutCommand checkout = git.checkout();
+            checkout.setName(version);
+            checkout.call();
+            System.out.println("Checkout to " + version);
+            //logger.info("Checkout to " + version);
+            PullCommand pullCmd = git.pull();
+            pullCmd.call();
+            System.out.println("Pulled from remote repository to local repository at " );
+            //logger.info();
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + " : " + git.getRepository().getRemoteNames());
+            return false;
+            //logger.info(e.getMessage() + " : " + RepoGitDir.getAbsolutePath());
+        }
+
     }
 
 

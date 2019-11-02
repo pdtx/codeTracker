@@ -50,7 +50,6 @@ public class FileDao {
             return;
         }
         List<FileInfo> fileInfoList = new ArrayList<>(fileInfos);
-        //fileMapper.setDeleteInfo(fileInfoList);
         insertRawFileInfoList(fileInfoList);
     }
 

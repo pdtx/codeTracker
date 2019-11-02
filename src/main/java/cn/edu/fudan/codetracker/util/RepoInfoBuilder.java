@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.util;
 
 
+import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 

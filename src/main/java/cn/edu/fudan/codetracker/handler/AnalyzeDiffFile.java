@@ -7,6 +7,7 @@ package cn.edu.fudan.codetracker.handler;
 
 
 import cn.edu.fudan.codetracker.dao.*;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
