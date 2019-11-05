@@ -39,7 +39,8 @@ public class ScanServiceImpl implements ScanService {
      * */
     @Override
     public void firstScan(String repoUuid, String branch, String duration) {
-        String repoPath = restInterface.getRepoPath(repoUuid);
+        //String repoPath = restInterface.getRepoPath(repoUuid);
+        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         RepoInfoBuilder repoInfo;

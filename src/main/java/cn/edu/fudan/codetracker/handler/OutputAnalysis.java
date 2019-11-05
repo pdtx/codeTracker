@@ -141,7 +141,7 @@ public class OutputAnalysis {
                 }
                 // RepoInfoBuilder need to refactor for parentCommit is not null; so
                 RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
-                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, curFileList, jGitHelper, branch, preCommit);
+                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(packageDao, fileDao, classDao, fieldDao, methodDao, preRepoInfo, curRepoInfo);
                 analyzeDiffFile.addInfoConstruction(addFilesList);
                 analyzeDiffFile.deleteInfoConstruction(deleteFilesList);

@@ -253,6 +253,9 @@ public class AnalyzeDiffFile {
 
         for (FileInfo fileInfo : curRepoInfo.getFileInfos()) {
             trackerInfo = fileDao.getTrackerInfo(fileInfo.getFilePath());
+            if (trackerInfo == null) {
+                System.out.println(fileInfo.getFilePath() + " NULL");
+            }
             fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
             fileInfos.get(relation).add(fileInfo);
         }
@@ -285,7 +288,6 @@ public class AnalyzeDiffFile {
                         curFieldInfo.setTrackerInfo(RelationShip.ADD.name(), 1, curFieldInfo.getUuid());
                         fieldInfos.get(RelationShip.ADD.name()).add(curFieldInfo);
                         // 减少后续查找时间
-                        //curRepoInfo.getFieldInfos().remove(curFieldInfo);
                         uuidList.add(curFieldInfo.getUuid());
                     }
                 }
@@ -297,7 +299,7 @@ public class AnalyzeDiffFile {
                         preFieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID()));
                         fieldInfos.get(RelationShip.DELETE.name()).add(preFieldInfo);
                         //preRepoInfo.getFieldInfos().remove(preFieldInfo);
-                    } else if (!uuidList.contains(curFieldInfo.getUuid())) {
+                    } else if ( !uuidList.contains(curFieldInfo.getUuid())) {
                         curFieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
                         fieldInfos.get(RelationShip.CHANGE.name()).add(curFieldInfo);
                         //curRepoInfo.getFieldInfos().remove(curFieldInfo);

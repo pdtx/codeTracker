@@ -10,6 +10,7 @@ import java.util.UUID;
 public class FieldInfo {
 
     private String uuid;
+    private String fullName;
     private String simpleName;
     private String modifier;
     private String simpleType;
@@ -28,7 +29,7 @@ public class FieldInfo {
     private TrackerInfo trackerInfo;
 
     public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
-                     String fileName, String filePath, String className) {
+                     String fileName, String filePath, String className, String initValue) {
         uuid = UUID.randomUUID().toString();
         this.simpleName = simpleName;
         this.modifier = modifier;
@@ -40,6 +41,7 @@ public class FieldInfo {
         this.fileName = fileName;
         this.filePath = filePath;
         this.className = className;
+        this.initValue = initValue;
     }
 
 
@@ -183,5 +185,13 @@ public class FieldInfo {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 }

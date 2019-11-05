@@ -57,10 +57,9 @@ public class RepoInfoBuilder {
         this.branch = branch;
         this.jGitHelper = jGitHelper;
         // first time parentCommit is NULL
-        if (parentCommit == null || parentCommit.length() == 0) {
+        this.parentCommit = parentCommit;
+        if (this.parentCommit == null || this.parentCommit.length() == 0) {
             this.parentCommit = commit;
-        } else {
-            this.parentCommit = parentCommit;
         }
         fileInfos = new ArrayList<>();
         classInfos = new ArrayList<>();
@@ -98,7 +97,7 @@ public class RepoInfoBuilder {
             // module 出现过
             if (modulePackage.containsKey(moduleName)) {
                 if (modulePackage.get(moduleName).contains(packageName)) {
-                    packageUUID = findPackageUUIDbyModuleAndPackage(moduleName, packageName);
+                    packageUUID = findPackageUuidByModuleAndPackage(moduleName, packageName);
                 } else {
                     packageUUID = UUID.randomUUID().toString();
                     List<String> packageList = modulePackage.get(moduleName);
@@ -167,7 +166,7 @@ public class RepoInfoBuilder {
 
     }
 
-    private String findPackageUUIDbyModuleAndPackage(String moduleName, String packageName) {
+    private String findPackageUuidByModuleAndPackage(String moduleName, String packageName) {
         for (PackageInfo packageInfo : packageInfos) {
             if (packageInfo.getPackageName().equals(packageName) && packageInfo.getModuleName().equals(moduleName)) {
                 return packageInfo.getUuid();

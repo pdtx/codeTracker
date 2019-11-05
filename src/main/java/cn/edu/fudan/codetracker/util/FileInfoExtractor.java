@@ -191,13 +191,26 @@ public class FileInfoExtractor {
 
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
             //modifier
-            StringBuilder sb = new StringBuilder();
+            StringBuilder modifiers = new StringBuilder();
             for (Modifier modifier : fieldDeclaration.getModifiers()) {
-                sb.append(modifier.asString());
-                sb.append(" ");
+                modifiers.append(modifier.asString());
+                modifiers.append(" ");
             }
-            FieldInfo fieldInfo = new FieldInfo(fieldDeclaration.toString(), sb.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getPackageUuid(),
-                    moduleName, packageName, fileName, filePath, className);
+
+            StringBuilder simpleName = new StringBuilder();
+            StringBuilder initValue = new StringBuilder();
+            for (VariableDeclarator variableDeclarator: fieldDeclaration.getVariables()) {
+                simpleName.append(variableDeclarator.getName());
+                simpleName.append(" ");
+
+                initValue.append(variableDeclarator.getInitializer().toString());
+                initValue.append(" ");
+            }
+
+            //(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
+            //                     String fileName, String filePath, String className, String initValue)
+            FieldInfo fieldInfo = new FieldInfo(simpleName.toString(), modifiers.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getPackageUuid(),
+                    moduleName, packageName, fileName, filePath, className, initValue.toString());
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;

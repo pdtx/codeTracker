@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -19,8 +20,11 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class JGitHelper {
 
@@ -28,8 +32,6 @@ public class JGitHelper {
     private RevWalk revWalk;
     private String repoPath;
     private Git git;
-
-    private final int durationLength = 21;
 
     /**
      *
@@ -77,7 +79,7 @@ public class JGitHelper {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             int t = revCommit.getCommitTime() ;
-            Long timestamp = Long.parseLong(String.valueOf(t)) * 1000;
+            long timestamp = Long.parseLong(String.valueOf(t)) * 1000;
             time = new java.text.SimpleDateFormat(format).format(new java.util.Date(timestamp));
         }catch (Exception e) {
             e.printStackTrace();
@@ -104,7 +106,7 @@ public class JGitHelper {
     }
 
 
-    public static Repository openJGitRepository(String repoPath) throws IOException {
+    public Repository openJGitRepository(String repoPath) throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
 
         return builder.setGitDir(new File(repoPath))
@@ -113,7 +115,7 @@ public class JGitHelper {
                 .build();
     }
 
-    public static Repository createNewRepository() throws IOException {
+    public Repository createNewRepository() throws IOException {
         // prepare a new folder
         File localPath = File.createTempFile("TestGitRepository", "");
         if(!localPath.delete()) {
@@ -127,7 +129,7 @@ public class JGitHelper {
         return repository;
     }
 
-    public static void gitCheckout(String repoDir, String version) {
+    public void gitCheckout(String repoDir, String version) {
 
         File RepoGitDir = new File(repoDir + "\\.git");
         if (!RepoGitDir.exists()) {
@@ -162,78 +164,90 @@ public class JGitHelper {
 
     public static void main(String[] args) {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        String repoPath = "E:\\Lab\\project\\train-ticket";
-        String commitId = "56ecb887353075ff557638843e234a8411b5fb8c";
+        String repoPath = "E:\\Lab\\project\\IssueTracker-Master";
+        //String commitId = "56ecb887353075ff557638843e234a8411b5fb8c";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        jGitHelper.checkout(commitId);
+
+
+        for (String s : jGitHelper.getCommitListByBranchAndDuration("developer", "2019.07.01-2019.07.20")) {
+            System.out.println(s);
+        }
+/*        jGitHelper.checkout(commitId);
         System.out.println(jGitHelper.getAuthorName(commitId));
         System.out.println(jGitHelper.getCommitTime(commitId));
-        System.out.println(jGitHelper.getMess(commitId));
+        System.out.println(jGitHelper.getMess(commitId));*/
     }
 
 
+    /**
+     *
+     *  getCommitTime return second not millisecond
+     */
     public List<String> getCommitListByBranchAndDuration(String branchName, String duration) {
-        List<String> commitList = new ArrayList<>(32);
+        final int durationLength = 21;
+        Map<String, Long> commitMap = new HashMap<>(32);
         if (duration.length() < durationLength) {
             throw new RuntimeException("duration error!");
         }
-        String start = duration.substring(0,10);
-        String end = duration.substring(11,21);
+        long start =  getTime(duration.substring(0,10));
+        long end = getTime(duration.substring(11,21));
 
         RevWalk walk = new RevWalk(repository);
-
-        try {
-            List<Ref> branches = git.branchList().call();
-        } catch (GitAPIException g) {
-
-        }
-
-
-        if (! gitCheckout(branchName)) {
-            return null;
-        }
-
-/*        String branchName = branchName.getName();
+        checkout(branchName);
 
         try {
             Iterable<RevCommit> commits = git.log().all().call();
             for (RevCommit commit : commits) {
-                boolean foundInThisBranch = false;
-
-                RevCommit targetCommit = walk.parseCommit(repo.resolve(
-                        commit.getName()));
-                for (Map.Entry<String, Ref> e : repo.getAllRefs().entrySet()) {
-                    if (e.getKey().startsWith(Constants.R_HEADS)) {
-                        if (walk.isMergedInto(targetCommit, walk.parseCommit(
-                                e.getValue().getObjectId()))) {
-                            String foundInBranch = e.getValue().getName();
-                            if (branchName.equals(foundInBranch)) {
-                                foundInThisBranch = true;
-                                break;
-                            }
-                        }
+                long commitTime = commit.getCommitTime() * 1000L;
+                RevCommit targetCommit = walk.parseCommit(repository.resolve(commit.getName()));
+                for (Map.Entry<String, Ref> e : repository.getAllRefs().entrySet()) {
+                    if (e.getKey().startsWith(Constants.R_HEADS) &&
+                            walk.isMergedInto(targetCommit, walk.parseCommit(e.getValue().getObjectId())) &&
+                            branchName.equals(e.getValue().getName().replace("refs/heads/","")) &&
+                            commitTime <= end && commitTime >= start){
+                        commitMap.put(commit.getName(), commitTime);
+                        break;
                     }
                 }
-
-                if (foundInThisBranch) {
-                    System.out.println(commit.getName());
-                    System.out.println(commit.getAuthorIdent().getName());
-                    System.out.println(new Date(commit.getCommitTime() * 1000L));
-                    System.out.println(commit.getFullMessage());
-                }
             }
-        } catch (Exception e) {
+        } catch (IOException | GitAPIException e) {
             e.getMessage();
-        }*/
+        }
 
-
-        
-
-        return commitList;
+        return new ArrayList<>(sortByValue(commitMap).keySet());
 
     }
 
-    private boolean gitCheckout(String version) {
+    /**
+     * 由小到大排序
+     * st.sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).forEach(e -> result.put(e.getKey(), e.getValue()));
+     * 默认由大到小排序
+     * 类型 V 必须实现 Comparable 接口，并且这个接口的类型是 V 或 V 的任一父类。这样声明后，V 的实例之间，V 的实例和它的父类的实例之间，可以相互比较大小。
+     */
+    private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        Map<K, V> result = new LinkedHashMap<>();
+        Stream<Map.Entry<K, V>> st = map.entrySet().stream();
+        st.sorted(Comparator.comparing(Map.Entry::getValue)).forEach(e -> result.put(e.getKey(), e.getValue()));
+        return result;
+    }
+
+    /**
+     * s : 2018.01.01
+     */
+    private long getTime(String s) {
+        s = s.replace(".","-");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = dateFormat.parse(s);
+            return  date.getTime();
+        }catch (ParseException e) {
+            e.getMessage();
+        }
+
+        return 0;
+    }
+
+   /* private boolean gitCheckout(String version) {
         try {
             CheckoutCommand checkout = git.checkout();
             checkout.setName(version);
@@ -251,7 +265,7 @@ public class JGitHelper {
             //logger.info(e.getMessage() + " : " + RepoGitDir.getAbsolutePath());
         }
 
-    }
+    }*/
 
 
 }

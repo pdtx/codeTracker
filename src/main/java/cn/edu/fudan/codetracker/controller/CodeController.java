@@ -31,7 +31,7 @@ public class CodeController {
     /**
      * @param requestParam 包含： repoId、branch、duration
      */
-    @PostMapping(value = {"/project/"})
+    @PostMapping(value = {"/project"})
     public ResponseBean scan(@RequestBody JSONObject requestParam) {
         try {
             scanService.firstScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("duration"));
