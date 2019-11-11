@@ -5,6 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.jgit;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -17,6 +18,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +28,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Slf4j
 public class JGitHelper {
+
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
     private Repository repository;
     private RevWalk revWalk;
@@ -39,9 +44,11 @@ public class JGitHelper {
      *
      */
     public JGitHelper(String repoPath) {
+        this.repoPath = repoPath;
+        String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
-            repository = builder.setGitDir(new File(repoPath + "\\.git"))
+            repository = builder.setGitDir(new File(gitDir))
                     .readEnvironment() // scan environment GIT_* variables
                     .findGitDir() // scan up the file system tree
                     .build();
@@ -49,7 +56,7 @@ public class JGitHelper {
             revWalk = new RevWalk(repository);
             this.repoPath = repoPath;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -58,7 +65,7 @@ public class JGitHelper {
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(version).call();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("JGitHelper checkout error: " +  e.getMessage());
         }
     }
 
@@ -246,26 +253,5 @@ public class JGitHelper {
 
         return 0;
     }
-
-   /* private boolean gitCheckout(String version) {
-        try {
-            CheckoutCommand checkout = git.checkout();
-            checkout.setName(version);
-            checkout.call();
-            System.out.println("Checkout to " + version);
-            //logger.info("Checkout to " + version);
-            PullCommand pullCmd = git.pull();
-            pullCmd.call();
-            System.out.println("Pulled from remote repository to local repository at " );
-            //logger.info();
-            return true;
-        } catch (Exception e) {
-            System.out.println(e.getMessage() + " : " + git.getRepository().getRemoteNames());
-            return false;
-            //logger.info(e.getMessage() + " : " + RepoGitDir.getAbsolutePath());
-        }
-
-    }*/
-
 
 }

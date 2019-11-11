@@ -11,6 +11,7 @@ import cn.edu.fudan.codetracker.util.DirExplorer;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class OutputAnalysis {
 
     private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
@@ -49,9 +51,9 @@ public class OutputAnalysis {
         JSONArray preCommits;
         try {
             String input = FileUtils.readFileToString(new File(metaPath), "UTF-8");
-            JSONObject metaInfoJSON = JSONObject.parseObject(input);
-            fileInfoJsonArray = metaInfoJSON.getJSONArray("files");
-            JSONArray actions = metaInfoJSON.getJSONArray("actions");
+            JSONObject metaInfoJson = JSONObject.parseObject(input);
+            fileInfoJsonArray = metaInfoJson.getJSONArray("files");
+            JSONArray actions = metaInfoJson.getJSONArray("actions");
             Map<JSONObject, String> diffFileAction = new HashMap<>();
             for (int i = 0; i < fileInfoJsonArray.size(); i++) {
                 // only analyze java file
@@ -62,7 +64,7 @@ public class OutputAnalysis {
 
             String pathPrefix = metaPath.replace("meta.json", "");
             // if preCommits include not only one record, then take into account merge situation
-            preCommits = metaInfoJSON.getJSONArray("parents");
+            preCommits = metaInfoJson.getJSONArray("parents");
 
             String currFilePath;
             String prevFilePath;
@@ -87,18 +89,14 @@ public class OutputAnalysis {
                                     path = m.getKey().getString("curr_file_path") ;
                                 }else {
                                     path = m.getKey().getString("prev_file_path") ;
-                                    System.out.println("==========ADD1====================");
-                                    System.out.println(metaPath);
-                                    System.out.println("===========ADD1===================");
+                                    log.error("ADD situation: curr_file_path lack,use prev_file_path" + metaPath);
                                 }
                                 currFilePath =  pathPrefix + "/" + path;
                                 addFilesList.add(isWindows ? pathUnixToWin(currFilePath) : currFilePath);
                             }catch (NullPointerException e) {
-                                System.out.println("==========ADD2====================");
-                                System.out.println(metaPath);
-                                System.out.println("===========ADD2===================");
+                                log.error("ADD situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
-
+                            continue;
                         }
                         if ("DELETE".equals(m.getValue())) {
                             try {
@@ -107,34 +105,27 @@ public class OutputAnalysis {
                                     path = m.getKey().getString("prev_file_path") ;
                                 }else {
                                     path = m.getKey().getString("curr_file_path") ;
-                                    System.out.println("==========DELETE1====================");
-                                    System.out.println(metaPath);
-                                    System.out.println("===========DELETE1===================");
+                                    log.error("DELETE situation: prev_file_path lack,use curr_file_path" + metaPath);
                                 }
                                 prevFilePath = pathPrefix + "/" +   path;
                                 deleteFilesList.add(isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
                             }catch (NullPointerException e) {
-                                System.out.println("============DELETE2==================");
-                                System.out.println(metaPath);
-                                System.out.println("=============DELETE2=================");
+                                log.error("DELETE situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
+                            continue;
                         }
                         if ("MODIFY".equals(m.getValue())) {
                             prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
                             preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
                             currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
                             curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
-
-
                             if (m.getKey().containsKey("diffPath")) {
                                 String diffPath = m.getKey().getString("diffPath");
                                 //diffPath = isWindows ? pathUnixToWin(diffPath) : diffPath;
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(isWindows ? pathUnixToWin(diffPath) : diffPath);
                             }else {
-                                System.out.println("==========change====================");
-                                System.out.println(metaPath);
-                                System.out.println("===========change===================");
+                                log.error("CHANGE situation: diffPath lack " + metaPath);
                             }
                         }
                     }
@@ -154,64 +145,6 @@ public class OutputAnalysis {
         }
         return analyzeDiffFiles;
     }
-
- /*   private void analyzeMetaInfoFiles(Map<JSONObject, String> diffFileAction, AnalyzeDiffFile analyzeDiffFile, String preCommit, String metaPath) {
-        String prevFilePath;
-        String currFilePath;
-        //Map<String, String> preCurrentFileMap = new HashMap<>();
-        // 记录前后change 的文件列表
-        List<String> prePathList = new ArrayList<>();
-        List<String> curPathList = new ArrayList<>();
-        List<String> diffPathList = new ArrayList<>();
-
-        List<String> addFilesList = new ArrayList<>();
-        List<String> deleteFilesList = new ArrayList<>();
-
-        List<String> deletePath = new ArrayList<>();
-        // 三种类型的文件处理
-        for (Map.Entry<JSONObject, String> m : diffFileAction.entrySet()) {
-            if (! m.getKey().getString("file_full_name").endsWith(".java")) {
-                continue;
-            }
-            String parent_commit = m.getKey().getString("parent_commit");
-            if (parent_commit.equals(preCommit)) {
-                String diffPath = m.getKey().getString("diffPath");
-                String prefix = metaPath.replace("meta.json", "");
-                if ("MODIFY".equals(m.getValue())) {
-                    prevFilePath = prefix + pathUnixToWin(m.getKey().getString("prev_file_path"));
-                    currFilePath = prefix + pathUnixToWin(m.getKey().getString("curr_file_path"));
-                    prePathList.add(prevFilePath);
-                    curPathList.add(currFilePath);
-                    diffPathList.add(pathUnixToWin(diffPath));
-                }
-                if ("ADD".equals(m.getValue())) {
-                    currFilePath = prefix + pathUnixToWin(m.getKey().getString("curr_file_path"));
-                    addFilesList.add(currFilePath);
-                }
-                if ("DELETE".equals(m.getValue())) {
-                    prevFilePath = prefix + pathUnixToWin(m.getKey().getString("prev_file_path"));
-                    deleteFilesList.add(prevFilePath);
-                }
-            }
-        }
-
-
-
-
-*//*        analyzeDiffFile.addInfoConstruction(addFilesList);
-        analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
-        analyzeDiffFile.modifyInfoConstruction(prePathList, curPathList, diffPathList);
-
-        analyzeDiffFile.packageRelationAnalyze(notChangedFileList);*//*
-    }
-*/
-/*    private String deletePrefix(String curPathList, String preCommit) {
-        String p = curPathList.replace(preCommit, "--------");
-
-        String s[] = p.split("--------");
-        System.out.println(s);
-        return pathUnixToWin(s[1]);
-    }*/
 
     private String pathUnixToWin(String path) {
         return path.replace("/", "\\");

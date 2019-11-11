@@ -211,6 +211,7 @@ public class FileInfoExtractor {
             //                     String fileName, String filePath, String className, String initValue)
             FieldInfo fieldInfo = new FieldInfo(simpleName.toString(), modifiers.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getPackageUuid(),
                     moduleName, packageName, fileName, filePath, className, initValue.toString());
+            fieldInfo.setFullName(fieldDeclaration.toString());
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;
@@ -249,7 +250,10 @@ public class FileInfoExtractor {
             methodInfo.setModifier(sb.toString());
             //primitiveType
             methodInfo.setPrimitiveType(methodDeclaration.getType().asString());
-            methodInfo.setContent(methodDeclaration.getBody().toString());
+
+            if (methodDeclaration.getTokenRange().isPresent()) {
+                methodInfo.setContent(methodDeclaration.getTokenRange().get().toString());
+            }
             //statementInfo
             //methodInfo.setStatementInfo(parseStmt(methodDeclaration.getBody()));
 

@@ -72,6 +72,23 @@ public class MethodInfo {
         return (filePath + className + signature).hashCode();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if(o == null){
+            return false;
+        }
+
+        if(o instanceof MethodInfo){
+            MethodInfo methodInfo = (MethodInfo) o;
+            return this.uuid.equals(methodInfo.uuid);
+        }
+        return false;
+    }
+
     /**
      * getter and setter
      * */

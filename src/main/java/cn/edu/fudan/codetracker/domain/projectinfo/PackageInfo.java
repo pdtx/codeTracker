@@ -40,14 +40,25 @@ public class PackageInfo {
         for (char c : charArray) {
             hash = hash * 131 + c;
         }
-        return 0;
+        return hash;
     }
 
-/*    @Override
-    public int hashCode() {
-        return uuid.hashCode();
-    }*/
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
 
+        if(o == null){
+            return false;
+        }
+
+        if(o instanceof PackageInfo){
+            PackageInfo packageInfo = (PackageInfo) o;
+            return this.uuid.equals(packageInfo.uuid);
+        }
+        return false;
+    }
     /**
      * getter and setter
      * */

@@ -12,12 +12,14 @@ import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Slf4j
 public class AnalyzeDiffFile {
 
     private PackageDao packageDao;
@@ -35,19 +37,11 @@ public class AnalyzeDiffFile {
     private Map<String, Set<MethodInfo>> methodInfos;
     private Map<String, Set<FieldInfo>> fieldInfos;
 
-    // hash，value 修改后
-    private Map<Integer, TrackerInfo> modifyPackageUUID;
-/*
-    private Map<Integer, TrackerInfo> changeClass;
-    private Map<Integer, TrackerInfo> changeMethod;
-*/
+    /**
+     * modifyPackageUuid hash，value 修改后
+     */
+    private Map<Integer, TrackerInfo> modifyPackageUuid;
 
-
-/*    private List<PackageInfo> packageInfoList;
-    private List<FileInfo> fileInfoList;
-    private List<ClassInfo> classInfoList;
-    private List<MethodInfo> methodInfoList;
-    private List<FieldInfo> fieldInfoList;*/
 
     AnalyzeDiffFile(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao, RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo) {
         this.packageDao = packageDao;
@@ -68,36 +62,8 @@ public class AnalyzeDiffFile {
         init(classInfos);
         init(methodInfos);
         init(fieldInfos);
-        modifyPackageUUID = new HashMap<>();
+        modifyPackageUuid = new HashMap<>();
     }
-
-/*    private void initConstructor() {
-        packageInfos = new HashMap<>();
-        fileInfos = new HashMap<>();
-        classInfos = new HashMap<>();
-        methodInfos = new HashMap<>();
-        fieldInfos = new HashMap<>();
-        init(packageInfos);
-        init(fileInfos);
-        init(classInfos);
-        init(methodInfos);
-        init(fieldInfos);
-
-        // 通过new的实例 mapper 注入不了
-*//*        packageDao = new PackageDao();
-        fileDao = new FileDao();
-        classDao = new ClassDao();
-        fieldDao = new FieldDao();
-        methodDao = new MethodDao();*//*
-
-        // key 修改前，value 修改后
-        modifyPackageUUID = new HashMap<>();
-*//*        packageInfoList = new ArrayList<>();
-        fileInfoList = new ArrayList<>();
-        classInfoList = new ArrayList<>();
-        methodInfoList = new ArrayList<>();
-        fieldInfoList = new ArrayList<>();*//*
-    }*/
 
     private <T> void init(Map<String, Set<T>> map) {
         Set<T> add = new HashSet<>();
@@ -124,7 +90,7 @@ public class AnalyzeDiffFile {
         for (PackageInfo packageInfo : addRepoInfo.getPackageInfos()) {
             TrackerInfo trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
             if (trackerInfo != null) {
-                modifyPackageUUID.put(packageInfo.hashCode(), trackerInfo);
+                modifyPackageUuid.put(packageInfo.hashCode(), trackerInfo);
                 packageInfo.setTrackerInfo(new TrackerInfo( RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1,trackerInfo.getRootUUID()));
                 packageInfos.get(RelationShip.CHANGE.name()).add(packageInfo);
             } else {
@@ -135,33 +101,6 @@ public class AnalyzeDiffFile {
         classInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getClassInfos());
         methodInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getMethodInfos());
         fieldInfos.get(RelationShip.ADD.name()).addAll(addRepoInfo.getFieldInfos());
-/*        for (FileInfo fileInfo : addRepoInfo.getFileInfos()) {
-            if (modifyPackageUUID.containsKey(fileInfo.getPackageUuid())) {
-                fileInfo.setPackageUuid(modifyPackageUUID.get(fileInfo.getPackageUuid()));
-            }
-            fileInfos.get(RelationShip.ADD.name()).add(fileInfo);
-        }
-
-        for (ClassInfo classInfo : addRepoInfo.getClassInfos()) {
-            if (modifyPackageUUID.containsKey(classInfo.getPackageUuid())) {
-                classInfo.setPackageUuid(modifyPackageUUID.get(classInfo.getPackageUuid()));
-            }
-            classInfos.get(RelationShip.ADD.name()).add(classInfo);
-        }
-
-        for (MethodInfo methodInfo : addRepoInfo.getMethodInfos()) {
-            if (modifyPackageUUID.containsKey(methodInfo.getPackageUuid())) {
-                methodInfo.setPackageUuid(modifyPackageUUID.get(methodInfo.getPackageUuid()));
-            }
-            methodInfos.get(RelationShip.ADD.name()).add(methodInfo);
-        }
-
-        for (FieldInfo fieldInfo : addRepoInfo.getFieldInfos()) {
-            if (modifyPackageUUID.containsKey(fieldInfo.getPackageUuid())) {
-                fieldInfo.setPackageUuid(modifyPackageUUID.get(fieldInfo.getPackageUuid()));
-            }
-            fieldInfos.get(RelationShip.ADD.name()).add(fieldInfo);
-        }*/
     }
 
     /**
@@ -184,9 +123,9 @@ public class AnalyzeDiffFile {
                 packageInfos.get(RelationShip.DELETE.name()).add(packageInfo);
             } else {
                 int hashCode = packageInfo.hashCode();
-                if (! modifyPackageUUID.containsKey(hashCode)) {
+                if (! modifyPackageUuid.containsKey(hashCode)) {
                     trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
-                    modifyPackageUUID.put(hashCode, trackerInfo);
+                    modifyPackageUuid.put(hashCode, trackerInfo);
                     packageInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
                     packageInfos.get(RelationShip.CHANGE.name()).add(packageInfo);
                 }
@@ -243,9 +182,13 @@ public class AnalyzeDiffFile {
         TrackerInfo trackerInfo;
         for (PackageInfo packageInfo : curRepoInfo.getPackageInfos()) {
             int hashCode = packageInfo.hashCode();
-            if (! modifyPackageUUID.containsKey(hashCode)) {
+            if (! modifyPackageUuid.containsKey(hashCode)) {
                 trackerInfo = packageDao.getTrackerInfo(packageInfo.getModuleName(), packageInfo.getPackageName());
-                modifyPackageUUID.put(hashCode, trackerInfo);
+                if (trackerInfo == null) {
+                    log.error(curRepoInfo.getCommit(), packageInfo.getModuleName(), packageInfo.getPackageName());
+                    continue;
+                }
+                modifyPackageUuid.put(hashCode, trackerInfo);
                 packageInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
                 packageInfos.get(relation).add(packageInfo);
             }
@@ -254,7 +197,8 @@ public class AnalyzeDiffFile {
         for (FileInfo fileInfo : curRepoInfo.getFileInfos()) {
             trackerInfo = fileDao.getTrackerInfo(fileInfo.getFilePath());
             if (trackerInfo == null) {
-                System.out.println(fileInfo.getFilePath() + " NULL");
+                log.error(fileInfo.getCommonInfo().getCommit(), fileInfo.getFilePath());
+                continue;
             }
             fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
             fileInfos.get(relation).add(fileInfo);
@@ -267,17 +211,11 @@ public class AnalyzeDiffFile {
             try {
                 input = FileUtils.readFileToString(new File(diffPathList.get(i)), "UTF-8");
             }catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
                 continue;
             }
             String filePath = fileNameList.get(i);
             JSONArray diffDetail = JSONArray.parseArray(input);
-            String changeRelation;
-            String domainType;
-            String description;
-            String range;
-            int begin,end;
-
 
             // field
             // add
@@ -295,6 +233,10 @@ public class AnalyzeDiffFile {
                 for (FieldInfo preFieldInfo : preRepoInfo.getFieldInfos()) {
                     FieldInfo curFieldInfo = findFieldInfoByName(preFieldInfo.getSimpleName(), curRepoInfo.getFieldInfos(), filePath);
                     trackerInfo = fieldDao.getTrackerInfo(preFieldInfo.getFilePath(), preFieldInfo.getClassName(), preFieldInfo.getSimpleName());
+                    if (trackerInfo == null) {
+                        log.error(curRepoInfo.getCommit(), preFieldInfo.getFilePath(), preFieldInfo.getClassName(), preFieldInfo.getSimpleName());
+                        continue;
+                    }
                     if (curFieldInfo == null) {
                         preFieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID()));
                         fieldInfos.get(RelationShip.DELETE.name()).add(preFieldInfo);
@@ -308,6 +250,11 @@ public class AnalyzeDiffFile {
                 isFirst = false;
             }
 
+            String changeRelation;
+            String domainType;
+            String description;
+            String range;
+            int begin,end;
             for (int j = 0; j < diffDetail.size(); j++) {
                 JSONObject oneDiff = diffDetail.getJSONObject(j);
                 domainType = oneDiff.getString("type1").toLowerCase();
@@ -319,7 +266,6 @@ public class AnalyzeDiffFile {
                 description = oneDiff.getString("description");
                 range = oneDiff.getString("range");
 
-                ////////////////////////////////// class //////////////////
                 // find class: rename
                 if (domainType.equals("ClassOrInterface".toLowerCase())) {
                     switch (changeRelation){
@@ -354,7 +300,6 @@ public class AnalyzeDiffFile {
                 }
 
 
-
                 // method change declaration
                 if ("member".equals(domainType) && description.toLowerCase().contains("method")) {
                     switch (changeRelation){
@@ -367,9 +312,7 @@ public class AnalyzeDiffFile {
                             end = rangeAnalyzeEnd(range.split("-")[0]);
                             MethodInfo preMethodInfo = findMethodInfoByRange(preRepoInfo.getMethodInfos(), filePath, begin, end);
                             if (preMethodInfo == null) {
-                                System.out.println("===========preMethodInfo===============");
-                                System.out.println(range);
-                                System.out.println("============preMethodInfo==============");
+                                log.error("preMethodInfo NULL ERROR: " + filePath + ";  range: " + range);
                                 break;
                             }
                             try {
@@ -389,9 +332,7 @@ public class AnalyzeDiffFile {
                                 }
                             }catch (NullPointerException e) {
                                 e.printStackTrace();
-                                System.out.println("==========================");
-                                System.out.println(range);
-                                System.out.println("==========================");
+                                log.error(range);
                             }
 
                             break;
@@ -399,9 +340,21 @@ public class AnalyzeDiffFile {
                             handleMethod(preRepoInfo.getMethodInfos(), filePath, range, RelationShip.DELETE.name());
                             break;
                         default :
-                                System.out.println("relation null");
+                            System.out.println("relation null");
                     }
                 }
+            }
+
+            for (int j = 0; j < diffDetail.size(); j++) {
+                JSONObject oneDiff = diffDetail.getJSONObject(j);
+                domainType = oneDiff.getString("type1").toLowerCase();
+                changeRelation = oneDiff.getString("type2").toLowerCase();
+                // Change.Move 是比statement 更细粒度的语句的change
+                if ("change.move".equals(changeRelation)) {
+                    changeRelation = "change";
+                }
+                description = oneDiff.getString("description");
+                range = oneDiff.getString("range");
 
                 // statement
                 MethodInfo curMethodInfo = null;
@@ -436,8 +389,13 @@ public class AnalyzeDiffFile {
                         default:
                                 System.out.println("relation error statement");
                     }
-                    if (curMethodInfo != null && !methodInfos.get(RelationShip.CHANGE.name()).contains(curMethodInfo)) {
+                    if (curMethodInfo != null && !methodInfos.get(RelationShip.CHANGE.name()).contains(curMethodInfo) &&
+                            !methodInfos.get(RelationShip.ADD.name()).contains(curMethodInfo)) {
                         trackerInfo = methodDao.getTrackerInfo(curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature());
+                        if (trackerInfo == null) {
+                            log.error(curRepoInfo.getCommit(),curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature());
+                            continue;
+                        }
                         curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
                         curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
                         methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
@@ -449,6 +407,56 @@ public class AnalyzeDiffFile {
 
         }
 
+    }
+
+    private void diffClassAnalyze(JSONArray diffDetail, String filePath, RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo) {
+        String changeRelation;
+        String domainType;
+        String range;
+        int begin,end;
+        for (int j = 0; j < diffDetail.size(); j++) {
+            JSONObject oneDiff = diffDetail.getJSONObject(j);
+            domainType = oneDiff.getString("type1").toLowerCase();
+            changeRelation = oneDiff.getString("type2").toLowerCase();
+            // Change.Move 是比statement 更细粒度的语句的change
+            if ("change.move".equals(changeRelation)) {
+                changeRelation = "change";
+            }
+            range = oneDiff.getString("range");
+
+            // find class: rename
+            if (domainType.equals("ClassOrInterface".toLowerCase())) {
+                switch (changeRelation){
+                    case "insert":
+                        handleClass(curRepoInfo, filePath, range, RelationShip.ADD.name());
+                        break;
+                    case "change":
+                        //before change
+                        begin = rangeAnalyzeBegin(range.split("-")[0]);
+                        end = rangeAnalyzeEnd(range.split("-")[0]);
+                        ClassInfo preClassInfo = findClassInfoByRange(preRepoInfo.getClassInfos(), filePath, begin, end);
+                        // 必须得到root uuid 以及 version 否则无法关联起来
+                        TrackerInfo preTrackerInfo = classDao.getTrackerInfo(preClassInfo.getFilePath(), preClassInfo.getClassName());
+                        //after change
+                        begin = rangeAnalyzeBegin(range.split("-")[1]);
+                        end = rangeAnalyzeEnd(range.split("-")[1]);
+                        ClassInfo curClassInfo = findClassInfoByRange(curRepoInfo.getClassInfos(), filePath, begin, end);
+                        if (curClassInfo != null) {
+                            curClassInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID()));
+                            // 直接入库
+                            classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
+                            //curRepoInfo.getClassInfos().remove(curClassInfo);
+                        }
+                        break;
+                    case "delete":
+                        handleClass(preRepoInfo, filePath, range, RelationShip.DELETE.name());
+                        break;
+                    default:
+                        log.error("relation error method");
+                }
+            }
+
+        }
     }
 
     private FieldInfo findFieldInfoByName(String fieldName, List<FieldInfo> fieldInfos, String filePath) {
@@ -486,7 +494,8 @@ public class AnalyzeDiffFile {
 
     private MethodInfo findMethodInfoByRange( List<MethodInfo> methodInfos, String filePath,int begin, int end) {
         for (MethodInfo methodInfo : methodInfos) {
-            if (filePath.equals(methodInfo.getFilePath()) && methodInfo.getBegin() <= begin && methodInfo.getEnd() >= end) {
+            boolean isInclude = !(methodInfo.getBegin() >= end || methodInfo.getEnd() <= begin);
+            if (isInclude && filePath.equals(methodInfo.getFilePath())) {
                 return methodInfo;
             }
         }

@@ -73,7 +73,8 @@
         committer,
         commit_date,
         commit_message,
-        parent_commit
+        parent_commit,
+        full_name
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -91,7 +92,8 @@
             #{item.commonInfo.committer},
             #{item.commonInfo.commitDate},
             #{item.commonInfo.commitMessage},
-            #{item.commonInfo.parentCommit}
+            #{item.commonInfo.parentCommit},
+            #{item.fullName}
             )
         </foreach>
     </insert>

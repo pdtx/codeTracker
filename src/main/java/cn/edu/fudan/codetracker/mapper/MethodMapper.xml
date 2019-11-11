@@ -118,10 +118,14 @@
             )
         </foreach>
     </insert>
-
+<!--    select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1
+        select version,uuid from track_method where uuid =
+        (select method_uuid from raw_method where signature = #{signature} and method_uuid in
+        (select uuid from track_method where file_path = #{filePath} and class_name = #{className}) limit 1) order by version desc limit 1
     </select>
+
+
 
     <update id="updateChangeInfo" parameterType="List">
         update track_method

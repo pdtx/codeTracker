@@ -13,13 +13,15 @@ import cn.edu.fudan.codetracker.handler.OutputAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
-import cn.edu.fudan.codetracker.util.cldiff.CLDiffHelper;
+import cn.edu.fudan.codetracker.util.cldiff.ClDiffHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class ScanServiceImpl implements ScanService {
 
@@ -31,7 +33,7 @@ public class ScanServiceImpl implements ScanService {
 
     private RestInterfaceManager restInterface;
 
-    @Value("outputDir")
+    @Value("${outputDir}")
     private String outputDir;
 
     /**
@@ -49,11 +51,13 @@ public class ScanServiceImpl implements ScanService {
             if (isInit) {
                 scan(repoUuid , commit, branch, outputDir, jGitHelper);
             } else {
+                jGitHelper.checkout(commit);
                 repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
                 repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
                 saveData(repoInfo);
                 isInit = true;
             }
+            log.info("complete commit：" + commit);
         }
     }
 
@@ -99,7 +103,7 @@ public class ScanServiceImpl implements ScanService {
         }
 
         // 分析版本之间的关系
-        CLDiffHelper.executeCLDiff(repoPath, commitId, outputDir);
+        ClDiffHelper.executeDiff(repoPath, commitId, outputDir);
         String [] path = repoPath.replace('\\','/').split("/");
         String outputPath = outputDir + "\\" + path[path.length -1];
         // extra diff info and construct tracking relation
@@ -159,6 +163,9 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private String getRepoPathByUuid(String repoUuid) {
+        if ("dubbo".equals(repoUuid)) {
+            return "E:\\Lab\\project\\dubbo";
+        }
 
         return "E:\\Lab\\project\\IssueTracker-Master";
     }
