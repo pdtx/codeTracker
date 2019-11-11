@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.codetracker.mapper.StatisticsMapper">
+
+    <resultMap id="versionStatistics" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
+        <id property="version" column="version"/>
+        <id property="quantity" column="quantity"/>
+    </resultMap>
+
+    <select id="getMethodStatistics" parameterType="String" resultMap="versionStatistics" >
+        select version ,count(*) as quantity from issueTracker.track_method  where track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} group by version order by version desc;
+    </select>
+
+</mapper>

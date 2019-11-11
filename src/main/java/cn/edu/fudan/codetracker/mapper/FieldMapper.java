@@ -14,7 +14,7 @@ public interface FieldMapper {
 
     void insertRawFieldInfoList(List<FieldInfo> fieldInfos);
 
-    TrackerInfo getTrackerInfo(String filePath, String className, String simpleName);
+    TrackerInfo getTrackerInfo(String filePath, String className, String simpleName, String repoUuid, String branch);
 
     void updateChangeInfo(List<FieldInfo> fieldInfos);
 

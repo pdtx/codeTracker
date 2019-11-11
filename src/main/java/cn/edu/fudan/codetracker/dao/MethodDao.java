@@ -7,12 +7,14 @@ package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.mapper.MethodMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Repository
@@ -33,8 +35,8 @@ public class MethodDao {
         this.methodMapper = methodMapper;
     }
 
-    public TrackerInfo getTrackerInfo(String filePath, String className, String signature) {
-        return methodMapper.getTrackerInfo( filePath, className, signature);
+    public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String repoUuid, String branch) {
+        return methodMapper.getTrackerInfo( filePath, className, signature, repoUuid, branch);
     }
 
     public void setAddInfo(Set<MethodInfo> methodInfos) {
@@ -66,5 +68,9 @@ public class MethodDao {
 
     public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
         return  methodMapper.getMethodHistory(repoId, moduleName, packageName, className, signature);
+    }
+
+    public List<VersionStatistics> getMethodStatistics(String repoUuid, String branch) {
+        return methodMapper.getMethodStatistics(repoUuid, branch);
     }
 }

@@ -13,7 +13,7 @@ public interface PackageMapper {
 
     void insertRawPackageInfoList(List<PackageInfo> packageInfos);
 
-    TrackerInfo getTrackerInfo(String moduleName, String packageName);
+    TrackerInfo getTrackerInfo(String moduleName, String packageName, String repoUuid, String branch);
 
     void updateDeleteInfo(List<PackageInfo> packageInfoList);
 

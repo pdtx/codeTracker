@@ -33,8 +33,8 @@ public class FieldDao {
         this.fieldMapper = fieldMapper;
     }
 
-    public TrackerInfo getTrackerInfo(String filePath, String className, String simpleName) {
-        return fieldMapper.getTrackerInfo( filePath, className, simpleName);
+    public TrackerInfo getTrackerInfo(String filePath, String className, String simpleName, String repoUuid, String branch) {
+        return fieldMapper.getTrackerInfo( filePath, className, simpleName, repoUuid, branch);
     }
 
     public void setAddInfo(Set<FieldInfo> fieldInfos) {

@@ -20,7 +20,7 @@ public interface FileMapper {
      * */
     void insertFileInfoList(List<FileInfo> fileInfos);
 
-    TrackerInfo getTrackerInfo(String path);
+    TrackerInfo getTrackerInfo(String path, String repoUuid, String branch);
 
     //void setDeleteInfo(List<FileInfo> fileInfoList);
 

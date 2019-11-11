@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class OutputAnalysis {
 
-    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
     private String repoUuid;
     private String branch;
@@ -40,7 +40,9 @@ public class OutputAnalysis {
         this.commitId = commitId;
     }
 
-    // entry point of analyzing relations about two commits
+    /**
+     * entry point of analyzing relations about two commits
+     */
     public List<AnalyzeDiffFile> analyzeMetaInfo(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao) {
         List<AnalyzeDiffFile> analyzeDiffFiles = new ArrayList<>(2);
         File file = outputDir.contains("\\") ?
@@ -92,7 +94,7 @@ public class OutputAnalysis {
                                     log.error("ADD situation: curr_file_path lack,use prev_file_path" + metaPath);
                                 }
                                 currFilePath =  pathPrefix + "/" + path;
-                                addFilesList.add(isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                                addFilesList.add(IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                             }catch (NullPointerException e) {
                                 log.error("ADD situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
@@ -108,7 +110,7 @@ public class OutputAnalysis {
                                     log.error("DELETE situation: prev_file_path lack,use curr_file_path" + metaPath);
                                 }
                                 prevFilePath = pathPrefix + "/" +   path;
-                                deleteFilesList.add(isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                                deleteFilesList.add(IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
                             }catch (NullPointerException e) {
                                 log.error("DELETE situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
@@ -116,14 +118,14 @@ public class OutputAnalysis {
                         }
                         if ("MODIFY".equals(m.getValue())) {
                             prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
-                            preFileList.add( isWindows ? pathUnixToWin(prevFilePath) : prevFilePath);
+                            preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
                             currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
-                            curFileList.add( isWindows ? pathUnixToWin(currFilePath) : currFilePath);
+                            curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                             if (m.getKey().containsKey("diffPath")) {
                                 String diffPath = m.getKey().getString("diffPath");
-                                //diffPath = isWindows ? pathUnixToWin(diffPath) : diffPath;
+                                //diffPath = IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath;
                                 fileNameList.add(m.getKey().getString("file_full_name"));
-                                diffPathList.add(isWindows ? pathUnixToWin(diffPath) : diffPath);
+                                diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
                             }else {
                                 log.error("CHANGE situation: diffPath lack " + metaPath);
                             }

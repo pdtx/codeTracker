@@ -32,8 +32,8 @@ public class FileDao {
         this.fileMapper = fileMapper;
     }
 
-    public TrackerInfo getTrackerInfo(String path) {
-        return fileMapper.getTrackerInfo(path);
+    public TrackerInfo getTrackerInfo(String path, String repoUuid, String branch) {
+        return fileMapper.getTrackerInfo(path, repoUuid, branch);
     }
 
     public void setAddInfo(Set<FileInfo> fileInfos) {

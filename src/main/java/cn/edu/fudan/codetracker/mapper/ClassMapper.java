@@ -18,7 +18,7 @@ public interface ClassMapper {
 
     void insertRawClassInfoList(List<ClassInfo> classInfos);
 
-    TrackerInfo getTrackerInfo(String filePath, String className);
+    TrackerInfo getTrackerInfo(String filePath, String className, String repoUuid, String branch);
 
     void updateChangeInfo(List<ClassInfo> classInfosList);
 }

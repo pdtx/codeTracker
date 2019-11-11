@@ -65,7 +65,9 @@
         committer,
         commit_date,
         commit_message,
-        parent_commit
+        parent_commit,
+        repo_uuid,
+        branch
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -81,13 +83,15 @@
             #{item.commonInfo.committer},
             #{item.commonInfo.commitDate},
             #{item.commonInfo.commitMessage},
-            #{item.commonInfo.parentCommit}
+            #{item.commonInfo.parentCommit},
+            #{item.commonInfo.repoUuid},
+            #{item.commonInfo.branch}
             )
         </foreach>
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} order by version desc limit 1
+        select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">

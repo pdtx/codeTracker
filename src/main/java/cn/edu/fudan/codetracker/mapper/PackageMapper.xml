@@ -4,17 +4,17 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.PackageMapper">
 
     <!--column 对应数据库中的字段，property 对应pojo中的属性-->
-<!--    <resultMap id="package" type="PackageInfo">
+<!--    <resultmap id="package" type="PackageInfo">
         <id property="uuid" column="uuid"/>
         <collection property="issueType" column="type"
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
-    </resultMap>
+    </resultmap>
 
-    <resultMap id="rawPackage" type="PackageInfo">
+    <resultmap id="rawPackage" type="PackageInfo">
         <id property="uuid" column="uuid"/>
         <collection property="issueType" column="type"
                     select="cn.edu.fudan.issueservice.mapper.IssueTypeMapper.getIssueTypeByTypeName"/>
-    </resultMap>-->
+    </resultmap>-->
 
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
@@ -63,7 +63,9 @@
         committer,
         commit_date,
         commit_message,
-        parent_commit
+        parent_commit,
+        repo_uuid,
+        branch
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -76,13 +78,15 @@
             #{item.commonInfo.committer},
             #{item.commonInfo.commitDate},
             #{item.commonInfo.commitMessage},
-            #{item.commonInfo.parentCommit}
+            #{item.commonInfo.parentCommit},
+            #{item.commonInfo.repoUuid},
+            #{item.commonInfo.branch}
             )
         </foreach>
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_package where module_name = #{moduleName} and package_name = #{packageName} order by version desc limit 1
+        select version,uuid from track_package where module_name = #{moduleName} and package_name = #{packageName} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">

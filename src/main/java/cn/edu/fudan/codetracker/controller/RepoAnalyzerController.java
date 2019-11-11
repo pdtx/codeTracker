@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @EnableAutoConfiguration
-public class CodeController {
+public class RepoAnalyzerController {
 
 
     private ScanService scanService;

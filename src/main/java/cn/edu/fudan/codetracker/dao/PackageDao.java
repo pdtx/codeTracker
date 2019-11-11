@@ -35,8 +35,8 @@ public class PackageDao {
     }
 
 
-    public TrackerInfo getTrackerInfo(String moduleName, String packageName) {
-        return packageMapper.getTrackerInfo(moduleName, packageName);
+    public TrackerInfo getTrackerInfo(String moduleName, String packageName, String repoUuid, String branch) {
+        return packageMapper.getTrackerInfo(moduleName, packageName, repoUuid, branch);
     }
 
     public void setAddInfo(@NotNull Set<PackageInfo> packageInfos) {

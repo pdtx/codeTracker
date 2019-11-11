@@ -34,8 +34,8 @@ public class ClassDao {
     }
 
 
-    public TrackerInfo getTrackerInfo(String filePath, String className) {
-        return classMapper.getTrackerInfo(filePath, className);
+    public TrackerInfo getTrackerInfo(String filePath, String className, String repoUuid, String branch) {
+        return classMapper.getTrackerInfo(filePath, className, repoUuid, branch);
     }
 
     public void setAddInfo(Set<ClassInfo> classInfos) {

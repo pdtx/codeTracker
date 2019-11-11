@@ -26,15 +26,6 @@ public class JsonTypeHandler extends BaseTypeHandler<JSONObject> {
      */
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, JSONObject objects, JdbcType jdbcType) throws SQLException {
-/*        StringBuilder stringBuilder = new StringBuilder("{");
-        int j = 0;
-        for (; j < objects.size() - 1; ++j) {
-            stringBuilder.append(objects.getJSONObject(j).toJSONString());
-            stringBuilder.append(",/n");
-        }
-        stringBuilder.append(objects.getJSONObject(j).toJSONString());
-        stringBuilder.append("/n}");
-        preparedStatement.setString(i,stringBuilder.toString());*/
         preparedStatement.setString(i, String.valueOf(objects.toJSONString()));
     }
 
