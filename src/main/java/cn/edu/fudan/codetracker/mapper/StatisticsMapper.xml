@@ -3,13 +3,73 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.StatisticsMapper">
 
-    <resultMap id="versionStatistics" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
+    <!-- -->
+    <resultMap id="versionStatistics1" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
         <id property="version" column="version"/>
-        <id property="quantity" column="quantity"/>
+        <result property="quantity" column="quantity"/>
     </resultMap>
 
-    <select id="getMethodStatistics" parameterType="String" resultMap="versionStatistics" >
+    <select id="getMethodStatistics" parameterType="String" resultMap="versionStatistics1" >
         select version ,count(*) as quantity from issueTracker.track_method  where track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} group by version order by version desc;
     </select>
+
+    <select id="getClassStatistics" parameterType="String" resultMap="versionStatistics1" >
+        select version ,count(*) as quantity from issueTracker.track_class  where track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} group by version order by version desc;
+    </select>
+
+    <select id="getFileStatistics" parameterType="String" resultMap="versionStatistics1" >
+        select version ,count(*) as quantity from issueTracker.track_file  where track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} group by version order by version desc;
+    </select>
+
+    <!-- -->
+    <resultMap id="modifiedFile" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="name" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <resultMap id="modifiedMethod" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="name" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="className" column="class_name"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <select id="getMostModifiedFile" parameterType="String" resultMap="modifiedFile">
+        select file_name,file_path,version from issueTracker.track_file  where version >1  and track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} order by version desc limit 20;
+    </select>
+
+    <select id="getMostModifiedClass" parameterType="String" resultMap="modifiedFile">
+        select class_name,file_path,version from issueTracker.track_class  where version >1 and track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} order by version desc limit 20;
+    </select>
+
+    <select id="getMostModifiedMethod" parameterType="String" resultMap="modifiedMethod">
+        select file_name,file_path,class_name,version from issueTracker.track_method  where version >1 and track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} order by version desc limit 20;
+    </select>
+
+
+
+    <!-- -->
+    <resultMap id="versionStatistics2" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
+        <id property="uuid" column="uuid"/>
+        <result property="name" column="name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
+    <select id="getModifiedMethodStatistics" parameterType="String" resultMap="versionStatistics2">
+        select r.method_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.method_uuid  order by quantity desc;
+    </select>
+
+    <select id="getModifiedClassStatistics" parameterType="String" resultMap="versionStatistics2">
+        select r.class_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t  where r.class_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.class_uuid  order by quantity desc;
+    </select>
+
+    <select id="getModifiedFileStatistics" parameterType="String" resultMap="versionStatistics2">
+        select r.file_uuid as uuid ,r.file_name as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t  where r.file_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.file_uuid  order by quantity desc;
+    </select>
+
+
+
 
 </mapper>

@@ -6,6 +6,18 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
 public class VersionStatistics {
+
+    private String uuid;
+    private String name;
+    private String filePath;
+
+    private int version;
+    private int quantity;
+
+    VersionStatistics() {
+
+    }
+
     public int getVersion() {
         return version;
     }
@@ -22,10 +34,27 @@ public class VersionStatistics {
         this.quantity = quantity;
     }
 
-    private int version;
-    private int quantity;
+    public String getUuid() {
+        return uuid;
+    }
 
-    VersionStatistics() {
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }

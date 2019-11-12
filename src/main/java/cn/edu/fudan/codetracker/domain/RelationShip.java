@@ -19,7 +19,7 @@ public enum RelationShip {
     MOVE("move");
 
 
-    private RelationShip (String name) {
+    RelationShip (String name) {
 
     }
 }

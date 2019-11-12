@@ -81,7 +81,7 @@
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_file where file_path = #{path} and and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from track_file where file_path = #{filePath} and and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">
