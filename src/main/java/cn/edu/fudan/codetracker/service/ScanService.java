@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface ScanService {
 
-    boolean scan(String repoUuid, String commitId, String branch, String outputDir, JGitHelper jGitHelper);
-
-    void firstScan(String repoUuid, List<String> commitList, String branch);
+    boolean scan(String repoUuid, String commitId, String branch, JGitHelper jGitHelper);
 
     void firstScan(String repoUuid, String branch, String duration);
 

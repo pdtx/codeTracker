@@ -25,6 +25,8 @@ import java.util.List;
 @Service
 public class ScanServiceImpl implements ScanService {
 
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+
     private PackageDao packageDao;
     private FileDao fileDao;
     private ClassDao classDao;
@@ -41,15 +43,14 @@ public class ScanServiceImpl implements ScanService {
      * */
     @Override
     public void firstScan(String repoUuid, String branch, String duration) {
-        //String repoPath = restInterface.getRepoPath(repoUuid);
-        String repoPath = getRepoPathByUuid(repoUuid);
+        String repoPath = IS_WINDOWS ? getRepoPathByUuid(repoUuid) : restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         RepoInfoBuilder repoInfo;
         boolean isInit = false;
         for (String commit : commitList) {
             if (isInit) {
-                scan(repoUuid , commit, branch, outputDir, jGitHelper);
+                scan(repoUuid , commit, branch, jGitHelper);
             } else {
                 jGitHelper.checkout(commit);
                 repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
@@ -94,7 +95,7 @@ public class ScanServiceImpl implements ScanService {
      * 后续扫描分析 diff 结果
      * */
     @Override
-    public boolean scan(String repoUuid, String commitId, String branch, String outputDir, JGitHelper jGitHelper) {
+    public boolean scan(String repoUuid, String commitId, String branch, JGitHelper jGitHelper) {
 
         String repoPath = getRepoPathByUuid(repoUuid);
 
@@ -105,7 +106,7 @@ public class ScanServiceImpl implements ScanService {
         // 分析版本之间的关系
         ClDiffHelper.executeDiff(repoPath, commitId, outputDir);
         String [] path = repoPath.replace('\\','/').split("/");
-        String outputPath = outputDir + "\\" + path[path.length -1];
+        String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + path[path.length -1];
         // extra diff info and construct tracking relation
         OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(packageDao, fileDao, classDao, fieldDao, methodDao);
@@ -140,27 +141,7 @@ public class ScanServiceImpl implements ScanService {
         return false;
     }
 
-    @Override
-    public void firstScan(String repoUuid, List<String> commitList, String branch) {
-        scan(repoUuid, commitList, branch);
-    }
 
-    public void scan(String repoUuid, List<String> commitList, String branch) {
-        String repoPath = getRepoPathByUuid(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        RepoInfoBuilder repoInfo;
-        if (commitList.size() >= 1) {
-            repoInfo = new RepoInfoBuilder(repoUuid, commitList.get(0), repoPath, jGitHelper, branch, null);
-            repoInfo.setCommitter(jGitHelper.getAuthorName(commitList.get(0)));
-            // 入库
-            saveData(repoInfo);
-        }
-        //String [] path = repoPath.replace('\\','/').split("/");
-        for (int i = 1; i < commitList.size();i++) {
-            String outputDir = "E:\\Lab\\project\\new";
-            scan(repoUuid , commitList.get(i), branch, outputDir, jGitHelper);
-        }
-    }
 
     private String getRepoPathByUuid(String repoUuid) {
         if ("dubbo".equals(repoUuid)) {

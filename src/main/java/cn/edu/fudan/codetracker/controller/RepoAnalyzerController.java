@@ -22,12 +22,6 @@ public class RepoAnalyzerController {
 
     private ScanService scanService;
 
-    @GetMapping(value = {"/scan"})
-    public Object scan() {
-        List<String> commitList = mockCommitList();
-        scanService.firstScan("123", commitList,"master");
-        return null;
-    }
     /**
      * @param requestParam 包含： repoId、branch、duration
      */

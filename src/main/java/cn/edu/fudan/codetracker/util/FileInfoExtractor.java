@@ -14,6 +14,7 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,7 +24,8 @@ import java.util.*;
 public class FileInfoExtractor {
 
     // should be defined in the properties
-    private final String PREFIX="E:\\Lab\\project\\";
+    @Value("${prefix}")
+    private String prefix;
 
     private String projectName;
     private String moduleName;
@@ -53,7 +55,7 @@ public class FileInfoExtractor {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            String [] s = (path.replace(PREFIX + projectName + '\\',"")).replace('\\','/').split("/" + moduleName + "/");
+            String [] s = (path.replace(prefix + projectName + '\\',"")).replace('\\','/').split("/" + moduleName + "/");
             filePath = moduleName + "/" + s[s.length - 1];
             // for finding packageUUID base on  packageName and moduleName
             fileInfo = new FileInfo(fileName, filePath, packageName, moduleName, deletePrefix(path));
@@ -70,7 +72,7 @@ public class FileInfoExtractor {
     }
 
     private String deletePrefix(String path) {
-        return  path.substring(path.indexOf(PREFIX + projectName) + 1);
+        return  path.substring(path.indexOf(prefix + projectName) + 1);
     }
 
     // need to be improved
