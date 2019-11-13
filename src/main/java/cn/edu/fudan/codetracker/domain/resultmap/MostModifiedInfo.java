@@ -9,6 +9,9 @@ public class MostModifiedInfo {
     private String name;
     private String className;
     private String filePath;
+    private String methodName;
+    private String packageName;
+    private String moduleName;
     private int version;
 
     MostModifiedInfo() {
@@ -38,6 +41,18 @@ public class MostModifiedInfo {
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
+
+    public String getMethodName() { return methodName; }
+
+    public void setMethodName(String methodName) { this.methodName = methodName; }
+
+    public String getPackageName() { return packageName; }
+
+    public void setPackageName(String packageName) { this.packageName = packageName; }
+
+    public String getModuleName() { return moduleName; }
+
+    public void setModuleName(String moduleName) { this.moduleName = moduleName; }
 
     public int getVersion() {
         return version;

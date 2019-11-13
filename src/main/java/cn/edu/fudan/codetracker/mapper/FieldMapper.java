@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.mapper;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.FieldInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface FieldMapper {
 
     void insertRawFieldInfoList(List<FieldInfo> fieldInfos);
 
-    TrackerInfo getTrackerInfo(String filePath, String className, String simpleName, String repoUuid, String branch);
+    TrackerInfo getTrackerInfo(@Param("filePath") String filePath, @Param("className") String className, @Param("simpleName") String simpleName, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
     void updateChangeInfo(List<FieldInfo> fieldInfos);
 

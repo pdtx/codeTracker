@@ -44,7 +44,7 @@ public class StatisticsController {
      * @param type package file class method
      */
     @GetMapping(value = {"/statistics/modification/{type}/{repoId}"})
-    public ResponseBean getModifiedStatistics(@PathVariable("type") String type, @PathVariable("repoId")String repoUuid, @RequestParam("branch") String branch) {
+    public ResponseBean getMostModifiedStatistics(@PathVariable("type") String type, @PathVariable("repoId")String repoUuid, @RequestParam("branch") String branch) {
         try {
             List<MostModifiedInfo> data =  statisticsService.getMostModifiedInfo(repoUuid, branch, type);
             return new ResponseBean(200, "", data);

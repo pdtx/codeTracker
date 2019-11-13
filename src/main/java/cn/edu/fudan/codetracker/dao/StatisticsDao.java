@@ -36,6 +36,10 @@ public class StatisticsDao {
         if (ProjectInfo.FILE.name().equals(type)) {
             return statisticsMapper.getFileStatistics(repoUuid, branch);
         }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.getPackageStatistics(repoUuid, branch);
+        }
         return null;
     }
 
@@ -55,6 +59,9 @@ public class StatisticsDao {
         if (ProjectInfo.FILE.name().equals(type)) {
             return statisticsMapper.getMostModifiedFile(repoUuid, branch);
         }
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.getMostModifiedPackage(repoUuid,branch);
+        }
         return null;
     }
 
@@ -64,15 +71,15 @@ public class StatisticsDao {
     public List<VersionStatistics> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
         if (ProjectInfo.METHOD.name().equals(type)) {
-            return statisticsMapper.getModifiedMethodStatistics(repoUuid, branch);
+            return statisticsMapper.getMostDevelopersInvolvedMethod(repoUuid, branch);
         }
 
         if (ProjectInfo.CLASS.name().equals(type)) {
-            return statisticsMapper.getModifiedClassStatistics(repoUuid, branch);
+            return statisticsMapper.getMostDevelopersInvolvedClass(repoUuid, branch);
         }
 
         if (ProjectInfo.FILE.name().equals(type)) {
-            return statisticsMapper.getModifiedFileStatistics(repoUuid, branch);
+            return statisticsMapper.getMostDevelopersInvolvedFile(repoUuid, branch);
         }
         return null;
     }
