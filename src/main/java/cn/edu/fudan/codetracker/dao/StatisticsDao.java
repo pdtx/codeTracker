@@ -24,6 +24,7 @@ public class StatisticsDao {
     }
 
     public List<VersionStatistics> getStatisticsByType(String repoUuid, String branch, String type) {
+        type = type.toUpperCase();
         if (ProjectInfo.METHOD.name().equals(type)) {
             return statisticsMapper.getMethodStatistics(repoUuid, branch);
         }
@@ -42,6 +43,7 @@ public class StatisticsDao {
      * most modified
      */
     public List<MostModifiedInfo> getMostModifiedInfo(String repoUuid, String branch, String type) {
+        type = type.toUpperCase();
         if (ProjectInfo.METHOD.name().equals(type)) {
             return statisticsMapper.getMostModifiedMethod(repoUuid, branch);
         }
@@ -60,6 +62,7 @@ public class StatisticsDao {
      * modification of most developers participate in
      */
     public List<VersionStatistics> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
+        type = type.toUpperCase();
         if (ProjectInfo.METHOD.name().equals(type)) {
             return statisticsMapper.getModifiedMethodStatistics(repoUuid, branch);
         }
