@@ -79,6 +79,12 @@
         <result property="quantity" column="quantity"/>
     </resultMap>
 
+    <resultMap id="mostDevelopersPackage" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
+        <id property="uuid" column="uuid"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
     <select id="getMostDevelopersInvolvedMethod" parameterType="String" resultMap="versionStatistics2">
         select r.method_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.method_uuid  order by quantity desc;
     </select>
@@ -89,6 +95,10 @@
 
     <select id="getMostDevelopersInvolvedFile" parameterType="String" resultMap="versionStatistics2">
         select r.file_uuid as uuid ,r.file_name as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t  where r.file_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.file_uuid  order by quantity desc;
+    </select>
+
+    <select id="getMostDevelopersInvolvedPackage" parameterType="String" resultMap="mostDevelopersPackage">
+        select r.root_uuid as uuid ,t.package_name as name,count(distinct(r.committer)) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t  where r.root_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.root_uuid  order by quantity desc;
     </select>
 
 

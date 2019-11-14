@@ -5,16 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ed1d38f8-c334-479d-bae8-0bd645592b58" name="Default Changelist" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/StatisticsDao.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/StatisticsDao.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/resultmap/MostModifiedInfo.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/resultmap/MostModifiedInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/ClassMapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FieldMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FieldMapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FileMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FileMapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/PackageMapper.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.xml" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.xml" />
     </list>
@@ -65,8 +56,8 @@
       <file leaf-file-name="StatisticsController.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="48" column="69" lean-forward="false" selection-start-line="48" selection-start-column="69" selection-end-line="48" selection-end-column="69" />
+            <state relative-caret-position="281">
+              <caret line="59" column="47" lean-forward="false" selection-start-line="59" selection-start-column="26" selection-end-line="59" selection-end-column="47" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -77,8 +68,8 @@
       <file leaf-file-name="StatisticsServiceImpl.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/StatisticsServiceImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="305">
-              <caret line="30" column="45" lean-forward="true" selection-start-line="30" selection-start-column="45" selection-end-line="30" selection-end-column="45" />
+            <state relative-caret-position="451">
+              <caret line="35" column="38" lean-forward="false" selection-start-line="35" selection-start-column="38" selection-end-line="35" selection-end-column="38" />
               <folding />
             </state>
           </provider>
@@ -87,8 +78,8 @@
       <file leaf-file-name="StatisticsDao.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/StatisticsDao.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="433">
-              <caret line="62" column="55" lean-forward="false" selection-start-line="62" selection-start-column="55" selection-end-line="62" selection-end-column="55" />
+            <state relative-caret-position="626">
+              <caret line="85" column="87" lean-forward="false" selection-start-line="85" selection-start-column="87" selection-end-line="85" selection-end-column="87" />
               <folding />
             </state>
           </provider>
@@ -97,8 +88,8 @@
       <file leaf-file-name="StatisticsMapper.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="61" column="93" lean-forward="true" selection-start-line="61" selection-start-column="93" selection-end-line="61" selection-end-column="93" />
+            <state relative-caret-position="605">
+              <caret line="79" column="60" lean-forward="false" selection-start-line="79" selection-start-column="60" selection-end-line="79" selection-end-column="60" />
               <folding />
             </state>
           </provider>
@@ -107,20 +98,34 @@
       <file leaf-file-name="StatisticsMapper.xml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="362">
-              <caret line="69" column="13" lean-forward="true" selection-start-line="69" selection-start-column="13" selection-end-line="69" selection-end-column="13" />
+            <state relative-caret-position="2088">
+              <caret line="87" column="45" lean-forward="true" selection-start-line="87" selection-start-column="45" selection-end-line="87" selection-end-column="45" />
               <folding>
-                <marker date="1573645876279" expanded="true" signature="571:757" ph="select versi... track_method" />
-                <marker date="1573645876279" expanded="true" signature="874:1057" ph="select versi... track_class" />
-                <marker date="1573645876279" expanded="true" signature="1173:1353" ph="select versi... track_file" />
-                <marker date="1573645876279" expanded="true" signature="1472:1661" ph="select versi... track_package" />
-                <marker date="1573645876279" expanded="true" signature="3097:3283" ph="select file_... track_file" />
-                <marker date="1573645876279" expanded="true" signature="3396:3595" ph="select class... track_class" />
-                <marker date="1573645876279" expanded="true" signature="3710:3921" ph="select file_... track_method" />
-                <marker date="1573645876279" expanded="true" signature="4038:4237" ph="select packa... track_package" />
-                <marker date="1573645876279" expanded="true" signature="4711:5006" ph="select r.met... raw_method" />
-                <marker date="1573645876279" expanded="true" signature="5134:5424" ph="select r.cla... raw_class" />
-                <marker date="1573645876279" expanded="true" signature="5551:5838" ph="select r.fil... raw_file" />
+                <marker date="1573647271944" expanded="true" signature="571:757" ph="select versi... track_method" />
+                <marker date="1573647271944" expanded="true" signature="874:1057" ph="select versi... track_class" />
+                <marker date="1573647271944" expanded="true" signature="1173:1353" ph="select versi... track_file" />
+                <marker date="1573647271944" expanded="true" signature="1472:1661" ph="select versi... track_package" />
+                <marker date="1573647271944" expanded="true" signature="3097:3283" ph="select file_... track_file" />
+                <marker date="1573647271944" expanded="true" signature="3396:3595" ph="select class... track_class" />
+                <marker date="1573647271944" expanded="true" signature="3710:3921" ph="select file_... track_method" />
+                <marker date="1573647271944" expanded="true" signature="4038:4237" ph="select packa... track_package" />
+                <marker date="1573647271944" expanded="true" signature="4987:5282" ph="select r.met... raw_method" />
+                <marker date="1573647271944" expanded="true" signature="5410:5700" ph="select r.cla... raw_class" />
+                <marker date="1573647271944" expanded="true" signature="5827:6114" ph="select r.fil... raw_file" />
+                <marker date="1573647271944" expanded="true" signature="6247:6531" ph="select r.roo... raw_package" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VersionStatistics.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/resultmap/VersionStatistics.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="466">
+              <caret line="28" column="26" lean-forward="false" selection-start-line="28" selection-start-column="15" selection-end-line="28" selection-end-column="26" />
+              <folding>
+                <element signature="e#499#500#0" expanded="true" />
+                <element signature="e#530#531#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -246,8 +251,8 @@
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/FileMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/MethodMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java" />
-        <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/resultmap/MostModifiedInfo.java" />
+        <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/StatisticsDao.java" />
         <option value="$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.xml" />
       </list>
@@ -609,12 +614,12 @@
       <workItem from="1573109796298" duration="27925000" />
       <workItem from="1573439739483" duration="35741000" />
       <workItem from="1573536259107" duration="12554000" />
-      <workItem from="1573634567010" duration="8013000" />
+      <workItem from="1573634567010" duration="11148000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="568563000" />
+    <option name="totallyTimeSpent" value="571698000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -638,7 +643,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26943558" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2601626" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25900117" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Spring" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -1152,9 +1157,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/StatisticsServiceImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="35" column="38" lean-forward="false" selection-start-line="35" selection-start-column="38" selection-end-line="35" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/domain/resultmap/VersionStatistics.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
+        <state relative-caret-position="466">
           <caret line="28" column="26" lean-forward="false" selection-start-line="28" selection-start-column="15" selection-end-line="28" selection-end-column="26" />
           <folding>
             <element signature="e#499#500#0" expanded="true" />
@@ -1171,56 +1184,49 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="48" column="69" lean-forward="false" selection-start-line="48" selection-start-column="69" selection-end-line="48" selection-end-column="69" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/service/impl/StatisticsServiceImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="30" column="45" lean-forward="true" selection-start-line="30" selection-start-column="45" selection-end-line="30" selection-end-column="45" />
+        <state relative-caret-position="605">
+          <caret line="79" column="60" lean-forward="false" selection-start-line="79" selection-start-column="60" selection-end-line="79" selection-end-column="60" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/dao/StatisticsDao.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="62" column="55" lean-forward="false" selection-start-line="62" selection-start-column="55" selection-end-line="62" selection-end-column="55" />
+        <state relative-caret-position="626">
+          <caret line="85" column="87" lean-forward="false" selection-start-line="85" selection-start-column="87" selection-end-line="85" selection-end-column="87" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/controller/StatisticsController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="61" column="93" lean-forward="true" selection-start-line="61" selection-start-column="93" selection-end-line="61" selection-end-column="93" />
-          <folding />
+        <state relative-caret-position="281">
+          <caret line="59" column="47" lean-forward="false" selection-start-line="59" selection-start-column="26" selection-end-line="59" selection-end-column="47" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/cn/edu/fudan/codetracker/mapper/StatisticsMapper.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="362">
-          <caret line="69" column="13" lean-forward="true" selection-start-line="69" selection-start-column="13" selection-end-line="69" selection-end-column="13" />
+        <state relative-caret-position="2088">
+          <caret line="87" column="45" lean-forward="true" selection-start-line="87" selection-start-column="45" selection-end-line="87" selection-end-column="45" />
           <folding>
-            <marker date="1573645876279" expanded="true" signature="571:757" ph="select versi... track_method" />
-            <marker date="1573645876279" expanded="true" signature="874:1057" ph="select versi... track_class" />
-            <marker date="1573645876279" expanded="true" signature="1173:1353" ph="select versi... track_file" />
-            <marker date="1573645876279" expanded="true" signature="1472:1661" ph="select versi... track_package" />
-            <marker date="1573645876279" expanded="true" signature="3097:3283" ph="select file_... track_file" />
-            <marker date="1573645876279" expanded="true" signature="3396:3595" ph="select class... track_class" />
-            <marker date="1573645876279" expanded="true" signature="3710:3921" ph="select file_... track_method" />
-            <marker date="1573645876279" expanded="true" signature="4038:4237" ph="select packa... track_package" />
-            <marker date="1573645876279" expanded="true" signature="4711:5006" ph="select r.met... raw_method" />
-            <marker date="1573645876279" expanded="true" signature="5134:5424" ph="select r.cla... raw_class" />
-            <marker date="1573645876279" expanded="true" signature="5551:5838" ph="select r.fil... raw_file" />
+            <marker date="1573647271944" expanded="true" signature="571:757" ph="select versi... track_method" />
+            <marker date="1573647271944" expanded="true" signature="874:1057" ph="select versi... track_class" />
+            <marker date="1573647271944" expanded="true" signature="1173:1353" ph="select versi... track_file" />
+            <marker date="1573647271944" expanded="true" signature="1472:1661" ph="select versi... track_package" />
+            <marker date="1573647271944" expanded="true" signature="3097:3283" ph="select file_... track_file" />
+            <marker date="1573647271944" expanded="true" signature="3396:3595" ph="select class... track_class" />
+            <marker date="1573647271944" expanded="true" signature="3710:3921" ph="select file_... track_method" />
+            <marker date="1573647271944" expanded="true" signature="4038:4237" ph="select packa... track_package" />
+            <marker date="1573647271944" expanded="true" signature="4987:5282" ph="select r.met... raw_method" />
+            <marker date="1573647271944" expanded="true" signature="5410:5700" ph="select r.cla... raw_class" />
+            <marker date="1573647271944" expanded="true" signature="5827:6114" ph="select r.fil... raw_file" />
+            <marker date="1573647271944" expanded="true" signature="6247:6531" ph="select r.roo... raw_package" />
           </folding>
         </state>
       </provider>
