@@ -81,6 +81,10 @@ public class StatisticsDao {
         if (ProjectInfo.FILE.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedFile(repoUuid, branch);
         }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.getMostDevelopersInvolvedPackage(repoUuid, branch);
+        }
         return null;
     }
 

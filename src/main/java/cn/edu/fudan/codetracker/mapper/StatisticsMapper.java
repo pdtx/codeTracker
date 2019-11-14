@@ -74,4 +74,8 @@ public interface StatisticsMapper {
      * method modification of most developers participate in
      */
     List<VersionStatistics> getMostDevelopersInvolvedMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    /**
+     * package modification of most developers participate in
+     */
+    List<VersionStatistics> getMostDevelopersInvolvedPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }
