@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
@@ -68,7 +69,7 @@ public class StatisticsDao {
     /**
      * modification of most developers participate in
      */
-    public List<VersionStatistics> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
+    public List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
         if (ProjectInfo.METHOD.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedMethod(repoUuid, branch);
@@ -84,6 +85,29 @@ public class StatisticsDao {
 
         if (ProjectInfo.PACKAGE.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedPackage(repoUuid, branch);
+        }
+        return null;
+    }
+
+    /**
+     * most modified in given time
+     */
+    public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type,String beginDate, String endDate){
+        type = type.toUpperCase();
+        if (ProjectInfo.METHOD.name().equals(type)) {
+            return statisticsMapper.getMostModifiedMethodByTime(repoUuid,branch, beginDate, endDate);
+        }
+
+        if (ProjectInfo.CLASS.name().equals(type)) {
+            return statisticsMapper.getMostModifiedClassByTime(repoUuid,branch, beginDate, endDate);
+        }
+
+        if (ProjectInfo.FILE.name().equals(type)) {
+            return statisticsMapper.getMostModifiedFileByTime(repoUuid,branch, beginDate, endDate);
+        }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.getMostModifiedPackageByTime(repoUuid,branch, beginDate, endDate);
         }
         return null;
     }
