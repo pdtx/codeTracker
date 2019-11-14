@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
+import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.service.StatisticsService;
@@ -32,8 +33,13 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public List<VersionStatistics> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
+    public List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
         return statisticsDao.getMostDevelopersInvolved(repoUuid, branch, type);
+    }
+
+    @Override
+    public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type, String beginDate, String endDate){
+        return statisticsDao.getMostModifiedByTime(repoUuid, branch, type, beginDate, endDate);
     }
 
 
