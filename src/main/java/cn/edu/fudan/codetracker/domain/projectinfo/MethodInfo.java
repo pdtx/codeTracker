@@ -29,6 +29,7 @@ public class MethodInfo {
     }*/
 
     private String uuid;
+    private String simpleName;
     private String fullname;
     private String signature;
     private String content;
@@ -247,5 +248,13 @@ public class MethodInfo {
 
     public void setDiff(JSONObject diff) {
         this.diff = diff;
+    }
+
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    public void setSimpleName(String simpleName) {
+        this.simpleName = simpleName;
     }
 }

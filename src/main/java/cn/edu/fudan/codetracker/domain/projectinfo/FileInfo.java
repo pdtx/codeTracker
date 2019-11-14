@@ -24,14 +24,12 @@ public class FileInfo {
     
 
 
-    public FileInfo(String fileName, String filePath, String packageName, String moduleName, String packageUuid) {
+    public FileInfo(String fileName, String filePath, String packageName, String moduleName) {
         uuid = UUID.randomUUID().toString();
         this.fileName = fileName;
         this.filePath = filePath;
         this.packageName = packageName;
         this.moduleName = moduleName;
-        this.packageUuid = packageUuid;
-
     }
 
 /*    public FileInfo(String fileName, String packageName, String moduleName, String filePath, String) {

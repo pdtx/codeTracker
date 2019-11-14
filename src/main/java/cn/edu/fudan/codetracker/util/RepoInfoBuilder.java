@@ -86,6 +86,9 @@ public class RepoInfoBuilder {
         Map<String, List<String>> modulePackage = new WeakHashMap<>();
         PackageInfo packageInfo;
         for (String path : fileList) {
+            if (path.toLowerCase().contains("test.java")) {
+                continue;
+            }
             FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, repoUuid);
             String moduleName = fileInfoExtractor.getModuleName();
             String packageName = fileInfoExtractor.getPackageName();

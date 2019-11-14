@@ -156,6 +156,12 @@
             <artifactId>CLDIFFCmd</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.json</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
             <systemPath>${project.basedir}\jar\CLDIFFCmd.jar</systemPath>
         </dependency>
 
@@ -169,7 +175,7 @@
 
         <dependency>
             <groupId>cn.edu.fudan</groupId>
-            <artifactId>org.eclipse.cdt.core.cdt</artifactId>
+            <artifactId>org.eclipse.jdt.core</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}\jar\org.eclipse.jdt.core-3.12.3.jar</systemPath>
