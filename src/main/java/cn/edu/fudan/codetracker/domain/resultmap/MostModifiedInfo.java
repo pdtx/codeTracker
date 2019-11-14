@@ -6,25 +6,22 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
 public class MostModifiedInfo {
-    private String name;
-    private String className;
-    private String filePath;
-    private String methodName;
-    private String packageName;
     private String moduleName;
+    private String packageName;
+    private String fileName;
+    private String filePath;
+    private String className;
+    private String methodName;
+
     private int version;
 
     MostModifiedInfo() {
 
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getFileName() { return fileName; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setFileName(String fileName) { this.fileName = fileName; }
 
     public String getClassName() {
         return className;
