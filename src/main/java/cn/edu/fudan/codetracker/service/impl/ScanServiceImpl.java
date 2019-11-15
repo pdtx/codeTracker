@@ -48,7 +48,78 @@ public class ScanServiceImpl implements ScanService {
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         RepoInfoBuilder repoInfo;
         boolean isInit = false;
+        int num = 0;
         for (String commit : commitList) {
+            ++num;
+            if (isInit) {
+                scan(repoUuid , commit, branch, jGitHelper, repoPath);
+            } else {
+                jGitHelper.checkout(commit);
+                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
+                repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
+                saveData(repoInfo);
+                isInit = true;
+            }
+            log.info("complete commit：" + num  + "  " + commit);
+        }
+    }
+
+    private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
+        if (jGitHelper != null) {
+            jGitHelper = new JGitHelper(repoPath);
+        }
+
+        // 分析版本之间的关系
+        ClDiffHelper.executeDiff(repoPath, commitId, outputDir);
+        String [] path = repoPath.replace('\\','/').split("/");
+        String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + path[path.length -1];
+        // extra diff info and construct tracking relation
+        OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
+        List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(packageDao, fileDao, classDao, fieldDao, methodDao);
+        // 扫描结果记录入库
+        try {
+
+            for (AnalyzeDiffFile analyzeDiffFile : analyzeDiffFiles) {
+
+                //add
+                packageDao.setAddInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.ADD.name()));
+                fileDao.setAddInfo(analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name()));
+                classDao.setAddInfo(analyzeDiffFile.getClassInfos().get(RelationShip.ADD.name()));
+                methodDao.setAddInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.ADD.name()));
+                fieldDao.setAddInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.ADD.name()));
+                //delete
+                packageDao.setDeleteInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.DELETE.name()));
+                fileDao.setDeleteInfo(analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name()));
+                classDao.setDeleteInfo(analyzeDiffFile.getClassInfos().get(RelationShip.DELETE.name()));
+                methodDao.setDeleteInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.DELETE.name()));
+                fieldDao.setDeleteInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.DELETE.name()));
+                //change
+                packageDao.setChangeInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.CHANGE.name()));
+                fileDao.setChangeInfo(analyzeDiffFile.getFileInfos().get(RelationShip.CHANGE.name()));
+                classDao.setChangeInfo(analyzeDiffFile.getClassInfos().get(RelationShip.CHANGE.name()));
+                methodDao.setChangeInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.CHANGE.name()));
+                fieldDao.setChangeInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.CHANGE.name()));
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
+        return methodDao.getMethodHistory(repoId, moduleName, packageName, className, signature);
+    }
+
+    @Override
+    public void firstScan(String repoUuid, String branch, String duration, String repoPath) {
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
+        RepoInfoBuilder repoInfo;
+        boolean isInit = false;
+        int num = 0;
+        for (String commit : commitList) {
+            ++num;
             if (isInit) {
                 scan(repoUuid , commit, branch, jGitHelper);
             } else {
@@ -58,13 +129,8 @@ public class ScanServiceImpl implements ScanService {
                 saveData(repoInfo);
                 isInit = true;
             }
-            log.info("complete commit：" + commit);
+            log.info("complete commit：" + num  + "  " + commit);
         }
-    }
-
-    @Override
-    public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
-        return methodDao.getMethodHistory(repoId, moduleName, packageName, className, signature);
     }
 
     private void saveData(RepoInfoBuilder repoInfo) {
@@ -97,7 +163,7 @@ public class ScanServiceImpl implements ScanService {
     @Override
     public boolean scan(String repoUuid, String commitId, String branch, JGitHelper jGitHelper) {
 
-        String repoPath = getRepoPathByUuid(repoUuid);
+        String repoPath = IS_WINDOWS ? getRepoPathByUuid(repoUuid) : restInterface.getRepoPath(repoUuid);
 
         if (jGitHelper != null) {
             jGitHelper = new JGitHelper(repoPath);

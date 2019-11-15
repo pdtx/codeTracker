@@ -49,6 +49,9 @@ public class OutputAnalysis {
                 new File(outputDir + "\\" + commitId) :
                 new File(outputDir + "/" + commitId);
         String metaPath = findMetaFile(file);
+        if (metaPath == null || metaPath.length() == 0) {
+            return analyzeDiffFiles;
+        }
         JSONArray fileInfoJsonArray;
         JSONArray preCommits;
         try {
@@ -84,6 +87,10 @@ public class OutputAnalysis {
                     // three types of change relation handler ： ADD、DELETE、MODIFY
                     if (m.getKey().getString("parent_commit").equals(preCommit) &&
                             m.getKey().getString("file_full_name").endsWith(".java")) {
+                        // ignore test class
+                        if (m.getKey().getString("file_full_name").toLowerCase().contains("test.java")) {
+                            continue;
+                        }
                         if ("ADD".equals(m.getValue())) {
                             try {
                                 String path;
@@ -127,7 +134,7 @@ public class OutputAnalysis {
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
                             }else {
-                                log.error("CHANGE situation: diffPath lack " + metaPath);
+                                log.error("CHANGE situation: diffPath lack! " + metaPath + " id :" +  m.getKey().getString("id"));
                             }
                         }
                     }
@@ -156,6 +163,9 @@ public class OutputAnalysis {
         List<String> pathList = new ArrayList<>();
         new DirExplorer((level, path, file) -> path.endsWith("meta.json"),
                 (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(projectDir);
+        if (pathList.size() == 0) {
+            return null;
+        }
         return pathList.get(0);
     }
 

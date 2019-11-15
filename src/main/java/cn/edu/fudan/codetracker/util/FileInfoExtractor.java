@@ -7,6 +7,7 @@ package cn.edu.fudan.codetracker.util;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
@@ -14,18 +15,18 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
+@Slf4j
 public class FileInfoExtractor {
 
-    // should be defined in the properties
-    @Value("${prefix}")
-    private String prefix;
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    private final String prefix = IS_WINDOWS ? "E:\\\\Lab\\\\project\\\\" : "/home/fdse/user/issueTracker/repo/github/";
 
     private String projectName;
     private String moduleName;
@@ -55,10 +56,10 @@ public class FileInfoExtractor {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            String [] s = (path.replace(prefix + projectName + '\\',"")).replace('\\','/').split("/" + moduleName + "/");
+            String [] s = path.replace('\\','/').split("/" + moduleName + "/");
             filePath = moduleName + "/" + s[s.length - 1];
             // for finding packageUUID base on  packageName and moduleName
-            fileInfo = new FileInfo(fileName, filePath, packageName, moduleName, deletePrefix(path));
+            fileInfo = new FileInfo(fileName, filePath, packageName, moduleName);
 
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
@@ -66,7 +67,8 @@ public class FileInfoExtractor {
                 importNames.add(importDeclaration.getName().asString());
             }
 
-        }catch (FileNotFoundException e) {
+        }catch (Exception e) {
+            log.error("FileInfoExtractor :" + path);
             e.printStackTrace();
         }
     }
@@ -148,33 +150,24 @@ public class FileInfoExtractor {
     private List<MethodInfo> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassInfo classInfo) {
         List<MethodInfo> methodInfos = new ArrayList<>(2);
         for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
-            StringBuilder sb  = new StringBuilder();
+            StringBuilder modifiers  = new StringBuilder();
             MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
-
-            //fullname
-            methodInfo.setFullname(constructorDeclaration.getNameAsString());
-
-
-            sb.append(constructorDeclaration.getNameAsString());
-            // parameters
-            for (Parameter parameter : constructorDeclaration.getParameters()) {
-                sb.append(" ");
-                sb.append(parameter.toString());
+            // modifier
+            for (Modifier modifier : constructorDeclaration.getModifiers()) {
+                modifiers.append(modifier.asString());
+                modifiers.append(" ");
             }
+            //fullname
+            methodInfo.setFullname(constructorDeclaration.getDeclarationAsString(true,true,true));
 
             // signature
-            methodInfo.setSignature(sb.toString());
-
-            // modifier
-            sb.setLength(0);
-            for (Modifier modifier : constructorDeclaration.getModifiers()) {
-                sb.append(modifier.asString());
-                sb.append(" ");
+            methodInfo.setSignature(constructorDeclaration.getSignature().toString());
+            if (constructorDeclaration.getRange().isPresent()) {
+                methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                methodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
             }
-
-            methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
-            methodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
-            methodInfo.setModifier(sb.toString());
+            methodInfo.setModifier(modifiers.toString());
             //primitiveType
             methodInfo.setPrimitiveType(classInfo.getClassName());
             methodInfo.setContent(constructorDeclaration.getBody().toString());
@@ -201,17 +194,22 @@ public class FileInfoExtractor {
 
             StringBuilder simpleName = new StringBuilder();
             StringBuilder initValue = new StringBuilder();
+            StringBuilder simpleType = new StringBuilder();
             for (VariableDeclarator variableDeclarator: fieldDeclaration.getVariables()) {
                 simpleName.append(variableDeclarator.getName());
                 simpleName.append(" ");
+                if (variableDeclarator.getInitializer().isPresent()) {
+                    initValue.append(variableDeclarator.getInitializer().get());
+                    initValue.append(" ");
+                }
 
-                initValue.append(variableDeclarator.getInitializer().toString());
-                initValue.append(" ");
+                simpleType.append(variableDeclarator.getType());
+                simpleType.append(" ");
             }
 
             //(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
             //                     String fileName, String filePath, String className, String initValue)
-            FieldInfo fieldInfo = new FieldInfo(simpleName.toString(), modifiers.toString(), fieldDeclaration.getElementType().asString(), classUuid, fileInfo.getPackageUuid(),
+            FieldInfo fieldInfo = new FieldInfo(simpleName.toString(), modifiers.toString(), simpleType.toString(), classUuid, fileInfo.getPackageUuid(),
                     moduleName, packageName, fileName, filePath, className, initValue.toString());
             fieldInfo.setFullName(fieldDeclaration.toString());
             fieldInfos.add(fieldInfo);
@@ -223,35 +221,26 @@ public class FileInfoExtractor {
         List<MethodInfo> methodInfos = new ArrayList<>();
 
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
-            StringBuilder sb  = new StringBuilder();
             MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
 
-            //fullname
-            methodInfo.setFullname(methodDeclaration.getNameAsString());
-
-
-            sb.append(methodDeclaration.getNameAsString());
-            // parameters
-            for (Parameter parameter : methodDeclaration.getParameters()) {
-                sb.append(" ");
-                sb.append(parameter.toString());
+            StringBuilder m = new StringBuilder();
+            // modifier
+            for (Modifier modifier : methodDeclaration.getModifiers()) {
+                m.append(modifier.asString());
+                m.append(" ");
             }
+            //simpleName
+            methodInfo.setSimpleName(methodDeclaration.getNameAsString());
 
             // signature
-            methodInfo.setSignature(sb.toString());
-
-            // modifier
-            sb.setLength(0);
-            for (Modifier modifier : methodDeclaration.getModifiers()) {
-                sb.append(modifier.asString());
-                sb.append(" ");
-            }
+            methodInfo.setSignature(methodDeclaration.getSignature().toString());
 
             methodInfo.setBegin(methodDeclaration.getRange().get().begin.line);
             methodInfo.setEnd(methodDeclaration.getRange().get().end.line);
-            methodInfo.setModifier(sb.toString());
+            methodInfo.setModifier(m.toString());
             //primitiveType
             methodInfo.setPrimitiveType(methodDeclaration.getType().asString());
+            methodInfo.setFullname(methodDeclaration.getDeclarationAsString(true,true,true));
 
             if (methodDeclaration.getTokenRange().isPresent()) {
                 methodInfo.setContent(methodDeclaration.getTokenRange().get().toString());
