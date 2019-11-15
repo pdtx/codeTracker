@@ -6,6 +6,7 @@ package cn.edu.fudan.codetracker.mapper;
  */
 import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -98,4 +99,10 @@ public interface StatisticsMapper {
      * most modified method in given time
      */
     List<MostDevelopersInfo> getMostModifiedMethodByTime(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * get most modified methods info in given package
+     */
+    List<MostModifiedMethod> getMostModifiedMethodByPackage(@Param("repoUuid") String repoUuid, @Param("packageUuid") String packageUuid, @Param("branch") String branch);
 }

@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.ProjectInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +111,13 @@ public class StatisticsDao {
             return statisticsMapper.getMostModifiedPackageByTime(repoUuid,branch, beginDate, endDate);
         }
         return null;
+    }
+
+    /**
+     * get most modified methods info in given package
+     */
+    public List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch){
+        return statisticsMapper.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
     }
 
 

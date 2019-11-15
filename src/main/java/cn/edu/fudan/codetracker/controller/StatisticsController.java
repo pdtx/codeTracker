@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.controller;
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Date;
 
 @RestController
 @EnableAutoConfiguration
@@ -94,6 +92,22 @@ public class StatisticsController {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
+    /**
+     * 获取某个package里面修改最多的method信息
+     */
+    @GetMapping(value = {"/statistics/modificationmethod/{repoId}/{packageId}"})
+    public ResponseBean getMostModifiedMethod(@PathVariable("repoId") String repoUuid, @PathVariable("packageId") String packageUuid, @RequestParam("branch") String branch){
+        try{
+            List<MostModifiedMethod> data = statisticsService.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
 
     @Autowired

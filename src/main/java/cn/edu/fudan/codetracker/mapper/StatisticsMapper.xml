@@ -125,6 +125,18 @@
         select r.method_uuid as uuid ,r.fullname as name ,t.file_path ,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc;
     </select>
 
+    <!-- -->
+    <resultMap id="mostModifiedMethodByPackage" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod">
+        <id property="uuid" column="uuid"/>
+        <result property="methodName" column="signature"/>
+        <result property="className" column="class_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <select id="getMostModifiedMethodByPackage" parameterType="String" resultMap="mostModifiedMethodByPackage">
+        select uuid ,signature ,class_name ,file_path ,version from issueTracker.track_method where repo_uuid = #{repoUuid} and package_uuid = #{packageUuid} and branch = #{branch} order by version desc limit 20;
+    </select>
 
 
 

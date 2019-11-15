@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.service.impl;
 import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,11 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type, String beginDate, String endDate){
         return statisticsDao.getMostModifiedByTime(repoUuid, branch, type, beginDate, endDate);
+    }
+
+    @Override
+    public List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch){
+        return statisticsDao.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
     }
 
 
