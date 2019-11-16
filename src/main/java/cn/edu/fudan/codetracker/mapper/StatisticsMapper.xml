@@ -27,7 +27,8 @@
 
     <!-- -->
     <resultMap id="modifiedFile" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="fileName" column="file_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="fileName" column="file_name"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="filePath" column="file_path"/>
@@ -35,7 +36,8 @@
     </resultMap>
 
     <resultMap id="modifiedClass" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="className" column="class_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="className" column="class_name"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="fileName" column="file_name"/>
@@ -44,7 +46,8 @@
     </resultMap>
 
     <resultMap id="modifiedMethod" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="methodName" column="fullname"/>
+        <id property="uuid" column="uuid"/>
+        <result property="methodName" column="fullname"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="fileName" column="file_name"/>
@@ -54,25 +57,26 @@
     </resultMap>
 
     <resultMap id="modifiedPackage" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="packageName" column="package_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="version" column="version"/>
     </resultMap>
 
     <select id="getMostModifiedFile" parameterType="String" resultMap="modifiedFile">
-        select file_name,file_path,package_name,module_name,version from issueTracker.track_file  where version >1  and track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} order by version desc limit 20;
+        select uuid,file_name,file_path,package_name,module_name,version from issueTracker.track_file  where version >1  and track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedClass" parameterType="String" resultMap="modifiedClass">
-        select class_name,file_name,file_path,package_name,module_name,version from issueTracker.track_class  where version >1 and track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} order by version desc limit 20;
+        select uuid,class_name,file_name,file_path,package_name,module_name,version from issueTracker.track_class  where version >1 and track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedMethod" parameterType="String" resultMap="modifiedMethod">
-        select fullname,file_name,file_path,class_name,package_name,module_name,version from issueTracker.track_method  where version >1 and track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} order by version desc limit 20;
+        select uuid,fullname,file_name,file_path,class_name,package_name,module_name,version from issueTracker.track_method  where version >1 and track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedPackage" parameterType="String" resultMap="modifiedPackage">
-        select package_name,module_name,version from issueTracker.track_package  where version >1 and track_package.repo_uuid = #{repoUuid} and track_package.branch = #{branch} order by version desc limit 20;
+        select uuid,package_name,module_name,version from issueTracker.track_package  where version >1 and track_package.repo_uuid = #{repoUuid} and track_package.branch = #{branch} order by version desc limit 20;
     </select>
 
 
@@ -125,6 +129,66 @@
         select r.method_uuid as uuid ,r.fullname as name ,t.file_path ,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc;
     </select>
 
+    <!-- -->
+    <resultMap id="mostModifiedMethodByPackage" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod">
+        <id property="uuid" column="uuid"/>
+        <result property="methodName" column="fullname"/>
+        <result property="className" column="class_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <select id="getMostModifiedMethodByPackage" parameterType="String" resultMap="mostModifiedMethodByPackage">
+        select uuid ,fullname ,class_name ,file_path ,version from issueTracker.track_method where repo_uuid = #{repoUuid} and package_uuid = #{packageUuid} and branch = #{branch} order by version desc limit 20;
+    </select>
+
+    <!-- -->
+    <resultMap id="developerFocusMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="name" column="name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
+    <select id="packageDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.root_uuid as uuid, t.package_name as name ,count(*) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t where r.root_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.root_uuid order by quantity desc;
+    </select>
+
+    <select id="fileDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.file_uuid as uuid, r.file_name as name , t.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t where r.file_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.file_uuid order by quantity desc;
+    </select>
+
+    <select id="classDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.class_uuid as uuid, r.class_name as name , t.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t where r.class_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.class_uuid order by quantity desc;
+    </select>
+
+    <select id="methodDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.method_uuid as uuid, r.fullname as name , t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc;
+    </select>
+
+    <!-- -->
+    <resultMap id="commitTimeLine" type="cn.edu.fudan.codetracker.domain.resultmap.CommitTimeLine">
+        <id property="commitId" column="commitid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="packageCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_package where root_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="fileCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_file where file_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="classCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_class where class_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="methodCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_method where method_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
 
 
 

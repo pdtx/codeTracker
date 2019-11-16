@@ -4,9 +4,7 @@ package cn.edu.fudan.codetracker.mapper;
  * @author: fancying
  * @create: 2019-06-06 16:41
  */
-import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -98,4 +96,47 @@ public interface StatisticsMapper {
      * most modified method in given time
      */
     List<MostDevelopersInfo> getMostModifiedMethodByTime(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * get most modified methods info in given package
+     */
+    List<MostModifiedMethod> getMostModifiedMethodByPackage(@Param("repoUuid") String repoUuid, @Param("packageUuid") String packageUuid, @Param("branch") String branch);
+
+
+    /**
+     * package that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> packageDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * file that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> fileDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * class that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> classDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * method that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> methodDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * get package commit info
+     */
+    List<CommitTimeLine> packageCommitTimeLine(@Param("uuid") String uuid);
+    /**
+     * get file commit info
+     */
+    List<CommitTimeLine> fileCommitTimeLine(@Param("uuid") String uuid);
+    /**
+     * get class commit info
+     */
+    List<CommitTimeLine> classCommitTimeLine(@Param("uuid") String uuid);
+    /**
+     * get method commit info
+     */
+    List<CommitTimeLine> methodCommitTimeLine(@Param("uuid") String uuid);
+
 }

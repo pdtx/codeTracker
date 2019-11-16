@@ -6,9 +6,7 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -108,6 +106,59 @@ public class StatisticsDao {
 
         if (ProjectInfo.PACKAGE.name().equals(type)) {
             return statisticsMapper.getMostModifiedPackageByTime(repoUuid,branch, beginDate, endDate);
+        }
+        return null;
+    }
+
+    /**
+     * get most modified methods info in given package
+     */
+    public List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch){
+        return statisticsMapper.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
+    }
+
+    /**
+     * developer most focus on in given time
+     */
+    public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
+        type = type.toUpperCase();
+        if (ProjectInfo.METHOD.name().equals(type)) {
+            return statisticsMapper.methodDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.CLASS.name().equals(type)) {
+            return statisticsMapper.classDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.FILE.name().equals(type)) {
+            return statisticsMapper.fileDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.packageDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+        return null;
+    }
+
+    /**
+     * get commit info by uuid
+     */
+    public List<CommitTimeLine> getCommitTimeLine(String type, String uuid){
+        type = type.toUpperCase();
+        if (ProjectInfo.METHOD.name().equals(type)) {
+            return statisticsMapper.methodCommitTimeLine(uuid);
+        }
+
+        if (ProjectInfo.CLASS.name().equals(type)) {
+            return statisticsMapper.classCommitTimeLine(uuid);
+        }
+
+        if (ProjectInfo.FILE.name().equals(type)) {
+            return statisticsMapper.fileCommitTimeLine(uuid);
+        }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.packageCommitTimeLine(uuid);
         }
         return null;
     }
