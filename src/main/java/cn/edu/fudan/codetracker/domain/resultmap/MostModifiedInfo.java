@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
 public class MostModifiedInfo {
+    private String uuid;
     private String moduleName;
     private String packageName;
     private String fileName;
@@ -18,6 +19,10 @@ public class MostModifiedInfo {
     MostModifiedInfo() {
 
     }
+
+    public String getUuid() { return uuid; }
+
+    public void setUuid(String uuid) { this.uuid = uuid; }
 
     public String getFileName() { return fileName; }
 

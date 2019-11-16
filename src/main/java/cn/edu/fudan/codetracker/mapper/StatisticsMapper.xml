@@ -27,7 +27,8 @@
 
     <!-- -->
     <resultMap id="modifiedFile" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="fileName" column="file_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="fileName" column="file_name"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="filePath" column="file_path"/>
@@ -35,7 +36,8 @@
     </resultMap>
 
     <resultMap id="modifiedClass" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="className" column="class_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="className" column="class_name"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="fileName" column="file_name"/>
@@ -44,7 +46,8 @@
     </resultMap>
 
     <resultMap id="modifiedMethod" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="methodName" column="fullname"/>
+        <id property="uuid" column="uuid"/>
+        <result property="methodName" column="fullname"/>
         <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="fileName" column="file_name"/>
@@ -54,25 +57,26 @@
     </resultMap>
 
     <resultMap id="modifiedPackage" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="packageName" column="package_name"/>
+        <id property="uuid" column="uuid"/>
+        <result property="packageName" column="package_name"/>
         <result property="moduleName" column="module_name"/>
         <result property="version" column="version"/>
     </resultMap>
 
     <select id="getMostModifiedFile" parameterType="String" resultMap="modifiedFile">
-        select file_name,file_path,package_name,module_name,version from issueTracker.track_file  where version >1  and track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} order by version desc limit 20;
+        select uuid,file_name,file_path,package_name,module_name,version from issueTracker.track_file  where version >1  and track_file.repo_uuid = #{repoUuid} and track_file.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedClass" parameterType="String" resultMap="modifiedClass">
-        select class_name,file_name,file_path,package_name,module_name,version from issueTracker.track_class  where version >1 and track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} order by version desc limit 20;
+        select uuid,class_name,file_name,file_path,package_name,module_name,version from issueTracker.track_class  where version >1 and track_class.repo_uuid = #{repoUuid} and track_class.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedMethod" parameterType="String" resultMap="modifiedMethod">
-        select fullname,file_name,file_path,class_name,package_name,module_name,version from issueTracker.track_method  where version >1 and track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} order by version desc limit 20;
+        select uuid,fullname,file_name,file_path,class_name,package_name,module_name,version from issueTracker.track_method  where version >1 and track_method.repo_uuid = #{repoUuid} and track_method.branch = #{branch} order by version desc limit 20;
     </select>
 
     <select id="getMostModifiedPackage" parameterType="String" resultMap="modifiedPackage">
-        select package_name,module_name,version from issueTracker.track_package  where version >1 and track_package.repo_uuid = #{repoUuid} and track_package.branch = #{branch} order by version desc limit 20;
+        select uuid,package_name,module_name,version from issueTracker.track_package  where version >1 and track_package.repo_uuid = #{repoUuid} and track_package.branch = #{branch} order by version desc limit 20;
     </select>
 
 
