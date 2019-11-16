@@ -166,6 +166,30 @@
         select r.method_uuid as uuid, r.fullname as name , t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc;
     </select>
 
+    <!-- -->
+    <resultMap id="commitTimeLine" type="cn.edu.fudan.codetracker.domain.resultmap.CommitTimeLine">
+        <id property="commitId" column="commitid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="packageCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_package where root_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="fileCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_file where file_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="classCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_class where class_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
+    <select id="methodCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
+        select commitid,committer,commit_date,change_relation from issueTracker.raw_method where method_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+    </select>
+
 
 
 </mapper>

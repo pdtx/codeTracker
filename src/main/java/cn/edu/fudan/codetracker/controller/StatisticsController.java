@@ -6,10 +6,7 @@
 package cn.edu.fudan.codetracker.controller;
 
 import cn.edu.fudan.codetracker.domain.ResponseBean;
-import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
-import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.protocol.types.Field;
@@ -115,6 +112,22 @@ public class StatisticsController {
     public ResponseBean getMostModifiedMethod(@PathVariable("repoId") String repoUuid, @PathVariable("type") String type, @RequestParam("branch") String branch, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
         try{
             List<MostDevelopersInfo> data = statisticsService.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 获取commit的时间线
+     * @param type package file class method
+     */
+    @GetMapping(value = {"/statistics/timeline/{type}/{uuid}"})
+    public ResponseBean getCommitTimeLine(@PathVariable("type") String type, @PathVariable("uuid") String uuid){
+        try{
+            List<CommitTimeLine> data = statisticsService.getCommitTimeLine(type, uuid);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

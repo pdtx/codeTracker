@@ -6,10 +6,7 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod;
-import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +48,11 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
         return statisticsDao.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
+    }
+
+    @Override
+    public List<CommitTimeLine> getCommitTimeLine(String type, String uuid){
+        return statisticsDao.getCommitTimeLine(type, uuid);
     }
 
 
