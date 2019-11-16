@@ -171,12 +171,11 @@ public class JGitHelper {
 
     public static void main(String[] args) {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        String repoPath = "E:\\Lab\\project\\IssueTracker-Master";
+        String repoPath = "E:\\Lab\\iec-wepm-develop";
         //String commitId = "56ecb887353075ff557638843e234a8411b5fb8c";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-
-
-        for (String s : jGitHelper.getCommitListByBranchAndDuration("developer", "2019.07.01-2019.07.20")) {
+        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
+        for (String s : jGitHelper.getCommitListByBranchAndDuration("develope", "2019.09.20-2019.11.01")) {
             System.out.println(s);
         }
 /*        jGitHelper.checkout(commitId);
@@ -191,38 +190,26 @@ public class JGitHelper {
      *  getCommitTime return second not millisecond
      */
     public List<String> getCommitListByBranchAndDuration(String branchName, String duration) {
+        checkout(branchName);
         final int durationLength = 21;
-        Map<String, Long> commitMap = new HashMap<>(32);
+        Map<String, Long> commitMap = new HashMap<>(512);
         if (duration.length() < durationLength) {
             throw new RuntimeException("duration error!");
         }
         long start =  getTime(duration.substring(0,10));
         long end = getTime(duration.substring(11,21));
-
-        RevWalk walk = new RevWalk(repository);
-        checkout(branchName);
-
         try {
-            Iterable<RevCommit> commits = git.log().all().call();
+            Iterable<RevCommit> commits = git.log().call();
             for (RevCommit commit : commits) {
                 long commitTime = commit.getCommitTime() * 1000L;
-                RevCommit targetCommit = walk.parseCommit(repository.resolve(commit.getName()));
-                for (Map.Entry<String, Ref> e : repository.getAllRefs().entrySet()) {
-                    if (e.getKey().startsWith(Constants.R_HEADS) &&
-                            walk.isMergedInto(targetCommit, walk.parseCommit(e.getValue().getObjectId())) &&
-                            branchName.equals(e.getValue().getName().replace("refs/heads/","")) &&
-                            commitTime <= end && commitTime >= start){
-                        commitMap.put(commit.getName(), commitTime);
-                        break;
-                    }
+                if (commitTime <= end && commitTime >= start) {
+                    commitMap.put(commit.getName(), commitTime);
                 }
             }
-        } catch (IOException | GitAPIException e) {
+        } catch (GitAPIException e) {
             e.getMessage();
         }
-
         return new ArrayList<>(sortByValue(commitMap).keySet());
-
     }
 
     /**

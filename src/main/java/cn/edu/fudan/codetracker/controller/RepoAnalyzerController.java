@@ -12,9 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @RestController
 @EnableAutoConfiguration
 public class RepoAnalyzerController {
@@ -45,15 +42,5 @@ public class RepoAnalyzerController {
         this.scanService = scanService;
     }
 
-
-    @GetMapping(value = {"/project"})
-    public ResponseBean localScan(@RequestParam("repoId") String repoId,@RequestParam("branch") String branch,@RequestParam("duration") String duration,@RequestParam("localDir") String localDir) {
-        try {
-            scanService.firstScan(repoId, branch, duration,localDir);
-            return new ResponseBean(200, "start scan", null);
-        } catch (Exception e) {
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
 
 }

@@ -137,6 +137,11 @@ public class AnalyzeDiffFile {
 
         for (FileInfo fileInfo : deleteRepoInfo.getFileInfos()) {
             trackerInfo = fileDao.getTrackerInfo(fileInfo.getFilePath(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name() , 1, fileInfo.getUuid()));
+                fileInfos.get(RelationShip.ADD.name()).add(fileInfo);
+                continue;
+            }
             trackerInfo.setChangeRelation(relation);
             fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
             fileInfos.get(RelationShip.DELETE.name()).add(fileInfo);
@@ -144,6 +149,9 @@ public class AnalyzeDiffFile {
 
         for (ClassInfo classInfo : deleteRepoInfo.getClassInfos()) {
             trackerInfo = classDao.getTrackerInfo(classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                continue;
+            }
             trackerInfo.setChangeRelation(relation);
             classInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
             classInfos.get(RelationShip.DELETE.name()).add(classInfo);
@@ -151,6 +159,9 @@ public class AnalyzeDiffFile {
 
         for (MethodInfo methodInfo : deleteRepoInfo.getMethodInfos()) {
             trackerInfo = methodDao.getTrackerInfo(methodInfo.getFilePath(), methodInfo.getClassName(), methodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                continue;
+            }
             trackerInfo.setChangeRelation(relation);
             methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
             methodInfos.get(RelationShip.DELETE.name()).add(methodInfo);
@@ -158,6 +169,9 @@ public class AnalyzeDiffFile {
 
         for (FieldInfo fieldInfo : deleteRepoInfo.getFieldInfos()) {
             trackerInfo = fieldDao.getTrackerInfo(fieldInfo.getFilePath(), fieldInfo.getClassName(), fieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                continue;
+            }
             trackerInfo.setChangeRelation(relation);
             fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
             fieldInfos.get(RelationShip.DELETE.name()).add(fieldInfo);
@@ -181,7 +195,7 @@ public class AnalyzeDiffFile {
         if (diffPathList == null || diffPathList.size() == 0) {
             return;
         }
-        String relation = RelationShip.CHANGE.name();
+        String change = RelationShip.CHANGE.name();
         TrackerInfo trackerInfo;
         for (PackageInfo packageInfo : curRepoInfo.getPackageInfos()) {
             int hashCode = packageInfo.hashCode();
@@ -193,8 +207,8 @@ public class AnalyzeDiffFile {
                     continue;
                 }
                 modifyPackageUuid.put(hashCode, trackerInfo);
-                packageInfo.setTrackerInfo(new TrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
-                packageInfos.get(relation).add(packageInfo);
+                packageInfo.setTrackerInfo(new TrackerInfo(change , trackerInfo.getVersion(), trackerInfo.getRootUUID()));
+                packageInfos.get(change).add(packageInfo);
             }
         }
 
@@ -206,7 +220,21 @@ public class AnalyzeDiffFile {
                 continue;
             }
             fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
-            fileInfos.get(relation).add(fileInfo);
+            fileInfos.get(change).add(fileInfo);
+        }
+
+        // class 修改
+        for (ClassInfo classInfo : curRepoInfo.getClassInfos()) {
+            trackerInfo = classDao.getTrackerInfo(classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                String errorMessage = "class tracker info null！ commit: " + curRepoInfo.getCommit() +
+                        " class name : " + classInfo.getClassName() +
+                        " file path : " + classInfo.getFilePath();
+                log.error(errorMessage);
+                continue;
+            }
+            classInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name() , trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
+            classInfos.get(change).add(classInfo);
         }
 
         Set<String> uuidList = new HashSet<>();
@@ -239,6 +267,7 @@ public class AnalyzeDiffFile {
                     FieldInfo curFieldInfo = findFieldInfoByName(preFieldInfo.getSimpleName(), curRepoInfo.getFieldInfos(), filePath);
                     trackerInfo = fieldDao.getTrackerInfo(preFieldInfo.getFilePath(), preFieldInfo.getClassName(), preFieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
                     if (trackerInfo == null) {
+                        String errorMessage;
                         log.error("FieldInfo info null");
                         log.error(curRepoInfo.getCommit(), preFieldInfo.getFilePath(), preFieldInfo.getClassName(), preFieldInfo.getSimpleName());
                         continue;
@@ -278,19 +307,23 @@ public class AnalyzeDiffFile {
                             break;
                         case "change":
                             //before change
-                            begin = rangeAnalyzeBegin(range.split("-")[0]);
-                            end = rangeAnalyzeEnd(range.split("-")[0]);
-                            ClassInfo preClassInfo = findClassInfoByRange(preRepoInfo.getClassInfos(), filePath, begin, end);
-                            // 必须得到root uuid 以及 version 否则无法关联起来
-                            TrackerInfo preTrackerInfo = classDao.getTrackerInfo(preClassInfo.getFilePath(), preClassInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-                            //after change
-                            begin = rangeAnalyzeBegin(range.split("-")[1]);
-                            end = rangeAnalyzeEnd(range.split("-")[1]);
-                            ClassInfo curClassInfo = findClassInfoByRange(curRepoInfo.getClassInfos(), filePath, begin, end);
-                            if (curClassInfo != null) {
-                                curClassInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID()));
-                                // 直接入库
-                                classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
+                            try {
+                                begin = rangeAnalyzeBegin(range.split("-")[0]);
+                                end = rangeAnalyzeEnd(range.split("-")[0]);
+                                ClassInfo preClassInfo = findClassInfoByRange(preRepoInfo.getClassInfos(), filePath, begin, end);
+                                // 必须得到root uuid 以及 version 否则无法关联起来
+                                TrackerInfo preTrackerInfo = classDao.getTrackerInfo(preClassInfo.getFilePath(), preClassInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+                                //after change
+                                begin = rangeAnalyzeBegin(range.split("-")[1]);
+                                end = rangeAnalyzeEnd(range.split("-")[1]);
+                                ClassInfo curClassInfo = findClassInfoByRange(curRepoInfo.getClassInfos(), filePath, begin, end);
+                                if (curClassInfo != null) {
+                                    curClassInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID()));
+                                    // 直接入库
+                                    classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
+                                }
+                            }catch (Exception e) {
+                                log.error(e.getMessage());
                             }
                             break;
                         case "delete":
@@ -319,6 +352,7 @@ public class AnalyzeDiffFile {
                             MethodInfo preMethodInfo = findMethodInfoByRange(preRepoInfo.getMethodInfos(), filePath, begin, end);
                             if (preMethodInfo == null) {
                                 log.error("preMethodInfo NULL ERROR: " + filePath + ";  range: " + range);
+                                preMethodInfo = findMethodInfoByRange(preRepoInfo.getMethodInfos(), filePath, begin, end);
                                 break;
                             }
                             try {
@@ -335,9 +369,7 @@ public class AnalyzeDiffFile {
                                         break;
                                     }
                                     curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
-                                    //curMethodInfo.setDiff(oneDiff);
                                     curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
-                                    //curMethodInfo.getJsonArray().add(oneDiff);
                                     // 直接入库
                                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
                                 }
@@ -411,18 +443,19 @@ public class AnalyzeDiffFile {
                             !methodInfos.get(RelationShip.ADD.name()).contains(curMethodInfo)) {
                         trackerInfo = methodDao.getTrackerInfo(curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
                         if (trackerInfo == null) {
-                            log.error(curRepoInfo.getCommit(),curMethodInfo.getFilePath(), curMethodInfo.getClassName(), curMethodInfo.getSignature());
+                            String errorMessage = "method trackerInfo null！ commit: " + curRepoInfo.getCommit() +
+                                    " class name: " + curMethodInfo.getClassName() +
+                                    " signature: " + curMethodInfo.getSignature();
+                            log.error(errorMessage);
                             continue;
                         }
                         curMethodInfo.setTrackerInfo(new TrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID()));
                         curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
                         methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
-                        //curRepoInfo.getMethodInfos().remove(curMethodInfo);// 减少下次搜索时间
+                        //classInfos.get(RelationShip.CHANGE.name()).add();
                     }
                 }
-
             }
-
         }
 
     }
@@ -512,8 +545,9 @@ public class AnalyzeDiffFile {
 
     private MethodInfo findMethodInfoByRange( List<MethodInfo> methodInfos, String filePath,int begin, int end) {
         for (MethodInfo methodInfo : methodInfos) {
-            boolean isInclude = !(methodInfo.getBegin() >= end || methodInfo.getEnd() <= begin);
-            if (isInclude && (filePath.contains(methodInfo.getFilePath()) || methodInfo.getFilePath().contains(filePath))) {
+            boolean isInclude = !(methodInfo.getBegin() > end || methodInfo.getEnd() < begin);
+            boolean isSameFilePath = filePath.contains(methodInfo.getFilePath()) || methodInfo.getFilePath().contains(filePath);
+            if (isInclude && isSameFilePath) {
                 return methodInfo;
             }
         }

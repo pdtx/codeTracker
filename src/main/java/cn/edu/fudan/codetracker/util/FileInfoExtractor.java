@@ -125,6 +125,8 @@ public class FileInfoExtractor {
             }
             // ？？？fullname 重新考虑
             String fullname = classOrInterfaceDeclaration.getNameAsString();
+            // (String fullname, String className, String filePath, String fileName, String packageName,
+            //                     String moduleName, String fileUuid, String packageUuid, String modifier, int begin, int end)
             ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, filePath, fileName, packageName, moduleName, fileInfo.getUuid(), fileInfo.getPackageUuid(),
                     sb.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
 
