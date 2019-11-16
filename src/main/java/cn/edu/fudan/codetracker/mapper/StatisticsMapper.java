@@ -105,4 +105,23 @@ public interface StatisticsMapper {
      * get most modified methods info in given package
      */
     List<MostModifiedMethod> getMostModifiedMethodByPackage(@Param("repoUuid") String repoUuid, @Param("packageUuid") String packageUuid, @Param("branch") String branch);
+
+
+    /**
+     * package that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> packageDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * file that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> fileDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * class that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> classDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * method that developer most focus on in given time
+     */
+    List<MostDevelopersInfo> methodDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
 }

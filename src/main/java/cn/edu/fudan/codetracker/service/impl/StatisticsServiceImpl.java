@@ -48,6 +48,11 @@ public class StatisticsServiceImpl implements StatisticsService {
         return statisticsDao.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
     }
 
+    @Override
+    public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
+        return statisticsDao.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
+    }
+
 
     /**
      * getter and setter

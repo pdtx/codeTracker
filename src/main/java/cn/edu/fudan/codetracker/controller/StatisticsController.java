@@ -81,7 +81,7 @@ public class StatisticsController {
      * @param beginDate xxxx-xx-xx
      * @param endDate xxxx-xx-xx
      */
-    @GetMapping(value = {"/statistics/modification/time/{type}/{repoId}"})
+    @GetMapping(value = {"/statistics/modificationtime/{type}/{repoId}"})
     public ResponseBean getMostModifiedByTime(@PathVariable("type") String type, @PathVariable("repoId") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
         try {
             List<MostDevelopersInfo> data = statisticsService.getMostModifiedByTime(repoUuid,branch,type,beginDate,endDate);
@@ -100,6 +100,21 @@ public class StatisticsController {
     public ResponseBean getMostModifiedMethod(@PathVariable("repoId") String repoUuid, @PathVariable("packageId") String packageUuid, @RequestParam("branch") String branch){
         try{
             List<MostModifiedMethod> data = statisticsService.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 获取指定时间内某个开发人员工作集中在何处
+     */
+    @GetMapping(value = {"/statistics/developerFocus/{type}/{repoId}"})
+    public ResponseBean getMostModifiedMethod(@PathVariable("repoId") String repoUuid, @PathVariable("type") String type, @RequestParam("branch") String branch, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+        try{
+            List<MostDevelopersInfo> data = statisticsService.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

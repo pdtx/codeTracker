@@ -128,14 +128,38 @@
     <!-- -->
     <resultMap id="mostModifiedMethodByPackage" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedMethod">
         <id property="uuid" column="uuid"/>
-        <result property="methodName" column="signature"/>
+        <result property="methodName" column="fullname"/>
         <result property="className" column="class_name"/>
         <result property="filePath" column="file_path"/>
         <result property="version" column="version"/>
     </resultMap>
 
     <select id="getMostModifiedMethodByPackage" parameterType="String" resultMap="mostModifiedMethodByPackage">
-        select uuid ,signature ,class_name ,file_path ,version from issueTracker.track_method where repo_uuid = #{repoUuid} and package_uuid = #{packageUuid} and branch = #{branch} order by version desc limit 20;
+        select uuid ,fullname ,class_name ,file_path ,version from issueTracker.track_method where repo_uuid = #{repoUuid} and package_uuid = #{packageUuid} and branch = #{branch} order by version desc limit 20;
+    </select>
+
+    <!-- -->
+    <resultMap id="developerFocusMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="name" column="name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
+    <select id="packageDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.root_uuid as uuid, t.package_name as name ,count(*) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t where r.root_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.root_uuid order by quantity desc;
+    </select>
+
+    <select id="fileDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.file_uuid as uuid, r.file_name as name , t.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t where r.file_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.file_uuid order by quantity desc;
+    </select>
+
+    <select id="classDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.class_uuid as uuid, r.class_name as name , t.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t where r.class_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.class_uuid order by quantity desc;
+    </select>
+
+    <select id="methodDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
+        select r.method_uuid as uuid, r.fullname as name , t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc;
     </select>
 
 

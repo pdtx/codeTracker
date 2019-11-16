@@ -120,5 +120,28 @@ public class StatisticsDao {
         return statisticsMapper.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
     }
 
+    /**
+     * developer most focus on in given time
+     */
+    public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
+        type = type.toUpperCase();
+        if (ProjectInfo.METHOD.name().equals(type)) {
+            return statisticsMapper.methodDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.CLASS.name().equals(type)) {
+            return statisticsMapper.classDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.FILE.name().equals(type)) {
+            return statisticsMapper.fileDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+
+        if (ProjectInfo.PACKAGE.name().equals(type)) {
+            return statisticsMapper.packageDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
+        }
+        return null;
+    }
+
 
 }
