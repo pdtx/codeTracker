@@ -172,22 +172,23 @@
         <result property="committer" column="committer"/>
         <result property="commitDate" column="commit_date"/>
         <result property="changeRelation" column="change_relation"/>
+        <result property="commitMessage" column="commit_message"/>
     </resultMap>
 
     <select id="packageCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation from issueTracker.raw_package where root_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_package where root_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
     </select>
 
     <select id="fileCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation from issueTracker.raw_file where file_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_file where file_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
     </select>
 
     <select id="classCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation from issueTracker.raw_class where class_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_class where class_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
     </select>
 
     <select id="methodCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation from issueTracker.raw_method where method_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_method where method_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
     </select>
 
 

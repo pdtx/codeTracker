@@ -7,6 +7,7 @@ public class CommitTimeLine {
     private String committer;
     private String commitDate;
     private String changeRelation;
+    private String commitMessage;
 
     CommitTimeLine() {
 
@@ -27,4 +28,8 @@ public class CommitTimeLine {
     public String getChangeRelation() { return changeRelation; }
 
     public void setChangeRelation(String changeRelation) { this.changeRelation = changeRelation; }
+
+    public String getCommitMessage() { return commitMessage; }
+
+    public void setCommitMessage(String commitMessage) { this.commitMessage = commitMessage; }
 }
