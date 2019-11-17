@@ -91,11 +91,11 @@
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_method where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from track_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">
-        update track_method
+        update track_class
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="list" item="item">

@@ -33,9 +33,8 @@ public class RepoInfoBuilder {
     private List<FieldInfo> fieldInfos;
     private List<MethodInfo> methodInfos;
 
+    private Map<String, List<PackageInfo>> moduleInfos;
 
-
-    private Map<String, Map<String, PackageInfo>> moduleInfos;
     private List<PackageInfo> packageInfos;
 
     public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit) {
@@ -92,39 +91,39 @@ public class RepoInfoBuilder {
             FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, repoUuid);
             String moduleName = fileInfoExtractor.getModuleName();
             String packageName = fileInfoExtractor.getPackageName();
-            // 特殊情况处理 ： 以 .java 处理 但是是空文件
+            // 特殊情况处理 ： 以 .java 结束但是是空文件
             if (packageName == null) {
                 continue;
             }
-            String packageUUID ;
+            String packageUuid ;
             // module 出现过
             if (modulePackage.containsKey(moduleName)) {
                 if (modulePackage.get(moduleName).contains(packageName)) {
-                    packageUUID = findPackageUuidByModuleAndPackage(moduleName, packageName);
+                    packageUuid = findPackageUuidByModuleAndPackage(moduleName, packageName);
                 } else {
-                    packageUUID = UUID.randomUUID().toString();
+                    packageUuid = UUID.randomUUID().toString();
                     List<String> packageList = modulePackage.get(moduleName);
                     packageList.add(packageName);
 
                     packageInfo = new PackageInfo(moduleName, packageName, fileInfoExtractor.getClassInfos());
-                    packageInfo.setUuid(packageUUID);
+                    packageInfo.setUuid(packageUuid);
                     packageInfo.setCommonInfo(commonInfo);
                     packageInfos.add(packageInfo);
                 }
             } else { // module 没出现过
-                packageUUID = UUID.randomUUID().toString();
+                packageUuid = UUID.randomUUID().toString();
                 List<String> packageList = new ArrayList<>();
                 packageList.add(packageName);
                 modulePackage.put(moduleName, packageList);
 
                 packageInfo = new PackageInfo(moduleName, packageName, fileInfoExtractor.getClassInfos());
-                packageInfo.setUuid(packageUUID);
+                packageInfo.setUuid(packageUuid);
                 packageInfo.setCommonInfo(commonInfo);
                 packageInfos.add(packageInfo);
             }
 
 
-            fileInfoExtractor.getFileInfo().setPackageUuid(packageUUID);
+            fileInfoExtractor.getFileInfo().setPackageUuid(packageUuid);
             fileInfoExtractor.parseClassInterface();
 
 
@@ -135,35 +134,35 @@ public class RepoInfoBuilder {
         }
 
         boolean isFirst = parentCommit.equals(commit);
-        final int FIRST_VERSION = 1;
+        final int firstVersion = 1;
         // 项目第一次分析 设置tracker Info
             if (isFirst) {
                 for (PackageInfo packageInfo1 : packageInfos) {
-                    packageInfo1.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, packageInfo1.getUuid()));
+                    packageInfo1.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, packageInfo1.getUuid()));
                 }
             }
             for (FileInfo fileInfo : fileInfos) {
                 fileInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fileInfo.getUuid()));
+                    fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, fileInfo.getUuid()));
                 }
             }
             for (ClassInfo classInfo : classInfos) {
                 classInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    classInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, classInfo.getUuid()));
+                    classInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, classInfo.getUuid()));
                 }
             }
             for (FieldInfo fieldInfo : fieldInfos) {
                 fieldInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION, fieldInfo.getUuid()));
+                    fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, fieldInfo.getUuid()));
                 }
             }
             for (MethodInfo methodInfo : methodInfos) {
                 methodInfo.setCommonInfo(commonInfo);
                 if (isFirst) {
-                    methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), FIRST_VERSION,methodInfo.getUuid()));
+                    methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion,methodInfo.getUuid()));
                 }
             }
 
@@ -200,15 +199,6 @@ public class RepoInfoBuilder {
     public String getCommitter() {
         return committer;
     }
-
-    public Map<String, PackageInfo> getPackageInfosByModuleName(String moduleName) {
-        return moduleInfos.get(moduleName);
-    }
-
-    public Map<String, Map<String, PackageInfo>> getModuleInfos() {
-        return moduleInfos;
-    }
-
 
     public void setCommitter(String committer) {
         this.committer = committer;
