@@ -11,6 +11,7 @@ import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -162,6 +163,30 @@ public class StatisticsDao {
         }
         return null;
     }
+
+
+    /**
+     * get commit info by committer
+     */
+    public List<CommitterHistory> getCommitInfoByCommitter(String committer){
+        List<CommitInfoByCommitter> commitList = statisticsMapper.getCommitInfoByCommitter(committer);
+        List<CommitterHistory> historyList = new ArrayList<>();
+        for (CommitInfoByCommitter cInfo: commitList) {
+            List<BasicInfoByCommitId> fileInfo = new ArrayList<>();
+            List<BasicInfoByCommitId> methodInfo = new ArrayList<>();
+            fileInfo = statisticsMapper.getFileInfoByCommitId(cInfo.getCommitId());
+            methodInfo = statisticsMapper.getMethodInfoByCommitId(cInfo.getCommitId());
+            CommitterHistory cHistory = new CommitterHistory();
+            cHistory.setCommitId(cInfo.getCommitId());
+            cHistory.setCommitDate(cInfo.getCommitDate());
+            cHistory.setFileList(fileInfo);
+            cHistory.setMethodList(methodInfo);
+            historyList.add(cHistory);
+        }
+        return historyList;
+    }
+
+
 
 
 }
