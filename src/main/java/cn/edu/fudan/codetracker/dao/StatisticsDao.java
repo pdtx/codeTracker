@@ -5,7 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
-import cn.edu.fudan.codetracker.domain.ProjectInfo;
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,19 +24,19 @@ public class StatisticsDao {
 
     public List<VersionStatistics> getStatisticsByType(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.getMethodStatistics(repoUuid, branch);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.getClassStatistics(repoUuid, branch);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.getFileStatistics(repoUuid, branch);
         }
 
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.getPackageStatistics(repoUuid, branch);
         }
         return null;
@@ -47,18 +47,18 @@ public class StatisticsDao {
      */
     public List<MostModifiedInfo> getMostModifiedInfo(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.getMostModifiedMethod(repoUuid, branch);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.getMostModifiedClass(repoUuid, branch);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.getMostModifiedFile(repoUuid, branch);
         }
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.getMostModifiedPackage(repoUuid,branch);
         }
         return null;
@@ -69,19 +69,19 @@ public class StatisticsDao {
      */
     public List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedMethod(repoUuid, branch);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedClass(repoUuid, branch);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedFile(repoUuid, branch);
         }
 
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.getMostDevelopersInvolvedPackage(repoUuid, branch);
         }
         return null;
@@ -92,19 +92,19 @@ public class StatisticsDao {
      */
     public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type,String beginDate, String endDate){
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.getMostModifiedMethodByTime(repoUuid,branch, beginDate, endDate);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.getMostModifiedClassByTime(repoUuid,branch, beginDate, endDate);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.getMostModifiedFileByTime(repoUuid,branch, beginDate, endDate);
         }
 
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.getMostModifiedPackageByTime(repoUuid,branch, beginDate, endDate);
         }
         return null;
@@ -122,19 +122,19 @@ public class StatisticsDao {
      */
     public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.methodDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.classDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.fileDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
         }
 
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.packageDeveloperFocusMost(repoUuid, branch, committer, beginDate, endDate);
         }
         return null;
@@ -145,19 +145,19 @@ public class StatisticsDao {
      */
     public List<CommitTimeLine> getCommitTimeLine(String type, String uuid){
         type = type.toUpperCase();
-        if (ProjectInfo.METHOD.name().equals(type)) {
+        if (ProjectInfoLevel.METHOD.name().equals(type)) {
             return statisticsMapper.methodCommitTimeLine(uuid);
         }
 
-        if (ProjectInfo.CLASS.name().equals(type)) {
+        if (ProjectInfoLevel.CLASS.name().equals(type)) {
             return statisticsMapper.classCommitTimeLine(uuid);
         }
 
-        if (ProjectInfo.FILE.name().equals(type)) {
+        if (ProjectInfoLevel.FILE.name().equals(type)) {
             return statisticsMapper.fileCommitTimeLine(uuid);
         }
 
-        if (ProjectInfo.PACKAGE.name().equals(type)) {
+        if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             return statisticsMapper.packageCommitTimeLine(uuid);
         }
         return null;

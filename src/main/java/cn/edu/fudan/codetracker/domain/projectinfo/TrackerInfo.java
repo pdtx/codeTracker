@@ -8,7 +8,9 @@ package cn.edu.fudan.codetracker.domain.projectinfo;
 public class TrackerInfo {
 
 
-    // 根据具体情况 单独获取
+    /**
+     * 根据具体情况 单独获取
+     */
     private int version;
     private String changeRelation;
     private String rootUUID;

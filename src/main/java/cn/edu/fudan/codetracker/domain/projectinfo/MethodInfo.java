@@ -5,28 +5,13 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.*;
 
-public class MethodInfo {
-
-    public MethodInfo() {
-    }
-
-     // mybatis 无需这种构造函数 只需要无参构造函数就行
-    // 反射机制需要调用类的无参构造函数
-    // mybatis 通过反射实现数据注入
-/*    public MethodInfo(String uuid, String fullname, String signature, String content, String commit,
-                      String committer, String commitMessage, java.sql.Timestamp commitDate, Integer version, String relation) {
-        this.uuid = uuid;
-        this.fullname = fullname;
-        this.signature = signature;
-        this.content = content;
-        this.commonInfo = new CommonInfo(commit, committer, commitMessage, commitDate);
-        this.trackerInfo = new TrackerInfo(version, relation);
-    }*/
+public class MethodInfo extends BaseInfo{
 
     private String uuid;
     private String simpleName;
@@ -38,7 +23,9 @@ public class MethodInfo {
     private String moduleName;
     private String packageName;
     private String fileName;
-    // filePath eg: scan-service/src/main/java/cn/edu/fudan/scanservice/tools/FindBugScanOperation.java
+    /**
+     * filePath eg: scan-service/src/main/java/cn/edu/fudan/scanservice/tools/FindBugScanOperation.java
+     */
     private String filePath;
     private String className;
     private String packageUuid;
@@ -53,7 +40,12 @@ public class MethodInfo {
     private JSONObject diff;
     private List<StatementInfo> statementInfos;
 
+    // mybatis 无需这种构造函数 只需要无参构造函数就行
+    // 反射机制需要调用类的无参构造函数
+    // mybatis 通过反射实现数据注入
 
+    public MethodInfo() {
+    }
 
     public MethodInfo(String className, String classUuid, String fileName, String filePath, String packageName, String packageUuid, String moduleName) {
         uuid = UUID.randomUUID().toString();
@@ -66,6 +58,25 @@ public class MethodInfo {
         this.moduleName = moduleName;
         diff = new JSONObject();
         diff.put("data",new JSONArray());
+    }
+
+    public MethodInfo(BaseInfo baseInfo, List<StatementInfo> children, ClassInfo parent, String className, String classUuid) {
+        super(baseInfo);
+        super.setParent(parent);
+        super.setChildren(children);
+        super.setProjectInfoLevel(ProjectInfoLevel.METHOD);
+
+        uuid = UUID.randomUUID().toString();
+        this.className = className;
+        this.classUuid = classUuid;
+        diff = new JSONObject();
+        diff.put("data",new JSONArray());
+
+        this.fileName = parent.getFileName();
+        this.filePath = parent.getFilePath();
+        this.packageName = parent.getPackageName();
+        this.packageUuid = parent.getPackageUuid();
+        this.moduleName = parent.getModuleName();
     }
 
     @Override

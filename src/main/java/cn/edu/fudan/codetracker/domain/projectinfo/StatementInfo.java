@@ -5,10 +5,13 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class StatementInfo {
+public class StatementInfo extends BaseInfo{
 
     private String uuid;
     private String body;
@@ -22,21 +25,26 @@ public class StatementInfo {
         this.end = end;
     }
 
+    public StatementInfo(BaseInfo baseInfo, List<StatementInfo> children, BaseInfo parent,String uuid, String body, int begin, int end) {
+        super(baseInfo);
+        super.setParent(parent);
+        super.setChildren(children);
+        super.setProjectInfoLevel(ProjectInfoLevel.STATEMENT);
+        this.uuid = uuid;
+        this.body = body;
+        this.begin = begin;
+        this.end = end;
+    }
+
     @Override
     public int hashCode() {
         return uuid.hashCode();
     }
 
-    public Map<String,String> StatToNeo4jNode(String label) {
-        Map<String,String> cqlListPara = new HashMap<>();
-        String cql = "CREATE (`" + uuid + "`:" + label + ":statement" + "{" +
-                "uuid:\"" + uuid  +
-                "\",body:{body},begin:" + begin +
-                ",end:" + end  + "})";
-        cqlListPara.put(cql,body);
-        return cqlListPara;
-    }
 
+    /**
+     * getter and setter
+     */
     public String getUuid() {
         return uuid;
     }
