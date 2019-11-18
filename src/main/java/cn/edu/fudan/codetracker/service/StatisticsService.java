@@ -23,4 +23,6 @@ public interface StatisticsService {
 
     List<CommitTimeLine> getCommitTimeLine(String type, String uuid);
 
+    List<CommitterHistory> getCommitHistoryByCommitter(String committer);
+
 }

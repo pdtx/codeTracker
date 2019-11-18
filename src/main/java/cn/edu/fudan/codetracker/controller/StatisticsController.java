@@ -136,6 +136,21 @@ public class StatisticsController {
         }
     }
 
+    /**
+     * 获取某个committer的commit历史
+     */
+    @GetMapping(value = {"/statistics/committer/{committer}"})
+    public ResponseBean getCommitHistoryByCommitter(@PathVariable("committer") String committer){
+        try{
+            List<CommitterHistory> data = statisticsService.getCommitHistoryByCommitter(committer);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
 
     @Autowired

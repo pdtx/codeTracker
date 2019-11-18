@@ -139,4 +139,22 @@ public interface StatisticsMapper {
      */
     List<CommitTimeLine> methodCommitTimeLine(@Param("uuid") String uuid);
 
+
+    /**
+     * get commit list by committer
+     */
+    List<CommitInfoByCommitter> getCommitInfoByCommitter(@Param("committer") String committer);
+
+
+    /**
+     * get file info by commitId
+     */
+    List<BasicInfoByCommitId> getFileInfoByCommitId(@Param("commitId") String commitId);
+    /**
+     * get method info by commitId
+     */
+    List<BasicInfoByCommitId> getMethodInfoByCommitId(@Param("commitId") String commitId);
+
+
+
 }

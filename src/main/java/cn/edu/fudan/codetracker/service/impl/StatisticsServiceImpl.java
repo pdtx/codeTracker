@@ -55,6 +55,11 @@ public class StatisticsServiceImpl implements StatisticsService {
         return statisticsDao.getCommitTimeLine(type, uuid);
     }
 
+    @Override
+    public List<CommitterHistory> getCommitHistoryByCommitter(String committer){
+        return statisticsDao.getCommitInfoByCommitter(committer);
+    }
+
 
     /**
      * getter and setter
