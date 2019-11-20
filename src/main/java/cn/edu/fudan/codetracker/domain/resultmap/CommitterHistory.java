@@ -5,6 +5,7 @@ import java.util.List;
 public class CommitterHistory {
     private String commitId;
     private String commitDate;
+    private String commitMessage;
     private List<BasicInfoByCommitId> fileList;
     private List<BasicInfoByCommitId> methodList;
 
@@ -27,6 +28,10 @@ public class CommitterHistory {
     public void setCommitDate(String commitDate) {
         this.commitDate = commitDate;
     }
+
+    public String getCommitMessage() { return commitMessage; }
+
+    public void setCommitMessage(String commitMessage) { this.commitMessage = commitMessage; }
 
     public List<BasicInfoByCommitId> getFileList() {
         return fileList;

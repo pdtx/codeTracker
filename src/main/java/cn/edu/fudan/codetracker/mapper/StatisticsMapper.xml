@@ -195,10 +195,11 @@
     <resultMap id="commitInfoByCommitter" type="cn.edu.fudan.codetracker.domain.resultmap.CommitInfoByCommitter">
         <id property="commitId" column="commitid"/>
         <result property="commitDate" column="commit_date"/>
+        <result property="commitMessage" column="commit_message"/>
     </resultMap>
 
     <select id="getCommitInfoByCommitter" parameterType="String" resultMap="commitInfoByCommitter">
-        select distinct commitid,commit_date from issueTracker.raw_package where committer = #{committer} order by commit_date;
+        select distinct commitid,commit_date,commit_message from issueTracker.raw_package where committer = #{committer} and commit_message not like "Merge%" order by commit_date;
     </select>
 
     <!-- -->

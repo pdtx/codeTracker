@@ -179,6 +179,7 @@ public class StatisticsDao {
             CommitterHistory cHistory = new CommitterHistory();
             cHistory.setCommitId(cInfo.getCommitId());
             cHistory.setCommitDate(cInfo.getCommitDate());
+            cHistory.setCommitMessage(cInfo.getCommitMessage());
             cHistory.setFileList(fileInfo);
             cHistory.setMethodList(methodInfo);
             historyList.add(cHistory);
