@@ -105,7 +105,7 @@ public class RepoInfoBuilder {
                     List<String> packageList = modulePackage.get(moduleName);
                     packageList.add(packageName);
 
-                    packageInfo = new PackageInfo(moduleName, packageName, fileInfoExtractor.getClassInfos());
+                    packageInfo = new PackageInfo(moduleName, packageName);
                     packageInfo.setUuid(packageUuid);
                     packageInfo.setCommonInfo(commonInfo);
                     packageInfos.add(packageInfo);
@@ -116,7 +116,7 @@ public class RepoInfoBuilder {
                 packageList.add(packageName);
                 modulePackage.put(moduleName, packageList);
 
-                packageInfo = new PackageInfo(moduleName, packageName, fileInfoExtractor.getClassInfos());
+                packageInfo = new PackageInfo(moduleName, packageName);
                 packageInfo.setUuid(packageUuid);
                 packageInfo.setCommonInfo(commonInfo);
                 packageInfos.add(packageInfo);

@@ -5,9 +5,13 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-public class FileInfo {
+public class FileInfo extends BaseInfo{
 
 
     private String uuid;
@@ -22,7 +26,9 @@ public class FileInfo {
     private TrackerInfo trackerInfo;
     private CommonInfo commonInfo;
     
+    public FileInfo() {
 
+    }
 
     public FileInfo(String fileName, String filePath, String packageName, String moduleName) {
         uuid = UUID.randomUUID().toString();
@@ -32,13 +38,18 @@ public class FileInfo {
         this.moduleName = moduleName;
     }
 
-/*    public FileInfo(String fileName, String packageName, String moduleName, String filePath, String) {
+    public FileInfo(BaseInfo baseInfo , List<ClassInfo> children, PackageInfo parent, String fileName, String filePath) {
+        super(baseInfo);
+        super.setParent(parent);
+        super.setChildren(children);
+        super.setProjectInfoLevel(ProjectInfoLevel.FILE);
+
         uuid = UUID.randomUUID().toString();
         this.fileName = fileName;
-        this.packageName = packageName;
-        this.moduleName = moduleName;
+        this.packageName = parent.getPackageName();
+        this.moduleName = parent.getModuleName();
         this.filePath = filePath;
-    }*/
+    }
 
     /**
      *filePath 可以唯一指定一个file

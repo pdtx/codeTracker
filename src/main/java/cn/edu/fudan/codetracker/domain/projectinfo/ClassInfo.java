@@ -5,9 +5,11 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+
 import java.util.*;
 
-public class ClassInfo {
+public class ClassInfo extends BaseInfo{
 
     private String uuid;
     private String fullname;
@@ -22,8 +24,6 @@ public class ClassInfo {
 
     private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
-
-
 
     private int begin;
     private int end;
@@ -48,6 +48,26 @@ public class ClassInfo {
         this.end = end;
     }
 
+    public ClassInfo(BaseInfo baseInfo, List<? extends BaseInfo> children, FileInfo parent,String fullname, String className, String modifier, int begin, int end) {
+        super(baseInfo);
+        super.setParent(parent);
+        super.setChildren(children);
+        super.setProjectInfoLevel(ProjectInfoLevel.CLASS);
+
+        uuid = UUID.randomUUID().toString();
+        this.fullname = fullname;
+        this.className = className;
+        this.modifier = modifier;
+        this.begin = begin;
+        this.end = end;
+
+        this.filePath = parent.getFilePath();
+        this.fileName = parent.getFileName();
+        this.packageName = parent.getPackageName();
+        this.moduleName = parent.getmoduleName();
+        this.fileUuid = parent.getUuid();
+        this.packageUuid = parent.getPackageUuid();
+    }
 
     public String getClassName() {
         return className;

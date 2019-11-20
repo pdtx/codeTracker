@@ -5,9 +5,13 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-public class FieldInfo {
+public class FieldInfo extends BaseInfo{
 
     private String uuid;
     private String fullName;
@@ -29,7 +33,7 @@ public class FieldInfo {
     private TrackerInfo trackerInfo;
 
     public FieldInfo(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
-                     String fileName, String filePath, String className, String initValue) {
+                          String fileName, String filePath, String className, String initValue) {
         uuid = UUID.randomUUID().toString();
         this.simpleName = simpleName;
         this.modifier = modifier;
@@ -42,6 +46,28 @@ public class FieldInfo {
         this.filePath = filePath;
         this.className = className;
         this.initValue = initValue;
+    }
+
+    public FieldInfo(BaseInfo baseInfo, List<StatementInfo> children, ClassInfo parent,
+                     String simpleName, String modifier, String simpleType, String initValue) {
+        super(baseInfo);
+        super.setParent(parent);
+        super.setChildren(children);
+        super.setProjectInfoLevel(ProjectInfoLevel.FIELD);
+
+        uuid = UUID.randomUUID().toString();
+        this.simpleName = simpleName;
+        this.modifier = modifier;
+        this.simpleType = simpleType;
+        this.initValue = initValue;
+
+        this.classUuid = parent.getUuid();
+        this.packageUuid = parent.getPackageUuid();
+        this.moduleName = parent.getModuleName();
+        this.packageName = parent.getClassName();
+        this.fileName = parent.getFileName();
+        this.filePath = parent.getFilePath();
+        this.className = parent.getClassName();
     }
 
 
