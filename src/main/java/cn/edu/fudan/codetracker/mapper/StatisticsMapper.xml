@@ -150,7 +150,6 @@
         <result property="name" column="name"/>
         <result property="filePath" column="file_path"/>
         <result property="quantity" column="quantity"/>
-        <result property="content" column="content"/>
     </resultMap>
 
     <select id="packageDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
@@ -166,8 +165,39 @@
     </select>
 
     <select id="methodDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.method_uuid as uuid, r.repo_uuid, r.branch, r.fullname as name , r.content, t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 20;
+        select r.method_uuid as uuid, r.repo_uuid, r.branch, r.fullname as name , t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 20;
     </select>
+
+    <!-- -->
+    <resultMap id="CommitMessageInfo" type="String">
+        <id property="commitMessage" column="commit_message"/>
+    </resultMap>
+
+    <select id="getCommitMessageByPackageId" parameterType="String" resultMap="CommitMessageInfo">
+        select commit_message from issueTracker.raw_package where root_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+    </select>
+
+    <select id="getCommitMessageByFileId" parameterType="String" resultMap="CommitMessageInfo">
+        select commit_message from issueTracker.raw_file where file_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+    </select>
+
+    <select id="getCommitMessageByClassId" parameterType="String" resultMap="CommitMessageInfo">
+        select commit_message from issueTracker.raw_method where class_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+    </select>
+
+    <select id="getCommitMessageByMethodId" parameterType="String" resultMap="CommitMessageInfo">
+        select commit_message from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+    </select>
+
+    <!-- -->
+    <resultMap id="ContentInfo" type="String">
+        <id property="content" column="content"/>
+    </resultMap>
+
+    <select id="getContentByMethodId" parameterType="String" resultMap="ContentInfo">
+        select content from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+    </select>
+
 
     <!-- -->
     <resultMap id="commitTimeLine" type="cn.edu.fudan.codetracker.domain.resultmap.CommitTimeLine">

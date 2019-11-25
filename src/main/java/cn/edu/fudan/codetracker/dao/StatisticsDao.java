@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -123,20 +124,49 @@ public class StatisticsDao {
      */
     public List<DeveloperMostFocus> getDeveloperFocusMost(String type, String committer, String beginDate, String endDate){
         type = type.toUpperCase();
+        List<DeveloperMostFocus> developerMostFocusList = new ArrayList<>();
+        List<DeveloperMostFocus> temp;
+        List<String> commitMessage;
         if (ProjectInfoLevel.METHOD.name().equals(type)) {
-            return statisticsMapper.methodDeveloperFocusMost(committer, beginDate, endDate);
+            temp = statisticsMapper.methodDeveloperFocusMost(committer, beginDate, endDate);
+            for (DeveloperMostFocus dmf: temp) {
+                commitMessage = statisticsMapper.getCommitMessageByMethodId(dmf.getUuid(),committer,beginDate,endDate);
+                List<String> content = statisticsMapper.getContentByMethodId(dmf.getUuid(),committer,beginDate,endDate);
+                dmf.setCommitMessage(commitMessage);
+                dmf.setContent(content);
+                developerMostFocusList.add(dmf);
+            }
+            return developerMostFocusList;
         }
 
         if (ProjectInfoLevel.CLASS.name().equals(type)) {
-            return statisticsMapper.classDeveloperFocusMost(committer, beginDate, endDate);
+            temp = statisticsMapper.classDeveloperFocusMost(committer, beginDate, endDate);
+            for (DeveloperMostFocus dmf: temp) {
+                commitMessage = statisticsMapper.getCommitMessageByClassId(dmf.getUuid(),committer,beginDate,endDate);
+                dmf.setCommitMessage(commitMessage);
+                developerMostFocusList.add(dmf);
+            }
+            return developerMostFocusList;
         }
 
         if (ProjectInfoLevel.FILE.name().equals(type)) {
-            return statisticsMapper.fileDeveloperFocusMost(committer, beginDate, endDate);
+            temp = statisticsMapper.fileDeveloperFocusMost(committer, beginDate, endDate);
+            for (DeveloperMostFocus dmf: temp) {
+                commitMessage = statisticsMapper.getCommitMessageByFileId(dmf.getUuid(),committer,beginDate,endDate);
+                dmf.setCommitMessage(commitMessage);
+                developerMostFocusList.add(dmf);
+            }
+            return developerMostFocusList;
         }
 
         if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
-            return statisticsMapper.packageDeveloperFocusMost(committer, beginDate, endDate);
+            temp = statisticsMapper.packageDeveloperFocusMost(committer, beginDate, endDate);
+            for (DeveloperMostFocus dmf: temp) {
+                commitMessage = statisticsMapper.getCommitMessageByPackageId(dmf.getUuid(),committer,beginDate,endDate);
+                dmf.setCommitMessage(commitMessage);
+                developerMostFocusList.add(dmf);
+            }
+            return developerMostFocusList;
         }
         return null;
     }

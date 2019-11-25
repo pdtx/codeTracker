@@ -1,15 +1,18 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
+import java.util.List;
+
 public class DeveloperMostFocus {
     private String repo;
     private String branch;
     private String uuid;
     private String name;
     private int quantity;
+    private List<String> commitMessage;
     private String filePath;
-    private String content;
+    private List<String> content;
 
-    DeveloperMostFocus() {
+    public DeveloperMostFocus() {
 
     }
 
@@ -37,7 +40,11 @@ public class DeveloperMostFocus {
 
     public void setFilePath(String filePath) { this.filePath = filePath; }
 
-    public String getContent() { return content; }
+    public List<String> getCommitMessage() { return commitMessage; }
 
-    public void setContent(String content) { this.content = content; }
+    public void setCommitMessage(List<String> commitMessage) { this.commitMessage = commitMessage; }
+
+    public List<String> getContent() { return content; }
+
+    public void setContent(List<String> content) { this.content = content; }
 }
