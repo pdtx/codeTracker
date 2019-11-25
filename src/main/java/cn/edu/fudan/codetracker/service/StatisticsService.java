@@ -19,7 +19,7 @@ public interface StatisticsService {
 
     List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch);
 
-    List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate);
+    List<DeveloperMostFocus> getDeveloperFocusMost(String type, String committer,String beginDate, String endDate);
 
     List<CommitTimeLine> getCommitTimeLine(String type, String uuid);
 

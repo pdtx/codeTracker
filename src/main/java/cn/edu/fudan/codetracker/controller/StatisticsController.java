@@ -108,10 +108,10 @@ public class StatisticsController {
     /**
      * 获取指定时间内某个开发人员工作集中在何处
      */
-    @GetMapping(value = {"/statistics/developerFocus/{type}/{repoId}"})
-    public ResponseBean getMostModifiedMethod(@PathVariable("repoId") String repoUuid, @PathVariable("type") String type, @RequestParam("branch") String branch, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+    @GetMapping(value = {"/statistics/developerFocus/{type}"})
+    public ResponseBean getMostModifiedMethod(@PathVariable("type") String type, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
         try{
-            List<MostDevelopersInfo> data = statisticsService.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
+            List<DeveloperMostFocus> data = statisticsService.getDeveloperFocusMost(type, committer, beginDate, endDate);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

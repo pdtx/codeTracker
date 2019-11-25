@@ -90,19 +90,19 @@
     </resultMap>
 
     <select id="getMostDevelopersInvolvedMethod" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.method_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.method_uuid  order by quantity desc;
+        select r.method_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t  where r.method_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.method_uuid  order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedClass" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.class_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t  where r.class_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.class_uuid  order by quantity desc;
+        select r.class_uuid as uuid,r.fullname as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t  where r.class_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.class_uuid  order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedFile" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.file_uuid as uuid ,r.file_name as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t  where r.file_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.file_uuid  order by quantity desc;
+        select r.file_uuid as uuid ,r.file_name as name,t.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t  where r.file_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.file_uuid  order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedPackage" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.root_uuid as uuid ,t.package_name as name,count(distinct(r.committer)) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t  where r.root_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.root_uuid  order by quantity desc;
+        select r.root_uuid as uuid ,t.package_name as name,count(distinct(r.committer)) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t  where r.root_uuid=t.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.root_uuid  order by quantity desc;
     </select>
 
     <!-- -->
@@ -143,27 +143,30 @@
     </select>
 
     <!-- -->
-    <resultMap id="developerFocusMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostDevelopersInfo">
+    <resultMap id="developerFocusMost" type="cn.edu.fudan.codetracker.domain.resultmap.DeveloperMostFocus">
         <id property="uuid" column="uuid"/>
+        <result property="repo" column="repo_uuid"/>
+        <result property="branch" column="branch"/>
         <result property="name" column="name"/>
         <result property="filePath" column="file_path"/>
         <result property="quantity" column="quantity"/>
+        <result property="content" column="content"/>
     </resultMap>
 
     <select id="packageDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.root_uuid as uuid, t.package_name as name ,count(*) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t where r.root_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc;
+        select r.root_uuid as uuid, r.repo_uuid, r.branch, t.package_name as name , count(*) as quantity from issueTracker.raw_package as r,issueTracker.track_package as t where r.root_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc limit 20;
     </select>
 
     <select id="fileDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.file_uuid as uuid, r.file_name as name , t.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t where r.file_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.file_uuid order by quantity desc;
+        select r.file_uuid as uuid, r.repo_uuid, r.branch, r.file_name as name , t.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.track_file as t where r.file_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.file_uuid order by quantity desc limit 20;
     </select>
 
     <select id="classDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.class_uuid as uuid, r.class_name as name , t.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t where r.class_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc;
+        select r.class_uuid as uuid, r.repo_uuid, r.branch, r.class_name as name , t.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.track_class as t where r.class_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc limit 20;
     </select>
 
     <select id="methodDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.method_uuid as uuid, r.fullname as name , t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.repo_uuid = #{repoUuid} and r.committer = #{committer} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc;
+        select r.method_uuid as uuid, r.repo_uuid, r.branch, r.fullname as name , r.content, t.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.track_method as t where r.method_uuid = t.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 20;
     </select>
 
     <!-- -->
@@ -199,7 +202,7 @@
     </resultMap>
 
     <select id="getCommitInfoByCommitter" parameterType="String" resultMap="commitInfoByCommitter">
-        select distinct commitid,commit_date,commit_message from issueTracker.raw_package where committer = #{committer} and commit_message not like "Merge%" order by commit_date;
+        select distinct commitid,commit_date,commit_message from issueTracker.raw_method where committer = #{committer} and commit_message not like "Merge%" order by commit_date;
     </select>
 
     <!-- -->
