@@ -16,7 +16,6 @@ public class PackageInfo extends BaseInfo{
     private String packageName;
     private String moduleName;
 
-    private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
     private List<FileInfo> fileInfos;
@@ -101,14 +100,6 @@ public class PackageInfo extends BaseInfo{
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
-
-    public void setCommonInfo(CommonInfo commonInfo) {
-        this.commonInfo = commonInfo;
     }
 
     public TrackerInfo getTrackerInfo() {

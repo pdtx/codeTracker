@@ -25,7 +25,6 @@ public class FileInfo extends BaseInfo{
     private String packageUuid;
 
     private TrackerInfo trackerInfo;
-    private CommonInfo commonInfo;
     
     public FileInfo() {
 
@@ -124,14 +123,6 @@ public class FileInfo extends BaseInfo{
 
     public void setPackageUuid(String packageUuid) {
         this.packageUuid = packageUuid;
-    }
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
-
-    public void setCommonInfo(CommonInfo commonInfo) {
-        this.commonInfo = commonInfo;
     }
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {

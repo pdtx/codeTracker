@@ -190,5 +190,6 @@ public class RepoInfoBuilder {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         String branch = "master";
         RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "cef2d7ba2cf3b581f0c8d8da79d07339527129f8",  repoPath, jGitHelper,  branch, "null");
+        System.out.println("done");
     }
 }

@@ -127,7 +127,7 @@ public class FileInfoExtractor {
             List<MethodInfo> methodInfos = parseConstructors(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class), classInfo);
             methodInfos.addAll(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
             classInfo.setMethodInfos(methodInfos);
-
+            classInfo.setChildren(methodInfos);
             classInfos.add(classInfo);
         }
         fileInfo.setChildren(classInfos);
@@ -265,24 +265,39 @@ public class FileInfoExtractor {
             // BaseInfo baseInfo, BaseInfo parent, String body, int begin, int end, String methodUuid
             if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
                 StatementInfo statementInfo = new StatementInfo(baseInfo, methodInfo, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
-                statementInfo.setChildren(parseLevelTwoStmt(statement.findAll(Statement.class), methodInfo, statementInfo));
+                statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
+                //statementInfo.setChildren(parseLevelTwoStmt2(statement.getChildNodes(), methodInfo, statementInfo));
                 statementInfos.add(statementInfo);
             }
         }
         return statementInfos;
     }
 
-    private List<StatementInfo> parseLevelTwoStmt(List<Statement>  statementList, MethodInfo methodInfo, StatementInfo parent) {
+    private List<StatementInfo> parseLevelTwoStmt(Statement parentStmt, MethodInfo methodInfo, StatementInfo parent) {
         List<StatementInfo> statementInfos = new ArrayList<>();
-        for (Statement statement : statementList) {
+        for (Node node : parentStmt.getChildNodes()) {
+            if (node.findFirst(Statement.class).isPresent()) {
+                Statement statement = node.findFirst(Statement.class).get();
+                StatementInfo statementInfo = new StatementInfo(baseInfo, parent, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
+                statementInfos.add(statementInfo);
+            }
+        }
+
+/*        boolean isFirst = true;
+        for (Statement statement : parentStmt.findAll(Statement.class)) {
+            if (isFirst) {
+                isFirst = false;
+                continue;
+            }
             if (statement.getParentNode().get().getRange().get().begin.line == parent.getBegin() &&
                     statement.getParentNode().get().getRange().get().end.line == parent.getEnd() &&
                     statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
                 StatementInfo statementInfo = new StatementInfo(baseInfo, parent, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
-                statementInfo.setChildren(parseLevelTwoStmt(statement.findAll(Statement.class), methodInfo, statementInfo));
+                statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
                 statementInfos.add(statementInfo);
             }
-        }
+        }*/
         return statementInfos;
     }
 

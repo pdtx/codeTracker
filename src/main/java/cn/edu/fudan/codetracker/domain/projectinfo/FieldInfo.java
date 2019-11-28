@@ -19,7 +19,6 @@ public class FieldInfo extends BaseInfo{
     private String simpleType;
     private String initValue;
 
-    private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
     public FieldInfo() {
@@ -74,14 +73,6 @@ public class FieldInfo extends BaseInfo{
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
-
-    public void setCommonInfo(CommonInfo commonInfo) {
-        this.commonInfo = commonInfo;
     }
 
     public TrackerInfo getTrackerInfo() {
