@@ -6,15 +6,16 @@
 package cn.edu.fudan.codetracker.util;
 
 
-import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Slf4j
 public class RepoInfoBuilder {
 
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -25,8 +26,7 @@ public class RepoInfoBuilder {
     private String branch;
     private String parentCommit;
     private JGitHelper jGitHelper;
-
-    private CommonInfo commonInfo;
+    private BaseInfo baseInfo;
 
     private List<FileInfo> fileInfos;
     private List<ClassInfo> classInfos;
@@ -68,112 +68,61 @@ public class RepoInfoBuilder {
             Date date = FORMATTER.parse(jGitHelper.getCommitTime(commit));
             committer = jGitHelper.getAuthorName(commit);
             commitMessage = jGitHelper.getMess(commit);
-            commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
-                    date, commit, committer, commitMessage, this.parentCommit);
+/*            commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
+                    date, commit, committer, commitMessage, this.parentCommit);*/
+            // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
+            baseInfo = new BaseInfo(repoUuid, branch, commit, date, committer, commitMessage, this.parentCommit);
         }catch (ParseException e) {
             e.printStackTrace();
         }
         packageInfos = new ArrayList<>();
-        moduleInfos = new HashMap<>();
+        moduleInfos = new HashMap<>(4);
         analyze(fileList);
     }
 
-
     private void analyze(List<String> fileList) {
-
         // 一个module内包含哪些package
-        Map<String, List<String>> modulePackage = new WeakHashMap<>();
-        PackageInfo packageInfo;
         for (String path : fileList) {
             if (path.toLowerCase().contains("test.java")) {
                 continue;
             }
-            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, repoUuid);
-            String moduleName = fileInfoExtractor.getModuleName();
+            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, repoUuid);
             String packageName = fileInfoExtractor.getPackageName();
-            // 特殊情况处理 ： 以 .java 结束但是是空文件
+            // special situation ： end with .java but empty
             if (packageName == null) {
                 continue;
             }
-            String packageUuid ;
-            // module 出现过
-            if (modulePackage.containsKey(moduleName)) {
-                if (modulePackage.get(moduleName).contains(packageName)) {
-                    packageUuid = findPackageUuidByModuleAndPackage(moduleName, packageName);
+            String moduleName = fileInfoExtractor.getModuleName();
+            //BaseInfo baseInfo, List<FileInfo> children, String moduleName, String packageName
+            PackageInfo packageInfo = new PackageInfo(baseInfo, moduleName, packageName);
+            if (moduleInfos.containsKey(moduleName)) {
+                if (moduleInfos.get(moduleName).contains(packageInfo)) {
+                    packageInfo = findPackageInfoByPackageName(packageInfo, moduleInfos.get(moduleName));
                 } else {
-                    packageUuid = UUID.randomUUID().toString();
-                    List<String> packageList = modulePackage.get(moduleName);
-                    packageList.add(packageName);
-
-                    packageInfo = new PackageInfo(moduleName, packageName);
-                    packageInfo.setUuid(packageUuid);
-                    packageInfo.setCommonInfo(commonInfo);
-                    packageInfos.add(packageInfo);
+                    moduleInfos.get(moduleName).add(packageInfo);
                 }
-            } else { // module 没出现过
-                packageUuid = UUID.randomUUID().toString();
-                List<String> packageList = new ArrayList<>();
-                packageList.add(packageName);
-                modulePackage.put(moduleName, packageList);
-
-                packageInfo = new PackageInfo(moduleName, packageName);
-                packageInfo.setUuid(packageUuid);
-                packageInfo.setCommonInfo(commonInfo);
+            } else {
+                List<PackageInfo> packageInfos = new ArrayList<>();
                 packageInfos.add(packageInfo);
+                moduleInfos.put(moduleName, packageInfos);
             }
-
-
-            fileInfoExtractor.getFileInfo().setPackageUuid(packageUuid);
+            fileInfoExtractor.getFileInfo().setPackageUuid(packageInfo.getUuid());
+            // 设置父节点
+            fileInfoExtractor.getFileInfo().setParent(packageInfo);
             fileInfoExtractor.parseClassInterface();
-
-
-            fileInfos.add(fileInfoExtractor.getFileInfo());
-            classInfos.addAll(fileInfoExtractor.getClassInfos());
-            fieldInfos.addAll(fileInfoExtractor.getFieldInfos());
-            methodInfos.addAll(fileInfoExtractor.getMethodInfos());
+            packageInfo.getFileInfos().add(fileInfoExtractor.getFileInfo());
+            // 设置子节点
+            packageInfo.setChildren(packageInfo.getFileInfos());
         }
-
-        boolean isFirst = parentCommit.equals(commit);
-        final int firstVersion = 1;
-        // 项目第一次分析 设置tracker Info
-            if (isFirst) {
-                for (PackageInfo packageInfo1 : packageInfos) {
-                    packageInfo1.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, packageInfo1.getUuid()));
-                }
-            }
-            for (FileInfo fileInfo : fileInfos) {
-                fileInfo.setCommonInfo(commonInfo);
-                if (isFirst) {
-                    fileInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, fileInfo.getUuid()));
-                }
-            }
-            for (ClassInfo classInfo : classInfos) {
-                classInfo.setCommonInfo(commonInfo);
-                if (isFirst) {
-                    classInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, classInfo.getUuid()));
-                }
-            }
-            for (FieldInfo fieldInfo : fieldInfos) {
-                fieldInfo.setCommonInfo(commonInfo);
-                if (isFirst) {
-                    fieldInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion, fieldInfo.getUuid()));
-                }
-            }
-            for (MethodInfo methodInfo : methodInfos) {
-                methodInfo.setCommonInfo(commonInfo);
-                if (isFirst) {
-                    methodInfo.setTrackerInfo(new TrackerInfo(RelationShip.ADD.name(), firstVersion,methodInfo.getUuid()));
-                }
-            }
-
     }
 
-    private String findPackageUuidByModuleAndPackage(String moduleName, String packageName) {
+    private PackageInfo findPackageInfoByPackageName(PackageInfo p1, List<PackageInfo> packageInfos) {
         for (PackageInfo packageInfo : packageInfos) {
-            if (packageInfo.getPackageName().equals(packageName) && packageInfo.getModuleName().equals(moduleName)) {
-                return packageInfo.getUuid();
+            if (p1.getPackageName().equals(packageInfo.getPackageName())) {
+                return packageInfo;
             }
         }
+        log.error("could not find package! package name:{},module name:{}", p1.getPackageName(), p1.getModuleName());
         return null;
     }
 
@@ -183,7 +132,6 @@ public class RepoInfoBuilder {
                 (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(projectDir);
         return pathList;
     }
-
 
     /**
      * getter and setter
@@ -235,5 +183,12 @@ public class RepoInfoBuilder {
     @org.jetbrains.annotations.Contract(pure = true)
     private String getParentCommit() {
         return this.parentCommit;
+    }
+
+    public static void main(String[] args) {
+        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        String branch = "master";
+        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "cef2d7ba2cf3b581f0c8d8da79d07339527129f8",  repoPath, jGitHelper,  branch, "null");
     }
 }

@@ -28,14 +28,16 @@ public class BaseInfo {
      */
     private String parentCommit;
 
+    /**
+     * tree parent
+     */
     private BaseInfo parent;
     private List<? extends BaseInfo> children;
     private ProjectInfoLevel projectInfoLevel;
 
-
     BaseInfo() { }
 
-    BaseInfo(String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit) {
+    public BaseInfo(String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit) {
         this.repoUuid = repoUuid;
         this.branch = branch;
         this.commitDate = commitDate;
@@ -43,6 +45,11 @@ public class BaseInfo {
         this.committer = committer;
         this.commitMessage = commitMessage;
         this.parentCommit = parentCommit;
+
+        this.startCommit = commit;
+        this.endCommit = commit;
+        this.startCommitDate = commitDate;
+        this.endCommitDate = commitDate;
     }
 
     public BaseInfo(BaseInfo baseInfo) {

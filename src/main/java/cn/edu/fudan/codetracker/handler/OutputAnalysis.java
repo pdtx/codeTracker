@@ -143,9 +143,9 @@ public class OutputAnalysis {
                 RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
                 RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(packageDao, fileDao, classDao, fieldDao, methodDao, preRepoInfo, curRepoInfo);
-                analyzeDiffFile.addInfoConstruction(addFilesList);
+/*                analyzeDiffFile.addInfoConstruction(addFilesList);
                 analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
-                analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);
+                analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);*/
                 analyzeDiffFiles.add(analyzeDiffFile);
             }
 

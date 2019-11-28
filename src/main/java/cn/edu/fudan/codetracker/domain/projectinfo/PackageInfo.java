@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 
 import java.util.*;
 
@@ -18,7 +19,7 @@ public class PackageInfo extends BaseInfo{
     private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
-    // 根据具体情况 单独获取
+    private List<FileInfo> fileInfos;
 
     public PackageInfo() {
 
@@ -30,13 +31,15 @@ public class PackageInfo extends BaseInfo{
         this.packageName = packageName;
     }
 
-    public PackageInfo(BaseInfo baseInfo, List<FileInfo> children, String moduleName, String packageName) {
+    public PackageInfo(BaseInfo baseInfo, String moduleName, String packageName) {
         super(baseInfo);
         super.setParent(null);
-        super.setChildren(children);
         super.setProjectInfoLevel(ProjectInfoLevel.PACKAGE);
+        fileInfos = new ArrayList<>();
+        uuid = UUID.randomUUID().toString();
         this.moduleName = moduleName;
         this.packageName = packageName;
+        trackerInfo =  new TrackerInfo(RelationShip.ADD.name(), 1, uuid);
     }
 
     @Override
@@ -64,7 +67,8 @@ public class PackageInfo extends BaseInfo{
 
         if(o instanceof PackageInfo){
             PackageInfo packageInfo = (PackageInfo) o;
-            return this.uuid.equals(packageInfo.uuid);
+            return this.moduleName.equals(packageInfo.moduleName) &&
+                    this.packageName.equals(packageInfo.packageName) ;
         }
         return false;
     }
@@ -114,5 +118,13 @@ public class PackageInfo extends BaseInfo{
 
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    }
+
+    public List<FileInfo> getFileInfos() {
+        return fileInfos;
+    }
+
+    public void setFileInfos(List<FileInfo> fileInfos) {
+        this.fileInfos = fileInfos;
     }
 }

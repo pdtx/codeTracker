@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 
 import java.util.Date;
 import java.util.List;
@@ -38,17 +39,15 @@ public class FileInfo extends BaseInfo{
         this.moduleName = moduleName;
     }
 
-    public FileInfo(BaseInfo baseInfo , List<ClassInfo> children, PackageInfo parent, String fileName, String filePath) {
+    public FileInfo(BaseInfo baseInfo, String fileName, String filePath, String packageName, String moduleName) {
         super(baseInfo);
-        super.setParent(parent);
-        super.setChildren(children);
         super.setProjectInfoLevel(ProjectInfoLevel.FILE);
-
         uuid = UUID.randomUUID().toString();
         this.fileName = fileName;
-        this.packageName = parent.getPackageName();
-        this.moduleName = parent.getModuleName();
         this.filePath = filePath;
+        this.packageName = packageName;
+        this.moduleName = moduleName;
+        trackerInfo =  new TrackerInfo(RelationShip.ADD.name(), 1, uuid);
     }
 
     /**
@@ -146,4 +145,5 @@ public class FileInfo extends BaseInfo{
     public void setTrackerInfo(TrackerInfo trackerInfo) {
         this.trackerInfo = trackerInfo;
     }
+
 }

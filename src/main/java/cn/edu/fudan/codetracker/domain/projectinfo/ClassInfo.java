@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 
 import java.util.*;
 
@@ -29,29 +30,13 @@ public class ClassInfo extends BaseInfo{
     private int end;
     private List<String> extendedList;
     private List<String> implementedList;
+
     private List<FieldInfo> fieldInfos;
     private List<MethodInfo> methodInfos;
 
-    public ClassInfo(String fullname, String className, String filePath, String fileName, String packageName,
-                     String moduleName, String fileUuid, String packageUuid, String modifier, int begin, int end) {
-        uuid = UUID.randomUUID().toString();
-        this.fullname = fullname;
-        this.className = className;
-        this.filePath = filePath;
-        this.fileName = fileName;
-        this.packageName = packageName;
-        this.moduleName = moduleName;
-        this.fileUuid = fileUuid;
-        this.packageUuid = packageUuid;
-        this.modifier = modifier;
-        this.begin = begin;
-        this.end = end;
-    }
-
-    public ClassInfo(BaseInfo baseInfo, List<? extends BaseInfo> children, FileInfo parent,String fullname, String className, String modifier, int begin, int end) {
+    public ClassInfo(BaseInfo baseInfo, FileInfo parent,String fullname, String className, String modifier, int begin, int end) {
         super(baseInfo);
         super.setParent(parent);
-        super.setChildren(children);
         super.setProjectInfoLevel(ProjectInfoLevel.CLASS);
 
         uuid = UUID.randomUUID().toString();
@@ -67,6 +52,7 @@ public class ClassInfo extends BaseInfo{
         this.moduleName = parent.getmoduleName();
         this.fileUuid = parent.getUuid();
         this.packageUuid = parent.getPackageUuid();
+        trackerInfo =  new TrackerInfo(RelationShip.ADD.name(), 1, uuid);
     }
 
     public String getClassName() {

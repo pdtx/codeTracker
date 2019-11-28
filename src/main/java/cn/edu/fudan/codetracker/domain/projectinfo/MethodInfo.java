@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.RelationShip;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -18,19 +19,9 @@ public class MethodInfo extends BaseInfo{
     private String fullname;
     private String signature;
     private String content;
-
-    private String classUuid;
-    private String moduleName;
-    private String packageName;
-    private String fileName;
     /**
      * filePath eg: scan-service/src/main/java/cn/edu/fudan/scanservice/tools/FindBugScanOperation.java
      */
-    private String filePath;
-    private String className;
-    private String packageUuid;
-
-    private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
     private String modifier;
@@ -38,50 +29,28 @@ public class MethodInfo extends BaseInfo{
     private int begin;
     private int end;
     private JSONObject diff;
-    private List<StatementInfo> statementInfos;
 
     // mybatis 无需这种构造函数 只需要无参构造函数就行
     // 反射机制需要调用类的无参构造函数
     // mybatis 通过反射实现数据注入
-
     public MethodInfo() {
     }
 
-    public MethodInfo(String className, String classUuid, String fileName, String filePath, String packageName, String packageUuid, String moduleName) {
-        uuid = UUID.randomUUID().toString();
-        this.className = className;
-        this.classUuid = classUuid;
-        this.fileName = fileName;
-        this.filePath = filePath;
-        this.packageName = packageName;
-        this.packageUuid = packageUuid;
-        this.moduleName = moduleName;
-        diff = new JSONObject();
-        diff.put("data",new JSONArray());
-    }
-
-    public MethodInfo(BaseInfo baseInfo, List<StatementInfo> children, ClassInfo parent, String className, String classUuid) {
+    public MethodInfo(BaseInfo baseInfo, ClassInfo parent) {
         super(baseInfo);
         super.setParent(parent);
-        super.setChildren(children);
         super.setProjectInfoLevel(ProjectInfoLevel.METHOD);
 
         uuid = UUID.randomUUID().toString();
-        this.className = className;
-        this.classUuid = classUuid;
         diff = new JSONObject();
         diff.put("data",new JSONArray());
-
-        this.fileName = parent.getFileName();
-        this.filePath = parent.getFilePath();
-        this.packageName = parent.getPackageName();
-        this.packageUuid = parent.getPackageUuid();
-        this.moduleName = parent.getModuleName();
+        trackerInfo =  new TrackerInfo(RelationShip.ADD.name(), 1, uuid);
     }
 
     @Override
     public int hashCode() {
-        return (filePath + className + signature).hashCode();
+        ClassInfo classInfo = (ClassInfo) super.getParent();
+        return (classInfo.getFilePath() + classInfo.getClassName() + signature).hashCode();
     }
 
     @Override
@@ -136,62 +105,6 @@ public class MethodInfo extends BaseInfo{
         this.content = content;
     }
 
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getClassUuid() {
-        return classUuid;
-    }
-
-    public void setClassUuid(String classUuid) {
-        this.classUuid = classUuid;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getPackageUuid() {
-        return packageUuid;
-    }
-
-    public void setPackageUuid(String packageUuid) {
-        this.packageUuid = packageUuid;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
-    }
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
-
-    public void setCommonInfo(CommonInfo commonInfo) {
-        this.commonInfo = commonInfo;
-    }
-
     public TrackerInfo getTrackerInfo() {
         return trackerInfo;
     }
@@ -232,25 +145,8 @@ public class MethodInfo extends BaseInfo{
         this.end = end;
     }
 
-    public List<StatementInfo> getStatementInfos() {
-        return statementInfos;
-    }
-
-    public void setStatementInfos(List<StatementInfo> statementInfos) {
-        this.statementInfos = statementInfos;
-    }
-
-
     public void setTrackerInfo(String changeRelation, int version, String uuid) {
         trackerInfo = new TrackerInfo(changeRelation, version, uuid);
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public JSONObject getDiff() {

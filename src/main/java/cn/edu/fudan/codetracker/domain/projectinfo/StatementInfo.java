@@ -1,15 +1,18 @@
 /**
- * @description:
+ * @description: 只记录method以及field中的statement，method 中statement的顺序按照start升序排列
  * @author: fancying
  * @create: 2019-05-26 21:22
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.RelationShip;
+import cn.edu.fudan.codetracker.domain.StatementType;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class StatementInfo extends BaseInfo{
 
@@ -17,23 +20,25 @@ public class StatementInfo extends BaseInfo{
     private String body;
     private int begin;
     private int end;
+    private String methodUuid;
+    private TrackerInfo trackerInfo;
 
-    public StatementInfo(String uuid, String body, int begin, int end) {
-        this.uuid = uuid;
-        this.body = body;
-        this.begin = begin;
-        this.end = end;
+    private StatementType type;
+
+    public StatementInfo() {
+
     }
 
-    public StatementInfo(BaseInfo baseInfo, List<StatementInfo> children, BaseInfo parent,String uuid, String body, int begin, int end) {
+    public StatementInfo(BaseInfo baseInfo, BaseInfo parent, String body, int begin, int end, String methodUuid) {
         super(baseInfo);
         super.setParent(parent);
-        super.setChildren(children);
         super.setProjectInfoLevel(ProjectInfoLevel.STATEMENT);
-        this.uuid = uuid;
+        this.uuid = UUID.randomUUID().toString();
         this.body = body;
         this.begin = begin;
         this.end = end;
+        this.methodUuid = methodUuid;
+        trackerInfo =  new TrackerInfo(RelationShip.ADD.name(), 1, uuid);
     }
 
     @Override
@@ -79,5 +84,29 @@ public class StatementInfo extends BaseInfo{
 
     public void setEnd(int end) {
         this.end = end;
+    }
+
+    public String getMethodUuid() {
+        return methodUuid;
+    }
+
+    public void setMethodUuid(String methodUuid) {
+        this.methodUuid = methodUuid;
+    }
+
+    public StatementType getType() {
+        return type;
+    }
+
+    public void setType(StatementType type) {
+        this.type = type;
+    }
+
+    public TrackerInfo getTrackerInfo() {
+        return trackerInfo;
+    }
+
+    public void setTrackerInfo(TrackerInfo trackerInfo) {
+        this.trackerInfo = trackerInfo;
     }
 }

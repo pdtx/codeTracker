@@ -7,19 +7,18 @@ package cn.edu.fudan.codetracker.util;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -36,18 +35,14 @@ public class FileInfoExtractor {
     private String filePath;
 
     private FileInfo fileInfo;
-    private List<ClassInfo> classInfos;
-    private List<FieldInfo> fieldInfos;
-    private List<MethodInfo> methodInfos;
 
     private CompilationUnit compilationUnit;
+    private BaseInfo baseInfo;
 
-    public FileInfoExtractor(String path, String projectName) {
+    FileInfoExtractor(BaseInfo baseInfo, String path, String projectName) {
         this.projectName = projectName;
+        this.baseInfo = baseInfo;
         importNames = new HashSet<>();
-        classInfos = new ArrayList<>();
-        fieldInfos = new ArrayList<>();
-        methodInfos = new ArrayList<>();
         try {
             // 根据操作系统修改
             compilationUnit = JavaParser.parse(new File(path));
@@ -58,15 +53,12 @@ public class FileInfoExtractor {
             moduleName = parseModuleName(singleDir);
             String [] s = path.replace('\\','/').split("/" + moduleName + "/");
             filePath = moduleName + "/" + s[s.length - 1];
-            // for finding packageUUID base on  packageName and moduleName
-            fileInfo = new FileInfo(fileName, filePath, packageName, moduleName);
-
+            fileInfo = new FileInfo(baseInfo, fileName, filePath, packageName, moduleName);
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
             for (ImportDeclaration importDeclaration :importDeclarations) {
                 importNames.add(importDeclaration.getName().asString());
             }
-
         }catch (Exception e) {
             log.error("FileInfoExtractor :" + path);
             e.printStackTrace();
@@ -77,7 +69,9 @@ public class FileInfoExtractor {
         return  path.substring(path.indexOf(prefix + projectName) + 1);
     }
 
-    // need to be improved
+    /**
+     * need to be improved
+     */
     private String parseModuleName(String[] singleDir) {
         for (int i = 1; i < singleDir.length; i++) {
             if ("src".equals(singleDir[i]) || "main".equals(singleDir[i]) ||  "java".equals(singleDir[i])) {
@@ -98,22 +92,19 @@ public class FileInfoExtractor {
         }
     }
 
-    public void parseClassInterface() {
-
+    void parseClassInterface() {
         List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
+        List<ClassInfo> classInfos = new ArrayList<>(1);
         for (ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarationList) {
-            //ResolvedReferenceTypeDeclaration resolvedReferenceTypeDeclaration = classOrInterfaceDeclaration.resolve();
-
             List<String> extendNames = new ArrayList<>();
             List<String> implementedNames = new ArrayList<>();
-
             // 名字
             String classOrInterfaceName = classOrInterfaceDeclaration.getName().asString();
             // 修饰符
-            StringBuilder sb = new StringBuilder();
+            StringBuilder modifiers = new StringBuilder();
             for (Modifier modifier : classOrInterfaceDeclaration.getModifiers()) {
-                sb.append(modifier.asString());
-                sb.append(" ");
+                modifiers.append(modifier.asString());
+                modifiers.append(" ");
             }
             // 扩展的类名
             for (ClassOrInterfaceType extendedType : classOrInterfaceDeclaration.getExtendedTypes()) {
@@ -123,67 +114,61 @@ public class FileInfoExtractor {
             for (ClassOrInterfaceType implementedType : classOrInterfaceDeclaration.getImplementedTypes()) {
                 implementedNames.add(implementedType.asString());
             }
-            // ？？？fullname 重新考虑
+            // fullname 重新考虑
             String fullname = classOrInterfaceDeclaration.getNameAsString();
-            // (String fullname, String className, String filePath, String fileName, String packageName,
-            //                     String moduleName, String fileUuid, String packageUuid, String modifier, int begin, int end)
-            ClassInfo classInfo = new ClassInfo(fullname, classOrInterfaceName, filePath, fileName, packageName, moduleName, fileInfo.getUuid(), fileInfo.getPackageUuid(),
-                    sb.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
 
+            // BaseInfo baseInfo, FileInfo parent, String fullname, String className, String modifier, int begin, int end
+            ClassInfo classInfo = new ClassInfo(baseInfo, fileInfo, fullname, classOrInterfaceName, modifiers.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
             classInfo.setExtendedList(extendNames);
             classInfo.setImplementedList(implementedNames);
-            classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo.getUuid(),classOrInterfaceName ) );
 
+            classInfo.setFieldInfos(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classInfo ) );
             // 构造函数也属于函数
             List<MethodInfo> methodInfos = parseConstructors(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class), classInfo);
             methodInfos.addAll(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classInfo));
             classInfo.setMethodInfos(methodInfos);
 
-            // 解析构造函数
-            //classInfo.getMethodInfos().addAll(parseConstructor(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class)));
-
-
             classInfos.add(classInfo);
-            fieldInfos.addAll(classInfo.getFieldInfos());
-            this.methodInfos.addAll(classInfo.getMethodInfos());
         }
+        fileInfo.setChildren(classInfos);
     }
 
     private List<MethodInfo> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassInfo classInfo) {
         List<MethodInfo> methodInfos = new ArrayList<>(2);
         for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
             StringBuilder modifiers  = new StringBuilder();
-            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
+            //BaseInfo baseInfo, ClassInfo parent, String className, String classUuid
+            MethodInfo conMethodInfo = new MethodInfo(baseInfo, classInfo);
             // modifier
             for (Modifier modifier : constructorDeclaration.getModifiers()) {
                 modifiers.append(modifier.asString());
                 modifiers.append(" ");
             }
             //fullname
-            methodInfo.setFullname(constructorDeclaration.getDeclarationAsString(true,true,true));
+            conMethodInfo.setFullname(constructorDeclaration.getDeclarationAsString(true,true,true));
 
             // signature
-            methodInfo.setSignature(constructorDeclaration.getSignature().toString());
+            conMethodInfo.setSignature(constructorDeclaration.getSignature().toString());
             if (constructorDeclaration.getRange().isPresent()) {
-                methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
-                methodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
-                methodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
+                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                conMethodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
             }
-            methodInfo.setModifier(modifiers.toString());
+            conMethodInfo.setModifier(modifiers.toString());
             //primitiveType
-            methodInfo.setPrimitiveType(classInfo.getClassName());
-            methodInfo.setContent(constructorDeclaration.getBody().toString());
+            conMethodInfo.setPrimitiveType(classInfo.getClassName());
+            conMethodInfo.setContent(constructorDeclaration.getBody().toString());
             //statementInfo
-            //methodInfo.setStatementInfo(parseStmt(methodDeclaration.getBody()));
+           // methodInfo.setChildren(parseStmt(constructorDeclaration.get));
 
-            methodInfos.add(methodInfo);
+            methodInfos.add(conMethodInfo);
         }
 
         return methodInfos;
     }
 
 
-    private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, String classUuid, String className) {
+    private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, ClassInfo parent) {
         List<FieldInfo> fieldInfos = new ArrayList<>();
 
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
@@ -209,11 +194,13 @@ public class FileInfoExtractor {
                 simpleType.append(" ");
             }
 
-            //(String simpleName, String modifier, String simpleType, String classUuid, String packageUuid, String moduleName, String packageName,
-            //                     String fileName, String filePath, String className, String initValue)
-            FieldInfo fieldInfo = new FieldInfo(simpleName.toString(), modifiers.toString(), simpleType.toString(), classUuid, fileInfo.getPackageUuid(),
-                    moduleName, packageName, fileName, filePath, className, initValue.toString());
+            //BaseInfo baseInfo, ClassInfo parent, String simpleName, String modifier, String simpleType, String initValue
+            FieldInfo fieldInfo = new FieldInfo(baseInfo, parent, simpleName.toString(), modifiers.toString(), simpleType.toString(), initValue.toString());
             fieldInfo.setFullName(fieldDeclaration.toString());
+
+            // field statement
+            /*fieldInfo.setChildren(parseLevelOneStmt());*/
+
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;
@@ -223,8 +210,8 @@ public class FileInfoExtractor {
         List<MethodInfo> methodInfos = new ArrayList<>();
 
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
-            MethodInfo methodInfo = new MethodInfo(classInfo.getClassName(), classInfo.getUuid(), fileName, filePath, packageName, fileInfo.getPackageUuid(), moduleName);
-
+            // BaseInfo baseInfo, ClassInfo parent, String className, String classUuid
+            MethodInfo methodInfo = new MethodInfo(baseInfo, classInfo);
             StringBuilder m = new StringBuilder();
             // modifier
             for (Modifier modifier : methodDeclaration.getModifiers()) {
@@ -248,27 +235,55 @@ public class FileInfoExtractor {
                 methodInfo.setContent(methodDeclaration.getTokenRange().get().toString());
             }
             //statementInfo
-            //methodInfo.setStatementInfo(parseStmt(methodDeclaration.getBody()));
-
+            if (methodDeclaration.getBody().isPresent()) {
+                methodInfo.setChildren(parseLevelOneStmt(methodDeclaration.getBody().get(), methodInfo));
+            }
             methodInfos.add(methodInfo);
         }
         return methodInfos;
     }
 
     /**
-     *  statement 有待商议
+     *  statement
      * */
-    private List<StatementInfo> parseStmt(Optional<BlockStmt> body) {
+/*    private List<StatementInfo> parseStmt(BlockStmt blockStmt) {
         List<StatementInfo> statements = new ArrayList<>();
-        if (body.isPresent()) {
-            BlockStmt blockStmt = body.get();
-            List<Statement>  statementList = blockStmt.findAll(Statement.class);
-            for (Statement statement : statementList) {
-                statements.add(new StatementInfo(UUID.randomUUID().toString()  ,statement.toString(),
-                        statement.getRange().get().begin.line, statement.getRange().get().end.line));
-            }
+        // blockStatement expressionStatement
+        List<Statement>  statementList = blockStmt.findAll(Statement.class);
+        for (Statement statement : statementList) {
+            statements.add(new StatementInfo(UUID.randomUUID().toString()  ,statement.toString(),
+                    statement.getRange().get().begin.line, statement.getRange().get().end.line));
         }
         return statements;
+    }*/
+
+    private List<StatementInfo> parseLevelOneStmt(BlockStmt blockStmt, MethodInfo methodInfo) {
+        List<StatementInfo> statementInfos = new ArrayList<>();
+        // blockStatement expressionStatement
+        List<Statement>  statementList = blockStmt.getStatements();
+        for (Statement statement : statementList) {
+            // BaseInfo baseInfo, BaseInfo parent, String body, int begin, int end, String methodUuid
+            if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
+                StatementInfo statementInfo = new StatementInfo(baseInfo, methodInfo, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                statementInfo.setChildren(parseLevelTwoStmt(statement.findAll(Statement.class), methodInfo, statementInfo));
+                statementInfos.add(statementInfo);
+            }
+        }
+        return statementInfos;
+    }
+
+    private List<StatementInfo> parseLevelTwoStmt(List<Statement>  statementList, MethodInfo methodInfo, StatementInfo parent) {
+        List<StatementInfo> statementInfos = new ArrayList<>();
+        for (Statement statement : statementList) {
+            if (statement.getParentNode().get().getRange().get().begin.line == parent.getBegin() &&
+                    statement.getParentNode().get().getRange().get().end.line == parent.getEnd() &&
+                    statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
+                StatementInfo statementInfo = new StatementInfo(baseInfo, parent, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                statementInfo.setChildren(parseLevelTwoStmt(statement.findAll(Statement.class), methodInfo, statementInfo));
+                statementInfos.add(statementInfo);
+            }
+        }
+        return statementInfos;
     }
 
     /**
@@ -280,10 +295,6 @@ public class FileInfoExtractor {
 
     public Set<String> getImportNames() {
         return importNames;
-    }
-
-    public List<ClassInfo> getClassInfos() {
-        return classInfos;
     }
 
     public String getFileName() {
@@ -302,11 +313,12 @@ public class FileInfoExtractor {
         return fileInfo;
     }
 
-    public List<FieldInfo> getFieldInfos() {
-        return fieldInfos;
+    public BaseInfo getBaseInfo() {
+        return baseInfo;
     }
 
-    public List<MethodInfo> getMethodInfos() {
-        return methodInfos;
+    public void setBaseInfo(BaseInfo baseInfo) {
+        this.baseInfo = baseInfo;
     }
+
 }
