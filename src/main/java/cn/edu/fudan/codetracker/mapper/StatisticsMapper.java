@@ -6,6 +6,7 @@ package cn.edu.fudan.codetracker.mapper;
  */
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import org.apache.ibatis.annotations.Param;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -107,19 +108,43 @@ public interface StatisticsMapper {
     /**
      * package that developer most focus on in given time
      */
-    List<MostDevelopersInfo> packageDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<DeveloperMostFocus> packageDeveloperFocusMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * file that developer most focus on in given time
      */
-    List<MostDevelopersInfo> fileDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<DeveloperMostFocus> fileDeveloperFocusMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * class that developer most focus on in given time
      */
-    List<MostDevelopersInfo> classDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<DeveloperMostFocus> classDeveloperFocusMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * method that developer most focus on in given time
      */
-    List<MostDevelopersInfo> methodDeveloperFocusMost(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<DeveloperMostFocus> methodDeveloperFocusMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * get package commit message
+     */
+    List<String> getCommitMessageByPackageId(@Param("uuid") String uuid, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get file commit message
+     */
+    List<String> getCommitMessageByFileId(@Param("uuid") String uuid, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get class commit message
+     */
+    List<String> getCommitMessageByClassId(@Param("uuid") String uuid, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get method commit message
+     */
+    List<String> getCommitMessageByMethodId(@Param("uuid") String uuid, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * get method content
+     */
+    List<String> getContentByMethodId(@Param("uuid") String uuid, @Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
 
     /**

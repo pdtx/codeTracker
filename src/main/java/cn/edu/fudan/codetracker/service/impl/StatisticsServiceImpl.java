@@ -46,8 +46,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public List<MostDevelopersInfo> getDeveloperFocusMost(String repoUuid, String type, String branch, String committer,String beginDate, String endDate){
-        return statisticsDao.getDeveloperFocusMost(repoUuid, type, branch, committer, beginDate, endDate);
+    public List<DeveloperMostFocus> getDeveloperFocusMost(String type, String committer,String beginDate, String endDate){
+        return statisticsDao.getDeveloperFocusMost(type, committer, beginDate, endDate);
     }
 
     @Override
