@@ -23,7 +23,6 @@ public class ClassInfo extends BaseInfo{
     private String packageUuid;
     private String modifier;
 
-    private CommonInfo commonInfo;
     private TrackerInfo trackerInfo;
 
     private int begin;
@@ -199,15 +198,6 @@ public class ClassInfo extends BaseInfo{
 
     public void setFileUuid(String fileUuid) {
         this.fileUuid = fileUuid;
-    }
-
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
-
-    public void setCommonInfo(CommonInfo commonInfo) {
-        this.commonInfo = commonInfo;
     }
 
     public TrackerInfo getTrackerInfo() {
