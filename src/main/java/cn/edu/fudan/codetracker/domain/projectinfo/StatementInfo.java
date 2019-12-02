@@ -22,7 +22,7 @@ public class StatementInfo extends BaseInfo{
     private int end;
     private String methodUuid;
     private TrackerInfo trackerInfo;
-
+    private int level;
     private StatementType type;
 
     public StatementInfo() {
@@ -33,6 +33,7 @@ public class StatementInfo extends BaseInfo{
         super(baseInfo);
         super.setParent(parent);
         super.setProjectInfoLevel(ProjectInfoLevel.STATEMENT);
+        level = parent.getProjectInfoLevel().getLevel() + 1;
         this.uuid = UUID.randomUUID().toString();
         this.body = body;
         this.begin = begin;
@@ -46,6 +47,22 @@ public class StatementInfo extends BaseInfo{
         return uuid.hashCode();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if(o == null){
+            return false;
+        }
+
+        if(o instanceof StatementInfo){
+            StatementInfo statementInfo = (StatementInfo) o;
+            return this.uuid.equals(statementInfo.uuid);
+        }
+        return false;
+    }
 
     /**
      * getter and setter
@@ -108,5 +125,9 @@ public class StatementInfo extends BaseInfo{
 
     public void setTrackerInfo(TrackerInfo trackerInfo) {
         this.trackerInfo = trackerInfo;
+    }
+
+    public int getLevel() {
+        return level;
     }
 }

@@ -32,6 +32,7 @@ public class ScanServiceImpl implements ScanService {
     private ClassDao classDao;
     private FieldDao fieldDao;
     private MethodDao methodDao;
+    private StatementDao statementDao;
 
     private RestInterfaceManager restInterface;
 
@@ -76,7 +77,7 @@ public class ScanServiceImpl implements ScanService {
         String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + path[path.length -1];
         // extra diff info and construct tracking relation
         OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
-        List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(packageDao, fileDao, classDao, fieldDao, methodDao);
+        List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
         // 扫描结果记录入库
         try {
 
@@ -180,5 +181,10 @@ public class ScanServiceImpl implements ScanService {
     @Autowired
     public void setRestInterface(RestInterfaceManager restInterface) {
         this.restInterface = restInterface;
+    }
+
+    @Autowired
+    public void setStatementDao(StatementDao statementDao) {
+        this.statementDao = statementDao;
     }
 }

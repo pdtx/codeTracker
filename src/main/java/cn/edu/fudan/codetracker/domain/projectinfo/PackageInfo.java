@@ -24,11 +24,11 @@ public class PackageInfo extends BaseInfo{
 
     }
 
-    public PackageInfo(String moduleName, String packageName) {
+/*    public PackageInfo(String moduleName, String packageName) {
         super();
         this.moduleName = moduleName;
         this.packageName = packageName;
-    }
+    }*/
 
     public PackageInfo(BaseInfo baseInfo, String moduleName, String packageName) {
         super(baseInfo);

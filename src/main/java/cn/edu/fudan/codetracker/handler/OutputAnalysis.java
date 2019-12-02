@@ -43,7 +43,7 @@ public class OutputAnalysis {
     /**
      * entry point of analyzing relations about two commits
      */
-    public List<AnalyzeDiffFile> analyzeMetaInfo(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao) {
+    public List<AnalyzeDiffFile> analyzeMetaInfo(ProxyDao proxyDao) {
         List<AnalyzeDiffFile> analyzeDiffFiles = new ArrayList<>(2);
         File file = outputDir.contains("\\") ?
                 new File(outputDir + "\\" + commitId) :
@@ -142,10 +142,10 @@ public class OutputAnalysis {
                 // RepoInfoBuilder need to refactor for parentCommit is not null; so
                 RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
                 RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit);
-                AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(packageDao, fileDao, classDao, fieldDao, methodDao, preRepoInfo, curRepoInfo);
-/*                analyzeDiffFile.addInfoConstruction(addFilesList);
+                AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(proxyDao, preRepoInfo, curRepoInfo);
+                analyzeDiffFile.addInfoConstruction(addFilesList);
                 analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
-                analyzeDiffFile.modifyInfoConstruction(preRepoInfo, fileNameList, curRepoInfo, diffPathList);*/
+                analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);
             }
 

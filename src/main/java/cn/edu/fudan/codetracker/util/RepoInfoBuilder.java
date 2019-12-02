@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.util;
 
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +29,13 @@ public class RepoInfoBuilder {
     private JGitHelper jGitHelper;
     private BaseInfo baseInfo;
 
+    private Map<String, List<PackageInfo>> moduleInfos;
+    private List<PackageInfo> packageInfos;
     private List<FileInfo> fileInfos;
     private List<ClassInfo> classInfos;
     private List<FieldInfo> fieldInfos;
     private List<MethodInfo> methodInfos;
-
-    private Map<String, List<PackageInfo>> moduleInfos;
-
-    private List<PackageInfo> packageInfos;
+    private List<StatementInfo> statementInfos;
 
     public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit) {
        constructor(repoUuid, commit, fileList, jGitHelper, branch, parentCommit);
@@ -60,23 +60,22 @@ public class RepoInfoBuilder {
         if (this.parentCommit == null || this.parentCommit.length() == 0) {
             this.parentCommit = commit;
         }
-        fileInfos = new ArrayList<>();
-        classInfos = new ArrayList<>();
-        fieldInfos = new ArrayList<>();
-        methodInfos = new ArrayList<>();
         try{
             Date date = FORMATTER.parse(jGitHelper.getCommitTime(commit));
             committer = jGitHelper.getAuthorName(commit);
             commitMessage = jGitHelper.getMess(commit);
-/*            commonInfo = new CommonInfo(commit, date, commit, date, repoUuid, branch,
-                    date, commit, committer, commitMessage, this.parentCommit);*/
             // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
             baseInfo = new BaseInfo(repoUuid, branch, commit, date, committer, commitMessage, this.parentCommit);
         }catch (ParseException e) {
             e.printStackTrace();
         }
-        packageInfos = new ArrayList<>();
         moduleInfos = new HashMap<>(4);
+        packageInfos = new ArrayList<>();
+        fileInfos = new ArrayList<>();
+        classInfos = new ArrayList<>();
+        fieldInfos = new ArrayList<>();
+        methodInfos = new ArrayList<>();
+        statementInfos = new ArrayList<>();
         analyze(fileList);
     }
 
@@ -114,7 +113,49 @@ public class RepoInfoBuilder {
             // 设置子节点
             packageInfo.setChildren(packageInfo.getFileInfos());
         }
+        travelRepoInfo();
     }
+    private void travelRepoInfo() {
+        for (List<PackageInfo> packageInfos : moduleInfos.values()) {
+            this.packageInfos.addAll(packageInfos);
+            travel(packageInfos);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void travel(List<? extends  BaseInfo> baseInfos) {
+        if (baseInfos == null || baseInfos.size() == 0) {
+            return;
+        }
+        switch (baseInfos.get(0).getProjectInfoLevel()) {
+            case FILE:
+                fileInfos.addAll((List<FileInfo>)baseInfos);
+                break;
+            case CLASS:
+                classInfos.addAll((List<ClassInfo>)baseInfos);
+                for (BaseInfo baseInfo : baseInfos) {
+                    ClassInfo c = (ClassInfo) baseInfo;
+                    travel(c.getMethodInfos());
+                    travel(c.getFieldInfos());
+                }
+                return;
+            case METHOD:
+                methodInfos.addAll((List<MethodInfo>)baseInfos);
+                break;
+            case FIELD:
+                fieldInfos.addAll((List<FieldInfo>)baseInfos);
+                break;
+            case STATEMENT:
+                statementInfos.addAll((List<StatementInfo>)baseInfos);
+                break;
+            default:
+                    break;
+        }
+        for (BaseInfo baseInfo : baseInfos) {
+            travel(baseInfo.getChildren());
+        }
+    }
+
 
     private PackageInfo findPackageInfoByPackageName(PackageInfo p1, List<PackageInfo> packageInfos) {
         for (PackageInfo packageInfo : packageInfos) {
@@ -191,5 +232,9 @@ public class RepoInfoBuilder {
         String branch = "master";
         RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "cef2d7ba2cf3b581f0c8d8da79d07339527129f8",  repoPath, jGitHelper,  branch, "null");
         System.out.println("done");
+    }
+
+    public List<StatementInfo> getStatementInfos() {
+        return statementInfos;
     }
 }

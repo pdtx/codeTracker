@@ -115,7 +115,7 @@ public class FileInfoExtractor {
                 implementedNames.add(implementedType.asString());
             }
             // fullname 重新考虑
-            String fullname = classOrInterfaceDeclaration.getNameAsString();
+            String fullname = modifiers.toString() + classOrInterfaceDeclaration.getNameAsString();
 
             // BaseInfo baseInfo, FileInfo parent, String fullname, String className, String modifier, int begin, int end
             ClassInfo classInfo = new ClassInfo(baseInfo, fileInfo, fullname, classOrInterfaceName, modifiers.toString(), classOrInterfaceDeclaration.getBegin().get().line, classOrInterfaceDeclaration.getEnd().get().line);
@@ -132,41 +132,6 @@ public class FileInfoExtractor {
         }
         fileInfo.setChildren(classInfos);
     }
-
-    private List<MethodInfo> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassInfo classInfo) {
-        List<MethodInfo> methodInfos = new ArrayList<>(2);
-        for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
-            StringBuilder modifiers  = new StringBuilder();
-            //BaseInfo baseInfo, ClassInfo parent, String className, String classUuid
-            MethodInfo conMethodInfo = new MethodInfo(baseInfo, classInfo);
-            // modifier
-            for (Modifier modifier : constructorDeclaration.getModifiers()) {
-                modifiers.append(modifier.asString());
-                modifiers.append(" ");
-            }
-            //fullname
-            conMethodInfo.setFullname(constructorDeclaration.getDeclarationAsString(true,true,true));
-
-            // signature
-            conMethodInfo.setSignature(constructorDeclaration.getSignature().toString());
-            if (constructorDeclaration.getRange().isPresent()) {
-                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
-                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
-                conMethodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
-            }
-            conMethodInfo.setModifier(modifiers.toString());
-            //primitiveType
-            conMethodInfo.setPrimitiveType(classInfo.getClassName());
-            conMethodInfo.setContent(constructorDeclaration.getBody().toString());
-            //statementInfo
-           // methodInfo.setChildren(parseStmt(constructorDeclaration.get));
-
-            methodInfos.add(conMethodInfo);
-        }
-
-        return methodInfos;
-    }
-
 
     private List<FieldInfo> parseField(List<FieldDeclaration> fieldDeclarations, ClassInfo parent) {
         List<FieldInfo> fieldInfos = new ArrayList<>();
@@ -204,6 +169,39 @@ public class FileInfoExtractor {
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;
+    }
+
+    private List<MethodInfo> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassInfo classInfo) {
+        List<MethodInfo> methodInfos = new ArrayList<>(2);
+        for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
+            StringBuilder modifiers  = new StringBuilder();
+            //BaseInfo baseInfo, ClassInfo parent, String className, String classUuid
+            MethodInfo conMethodInfo = new MethodInfo(baseInfo, classInfo);
+            // modifier
+            for (Modifier modifier : constructorDeclaration.getModifiers()) {
+                modifiers.append(modifier.asString());
+                modifiers.append(" ");
+            }
+            //fullname
+            conMethodInfo.setFullname(constructorDeclaration.getDeclarationAsString(true,true,true));
+
+            // signature
+            conMethodInfo.setSignature(constructorDeclaration.getSignature().toString());
+            if (constructorDeclaration.getRange().isPresent()) {
+                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                conMethodInfo.setBegin(constructorDeclaration.getRange().get().begin.line);
+                conMethodInfo.setEnd(constructorDeclaration.getRange().get().end.line);
+            }
+            conMethodInfo.setModifier(modifiers.toString());
+            //primitiveType
+            conMethodInfo.setPrimitiveType(classInfo.getClassName());
+            conMethodInfo.setContent(constructorDeclaration.getBody().toString());
+            //statementInfo
+            conMethodInfo.setChildren(parseLevelOneStmt(constructorDeclaration.getBody(), conMethodInfo));
+            methodInfos.add(conMethodInfo);
+        }
+
+        return methodInfos;
     }
 
     private List<MethodInfo> parseMethod(List<MethodDeclaration> methodDeclarations, ClassInfo classInfo) {
@@ -246,16 +244,6 @@ public class FileInfoExtractor {
     /**
      *  statement
      * */
-/*    private List<StatementInfo> parseStmt(BlockStmt blockStmt) {
-        List<StatementInfo> statements = new ArrayList<>();
-        // blockStatement expressionStatement
-        List<Statement>  statementList = blockStmt.findAll(Statement.class);
-        for (Statement statement : statementList) {
-            statements.add(new StatementInfo(UUID.randomUUID().toString()  ,statement.toString(),
-                    statement.getRange().get().begin.line, statement.getRange().get().end.line));
-        }
-        return statements;
-    }*/
 
     private List<StatementInfo> parseLevelOneStmt(BlockStmt blockStmt, MethodInfo methodInfo) {
         List<StatementInfo> statementInfos = new ArrayList<>();
@@ -283,21 +271,6 @@ public class FileInfoExtractor {
                 statementInfos.add(statementInfo);
             }
         }
-
-/*        boolean isFirst = true;
-        for (Statement statement : parentStmt.findAll(Statement.class)) {
-            if (isFirst) {
-                isFirst = false;
-                continue;
-            }
-            if (statement.getParentNode().get().getRange().get().begin.line == parent.getBegin() &&
-                    statement.getParentNode().get().getRange().get().end.line == parent.getEnd() &&
-                    statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
-                StatementInfo statementInfo = new StatementInfo(baseInfo, parent, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
-                statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
-                statementInfos.add(statementInfo);
-            }
-        }*/
         return statementInfos;
     }
 
@@ -328,12 +301,5 @@ public class FileInfoExtractor {
         return fileInfo;
     }
 
-    public BaseInfo getBaseInfo() {
-        return baseInfo;
-    }
-
-    public void setBaseInfo(BaseInfo baseInfo) {
-        this.baseInfo = baseInfo;
-    }
 
 }
