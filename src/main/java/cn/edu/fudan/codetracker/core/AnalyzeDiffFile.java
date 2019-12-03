@@ -3,7 +3,7 @@
  * @author: fancying
  * @create: 2019-06-06 16:41
  **/
-package cn.edu.fudan.codetracker.handler;
+package cn.edu.fudan.codetracker.core;
 
 
 import cn.edu.fudan.codetracker.dao.*;
