@@ -9,7 +9,7 @@
     </resultMap>
 
     <insert id="insertClassInfoList" parameterType="List">
-        insert into track_class
+        insert into meta_class
         (
         uuid,
         fullname,
@@ -39,12 +39,12 @@
             #{item.moduleName},
             #{item.fileUuid},
             #{item.packageUuid},
-            #{item.commonInfo.startCommit},
-            #{item.commonInfo.startCommitDate},
-            #{item.commonInfo.endCommit},
-            #{item.commonInfo.endCommitDate},
-            #{item.commonInfo.repoUuid},
-            #{item.commonInfo.branch},
+            #{item.startCommit},
+            #{item.startCommitDate},
+            #{item.endCommit},
+            #{item.endCommitDate},
+            #{item.repoUuid},
+            #{item.branch},
             #{item.trackerInfo.version},
             #{item.fileName}
             )
@@ -79,32 +79,32 @@
             #{item.trackerInfo.rootUUID},
             #{item.trackerInfo.version},
             #{item.trackerInfo.changeRelation},
-            #{item.commonInfo.commit},
-            #{item.commonInfo.committer},
-            #{item.commonInfo.commitDate},
-            #{item.commonInfo.commitMessage},
-            #{item.commonInfo.parentCommit},
-            #{item.commonInfo.repoUuid},
-            #{item.commonInfo.branch}
+            #{item.commit},
+            #{item.committer},
+            #{item.commitDate},
+            #{item.commitMessage},
+            #{item.parentCommit},
+            #{item.repoUuid},
+            #{item.branch}
             )
         </foreach>
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from track_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from meta_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">
-        update track_class
+        update meta_class
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommit}
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.commonInfo.endCommitDate}
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">

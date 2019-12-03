@@ -11,5 +11,4 @@ public interface ScanService {
 
     void firstScan(String repoUuid, String branch, String duration);
 
-    Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature);
 }

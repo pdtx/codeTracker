@@ -20,7 +20,4 @@ public interface MethodMapper {
 
     void updateChangeInfo(List<MethodInfo> methodInfoArrayList);
 
-    List<MethodInfo> getMethodHistory(@Param("repoId") String repoId, @Param("moduleName") String moduleName, @Param("packageName") String packageName, @Param("className") String className, @Param("signature") String signature);
-
-    List<VersionStatistics> getMethodStatistics(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

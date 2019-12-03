@@ -32,11 +32,6 @@ public class RepoAnalyzerController {
         }
     }
 
-    @GetMapping(value = {"/repo/{repoId}/{module}/{package}/{class}"})
-    public Object getMethodHistory(@PathVariable("repoId")String repoId,@PathVariable("module") String moduleName,@PathVariable("package") String packageName,@PathVariable("class") String className, @RequestParam("signature") String signature) {
-        return scanService.getMethodHistory(repoId, moduleName, packageName, className, signature);
-    }
-
     @Autowired
     public void setScanService(ScanService scanService) {
         this.scanService = scanService;

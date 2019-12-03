@@ -89,18 +89,22 @@ public class ScanServiceImpl implements ScanService {
                 classDao.setAddInfo(analyzeDiffFile.getClassInfos().get(RelationShip.ADD.name()));
                 methodDao.setAddInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.ADD.name()));
                 fieldDao.setAddInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.ADD.name()));
+                statementDao.setAddInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.ADD.name()));
                 //delete
                 packageDao.setDeleteInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.DELETE.name()));
                 fileDao.setDeleteInfo(analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name()));
                 classDao.setDeleteInfo(analyzeDiffFile.getClassInfos().get(RelationShip.DELETE.name()));
                 methodDao.setDeleteInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.DELETE.name()));
                 fieldDao.setDeleteInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.DELETE.name()));
+                statementDao.setDeleteInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.DELETE.name()));
                 //change
                 packageDao.setChangeInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.CHANGE.name()));
                 fileDao.setChangeInfo(analyzeDiffFile.getFileInfos().get(RelationShip.CHANGE.name()));
                 classDao.setChangeInfo(analyzeDiffFile.getClassInfos().get(RelationShip.CHANGE.name()));
                 methodDao.setChangeInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.CHANGE.name()));
                 fieldDao.setChangeInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.CHANGE.name()));
+                statementDao.setChangeInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.CHANGE.name()));
+
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -108,14 +112,8 @@ public class ScanServiceImpl implements ScanService {
 
     }
 
-    @Override
-    public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
-        return methodDao.getMethodHistory(repoId, moduleName, packageName, className, signature);
-    }
-
     private void saveData(RepoInfoBuilder repoInfo) {
         try {
-
 
             packageDao.insertPackageInfoList(repoInfo.getPackageInfos());
             packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos());
@@ -131,6 +129,11 @@ public class ScanServiceImpl implements ScanService {
 
             fieldDao.insertFieldInfoList(repoInfo.getFieldInfos());
             fieldDao.insertRawFieldInfoList(repoInfo.getFieldInfos());
+
+            statementDao.insertStatementInfoList(repoInfo.getStatementInfos());
+            statementDao.insertRawStatementInfoList(repoInfo.getStatementInfos());
+            statementDao.insertStatementRelationList(repoInfo.getStatementInfos());
+
         }catch (Exception e) {
             e.printStackTrace();
         }

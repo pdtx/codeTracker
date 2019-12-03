@@ -66,11 +66,4 @@ public class MethodDao {
         insertRawMethodInfoList(methodInfoArrayList);
     }
 
-    public Object getMethodHistory(String repoId, String moduleName, String packageName, String className, String signature) {
-        return  methodMapper.getMethodHistory(repoId, moduleName, packageName, className, signature);
-    }
-
-    public List<VersionStatistics> getMethodStatistics(String repoUuid, String branch) {
-        return methodMapper.getMethodStatistics(repoUuid, branch);
-    }
 }
