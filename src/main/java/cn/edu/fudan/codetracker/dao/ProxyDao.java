@@ -51,7 +51,7 @@ public class ProxyDao {
             case FIELD:
                 return fieldDao.getTrackerInfo(args[0], args[1], args[2], args[3], args[4]);
             case STATEMENT:
-                return statementDao.getTrackerInfo();
+                return statementDao.getTrackerInfo(args[0], args[1], args[2], args[3]);
             default:
                 return null;
         }

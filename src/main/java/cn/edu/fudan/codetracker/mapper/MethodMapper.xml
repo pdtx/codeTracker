@@ -8,33 +8,6 @@
         <id property="rootUUID" column="uuid"/>
     </resultMap>
 
-    <resultMap id="versionStatistics" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
-        <id property="version" column="version"/>
-        <id property="quantity" column="quantity"/>
-    </resultMap>
-
-
-    <resultMap id="rawMethodInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.MethodInfo">
-        <id property="uuid" column="uuid"/>
-        <result property="fullname" column="fullname"/>
-        <result property="signature" column="signature"/>
-        <result property="content" column="content"/>
-        <result property="begin" column="method_begin"/>
-        <result property="end" column="method_end"/>
-        <result property="diff" column="diff" typeHandler="cn.edu.fudan.codetracker.handler.JsonTypeHandler"/>
-        <association property="commonInfo" javaType="cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo">
-            <id property="commit" column="commitid"/>
-            <result property="committer" column="committer"/>
-            <result property="commitMessage" column="commit_message"/>
-            <result property="commitDate" column="commit_date"/>
-        </association>
-        <association property="trackerInfo" javaType="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
-            <id property="version" column="version"/>
-            <id property="changeRelation" column="change_relation"/>
-        </association>
-    </resultMap>
-
-
     <insert id="insertMethodInfoList" parameterType="List">
         insert into meta_method
         (
