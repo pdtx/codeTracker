@@ -145,8 +145,10 @@ public class MethodInfo extends BaseInfo{
         this.end = end;
     }
 
-    public void setTrackerInfo(String changeRelation, int version, String uuid) {
-        trackerInfo = new TrackerInfo(changeRelation, version, uuid);
+    public void setTrackerInfo(String relation, int version, String rootUuid) {
+        trackerInfo.setChangeRelation(relation);
+        trackerInfo.setVersion(version);
+        trackerInfo.setRootUUID(rootUuid);
     }
 
     public JSONObject getDiff() {

@@ -8,6 +8,7 @@ package cn.edu.fudan.codetracker.domain.projectinfo;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.domain.StatementType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -123,11 +124,13 @@ public class StatementInfo extends BaseInfo{
         return trackerInfo;
     }
 
-    public void setTrackerInfo(TrackerInfo trackerInfo) {
-        this.trackerInfo = trackerInfo;
-    }
-
     public int getLevel() {
         return level;
+    }
+
+    public void setTrackerInfo(String relation, int version, String rootUuid) {
+        trackerInfo.setVersion(version);
+        trackerInfo.setRootUUID(rootUuid);
+        trackerInfo.setChangeRelation(relation);
     }
 }

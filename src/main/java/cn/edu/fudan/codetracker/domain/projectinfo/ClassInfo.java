@@ -223,4 +223,10 @@ public class ClassInfo extends BaseInfo{
     public void setPackageUuid(String packageUuid) {
         this.packageUuid = packageUuid;
     }
+
+    public void setTrackerInfo(String relation, int version, String rootUUID) {
+        trackerInfo.setChangeRelation(relation);
+        trackerInfo.setVersion(version);
+        trackerInfo.setRootUUID(rootUUID);
+    }
 }
