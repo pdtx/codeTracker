@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Slf4j
@@ -45,7 +48,7 @@ public class FileInfoExtractor {
         importNames = new HashSet<>();
         try {
             // 根据操作系统修改
-            compilationUnit = JavaParser.parse(new File(path));
+            compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
             parsePackageName(compilationUnit);
             String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];

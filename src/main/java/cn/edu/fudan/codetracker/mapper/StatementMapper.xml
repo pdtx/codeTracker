@@ -15,7 +15,7 @@
         repo_uuid,
         branch,
         body,
-        verison,
+        version,
         statement_begin,
         statement_end,
         statement_type
@@ -57,7 +57,7 @@
         repo_uuid,
         branch,
         body,
-        verison
+        version
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">

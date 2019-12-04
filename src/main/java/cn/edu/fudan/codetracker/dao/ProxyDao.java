@@ -8,7 +8,6 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
-import org.apache.kafka.common.protocol.types.Field;
 
 public class ProxyDao {
 
@@ -26,6 +25,7 @@ public class ProxyDao {
     }
 
     public ProxyDao(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao, StatementDao statementDao) {
+        repoInfo = null;
         this.packageDao = packageDao;
         this.fileDao = fileDao;
         this.classDao = classDao;

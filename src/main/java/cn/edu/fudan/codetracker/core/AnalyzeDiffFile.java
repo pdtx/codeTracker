@@ -528,7 +528,6 @@ public class AnalyzeDiffFile {
 
     private MethodInfo findMethodInfoByRange( List<MethodInfo> methodInfos ,int begin, int end) {
         for (MethodInfo methodInfo : methodInfos) {
-            // !(methodInfo.getBegin() > end || methodInfo.getEnd() < begin);
             if (methodInfo.getBegin() <= end && methodInfo.getEnd() >= begin) {
                 return methodInfo;
             }
