@@ -34,7 +34,11 @@ public class StatementInfo extends BaseInfo{
         super(baseInfo);
         super.setParent(parent);
         super.setProjectInfoLevel(ProjectInfoLevel.STATEMENT);
-        level = parent.getProjectInfoLevel().getLevel() + 1;
+        if(parent instanceof StatementInfo){
+            level = ((StatementInfo) parent).getLevel() + 1;
+        } else {
+            level = parent.getProjectInfoLevel().getLevel() + 1;
+        }
         this.uuid = UUID.randomUUID().toString();
         this.body = body;
         this.begin = begin;
