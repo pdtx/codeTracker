@@ -270,9 +270,11 @@ public class FileInfoExtractor {
         for (Node node : parentStmt.getChildNodes()) {
             if (node.findFirst(Statement.class).isPresent()) {
                 Statement statement = node.findFirst(Statement.class).get();
-                StatementInfo statementInfo = new StatementInfo(baseInfo, parent, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
-                statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
-                statementInfos.add(statementInfo);
+                if ((statement.getTokenRange().isPresent() && statement.getBegin().isPresent() && statement.getEnd().isPresent()) ){
+                    StatementInfo statementInfo = new StatementInfo(baseInfo, parent,  statement.getTokenRange().get().toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                    statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
+                    statementInfos.add(statementInfo);
+                }
             }
         }
         return statementInfos;

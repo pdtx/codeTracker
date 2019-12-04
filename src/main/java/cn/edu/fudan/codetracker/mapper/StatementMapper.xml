@@ -150,7 +150,7 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from meta_statement where method_uuid = #{methodUuid} and statement_begin = #{begin} and statement_end = #{end} and body = #{body} order by version desc limit 1
+        select version,uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1
     </select>
 
 </mapper>

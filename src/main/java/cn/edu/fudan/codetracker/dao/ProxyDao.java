@@ -38,7 +38,6 @@ public class ProxyDao {
         if (repoInfo != null) {
             return null;
         }
-
         switch (projectInfoLevel) {
             case PACKAGE:
                 return packageDao.getTrackerInfo(args[0], args[1], args[2], args[3]);
