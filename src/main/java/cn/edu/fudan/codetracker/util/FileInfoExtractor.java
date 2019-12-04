@@ -12,6 +12,7 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -254,10 +255,10 @@ public class FileInfoExtractor {
         List<Statement>  statementList = blockStmt.getStatements();
         for (Statement statement : statementList) {
             // BaseInfo baseInfo, BaseInfo parent, String body, int begin, int end, String methodUuid
-            if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent()) {
-                StatementInfo statementInfo = new StatementInfo(baseInfo, methodInfo, statement.toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+            if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent() && statement.getTokenRange().isPresent()) {
+                String body = statement.getTokenRange().get().toString();
+                StatementInfo statementInfo = new StatementInfo(baseInfo, methodInfo, body, statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
                 statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
-                //statementInfo.setChildren(parseLevelTwoStmt2(statement.getChildNodes(), methodInfo, statementInfo));
                 statementInfos.add(statementInfo);
             }
         }

@@ -227,10 +227,10 @@ public class RepoInfoBuilder {
     }
 
     public static void main(String[] args) {
-        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
+        String repoPath = "E:\\Lab\\iec-wepm-develop";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         String branch = "master";
-        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "cef2d7ba2cf3b581f0c8d8da79d07339527129f8",  repoPath, jGitHelper,  branch, "null");
+        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "e7fecbe0fd950e420f46f3aefaa1e315242503b8",  repoPath, jGitHelper,  branch, "null");
         System.out.println("done");
     }
 
