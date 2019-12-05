@@ -172,13 +172,13 @@ public class AnalyzeDiffFile {
         }
 
         for (StatementInfo statementInfo : deleteRepoInfo.getStatementInfos()) {
+            statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), String.valueOf(statementInfo.getBegin()), String.valueOf(statementInfo.getEnd()), statementInfo.getBody());
             if (trackerInfo == null) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
             statementInfo.setTrackerInfo(RelationShip.DELETE.name() , trackerInfo.getVersion(), trackerInfo.getRootUUID());
-            statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
             statementInfos.get(RelationShip.DELETE.name()).add(statementInfo);
         }
     }
@@ -222,8 +222,12 @@ public class AnalyzeDiffFile {
     }
 
     private void handleStatement(List<StatementInfo> statementInfos, String relation) {
+        if (statementInfos == null || statementInfos.isEmpty()) {
+            return;
+        }
         if (relation.equals(RelationShip.DELETE.name())) {
             for (StatementInfo statementInfo : statementInfos) {
+                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), String.valueOf(statementInfo.getBegin()), String.valueOf(statementInfo.getEnd()), statementInfo.getBody());
                 if (trackerInfo == null) {
                     log.error("null");
@@ -231,7 +235,6 @@ public class AnalyzeDiffFile {
                 statementInfo.getTrackerInfo().setChangeRelation(relation);
                 statementInfo.getTrackerInfo().setRootUUID(trackerInfo.getRootUUID());
                 statementInfo.getTrackerInfo().setVersion(trackerInfo.getVersion());
-                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 this.statementInfos.get(relation).add(statementInfo);
                 handleStatement(castBaseInfo(statementInfo.getChildren()), relation);
             }
@@ -611,10 +614,10 @@ public class AnalyzeDiffFile {
         if (parent instanceof StatementInfo) {
             StatementInfo statementInfo  = (StatementInfo) parent;
             if (! statementInfos.get(change).contains(statementInfo)) {
+                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), String.valueOf(statementInfo.getBegin()), String.valueOf(statementInfo.getEnd()), statementInfo.getBody());
                 Assert.notNull(trackerInfo, "backtracking statementInfo's tracker info is null!" );
                 statementInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
-                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 statementInfos.get(change).add(statementInfo);
                 backtracking(statementInfo.getParent());
             }
