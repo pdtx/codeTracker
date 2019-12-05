@@ -71,8 +71,8 @@ public class StatementDao {
         statementMapper.updateChangeInfo(statementInfos);
     }
 
-    public TrackerInfo getTrackerInfo(String methodUuid, String begin, String end, String body) {
-        return statementMapper.getTrackerInfo(methodUuid, begin, end, body);
+    public TrackerInfo getTrackerInfo(String methodUuid, String body) {
+        return statementMapper.getTrackerInfo(methodUuid, body);
     }
 
     public void setAddInfo(@NotNull Set<StatementInfo> statementInfos) {

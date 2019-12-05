@@ -146,11 +146,11 @@
 
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
-        <id property="rootUUID" column="uuid"/>
+        <id property="rootUUID" column="statement_uuid"/>
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1
+        select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1
     </select>
 
 </mapper>

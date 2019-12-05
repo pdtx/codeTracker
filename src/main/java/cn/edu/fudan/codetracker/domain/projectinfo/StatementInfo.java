@@ -25,6 +25,7 @@ public class StatementInfo extends BaseInfo{
     private TrackerInfo trackerInfo;
     private int level;
     private StatementType type;
+    private int sequence;
 
     public StatementInfo() {
 
@@ -136,5 +137,13 @@ public class StatementInfo extends BaseInfo{
         trackerInfo.setVersion(version);
         trackerInfo.setRootUUID(rootUuid);
         trackerInfo.setChangeRelation(relation);
+    }
+
+    public int getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
     }
 }

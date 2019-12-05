@@ -21,6 +21,6 @@ public interface StatementMapper {
 
     void updateChangeInfo(List<StatementInfo> statementInfos);
 
-    TrackerInfo getTrackerInfo(@Param("methodUuid") String methodUuid, @Param("begin") String begin, @Param("end") String end, @Param("body") String body);
+    TrackerInfo getTrackerInfo(@Param("methodUuid") String methodUuid, @Param("body") String body);
 
 }
