@@ -232,7 +232,7 @@ public class AnalyzeDiffFile {
                 }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), statementInfo.getBody());
                 if (trackerInfo == null) {
-                    log.error("null");
+                    log.error("handleStatement: tracker info is null");
                 }
                 statementInfo.getTrackerInfo().setChangeRelation(relation);
                 statementInfo.getTrackerInfo().setRootUUID(trackerInfo.getRootUUID());

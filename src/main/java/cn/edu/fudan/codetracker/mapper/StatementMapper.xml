@@ -131,9 +131,24 @@
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
                 </foreach>
             </trim>
+            <trim prefix="body = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.body}
+                </foreach>
+            </trim>
             <trim prefix="version = case" suffix="end,">
                 <foreach collection="list" item="item">
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                </foreach>
+            </trim>
+            <trim prefix="statement_begin = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.begin}
+                </foreach>
+            </trim>
+            <trim prefix="statement_end = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.end}
                 </foreach>
             </trim>
         </trim>
