@@ -116,6 +116,16 @@
     <update id="updateChangeInfo" parameterType="List">
         update meta_method
         <trim prefix="set" suffixOverrides=",">
+            <trim prefix="fullname = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.fullname}
+                </foreach>
+            </trim>
+            <trim prefix="signature = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.signature}
+                </foreach>
+            </trim>
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="list" item="item">
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommit}
@@ -124,6 +134,11 @@
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="list" item="item">
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
+                </foreach>
+            </trim>
+            <trim prefix="content = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.content}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">

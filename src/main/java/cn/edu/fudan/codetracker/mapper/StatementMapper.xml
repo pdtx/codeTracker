@@ -131,9 +131,24 @@
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
                 </foreach>
             </trim>
+            <trim prefix="body = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.body}
+                </foreach>
+            </trim>
             <trim prefix="version = case" suffix="end,">
                 <foreach collection="list" item="item">
                     when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                </foreach>
+            </trim>
+            <trim prefix="statement_begin = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.begin}
+                </foreach>
+            </trim>
+            <trim prefix="statement_end = case" suffix="end,">
+                <foreach collection="list" item="item">
+                    when uuid=#{item.trackerInfo.rootUUID} then #{item.end}
                 </foreach>
             </trim>
         </trim>
@@ -146,11 +161,11 @@
 
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
-        <id property="rootUUID" column="uuid"/>
+        <id property="rootUUID" column="statement_uuid"/>
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1
+        select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1
     </select>
 
 </mapper>

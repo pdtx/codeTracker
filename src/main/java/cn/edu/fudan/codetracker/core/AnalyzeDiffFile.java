@@ -227,7 +227,9 @@ public class AnalyzeDiffFile {
         }
         if (relation.equals(RelationShip.DELETE.name())) {
             for (StatementInfo statementInfo : statementInfos) {
-                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
+                if (! methodUuidMap.values().contains(statementInfo.getMethodUuid())) {
+                    statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
+                }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), String.valueOf(statementInfo.getBegin()), String.valueOf(statementInfo.getEnd()), statementInfo.getBody());
                 if (trackerInfo == null) {
                     log.error("null");
@@ -581,6 +583,7 @@ public class AnalyzeDiffFile {
         }
         if (methodInfo != null) {
             backtracking(methodInfo.getParent());
+            return;
         }
         log.error("method relation error,relation:{}" ,changeRelation);
     }
