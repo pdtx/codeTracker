@@ -6,7 +6,6 @@
 package cn.edu.fudan.codetracker.util;
 
 
-import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +22,7 @@ public class RepoInfoBuilder {
     private String repoUuid;
     private String commit;
     private String committer;
+    private Date commitDate;
     private String commitMessage;
     private String branch;
     private String parentCommit;
@@ -61,11 +61,11 @@ public class RepoInfoBuilder {
             this.parentCommit = commit;
         }
         try{
-            Date date = FORMATTER.parse(jGitHelper.getCommitTime(commit));
+            commitDate = FORMATTER.parse(jGitHelper.getCommitTime(commit));
             committer = jGitHelper.getAuthorName(commit);
             commitMessage = jGitHelper.getMess(commit);
             // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
-            baseInfo = new BaseInfo(repoUuid, branch, commit, date, committer, commitMessage, this.parentCommit);
+            baseInfo = new BaseInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, this.parentCommit);
         }catch (ParseException e) {
             e.printStackTrace();
         }
@@ -224,6 +224,14 @@ public class RepoInfoBuilder {
     @org.jetbrains.annotations.Contract(pure = true)
     private String getParentCommit() {
         return this.parentCommit;
+    }
+
+    public String getCommitMessage() {
+        return commitMessage;
+    }
+
+    public Date getCommitDate() {
+        return commitDate;
     }
 
     public static void main(String[] args) {

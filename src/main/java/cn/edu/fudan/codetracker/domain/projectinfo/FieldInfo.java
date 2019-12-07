@@ -18,6 +18,8 @@ public class FieldInfo extends BaseInfo{
     private String modifier;
     private String simpleType;
     private String initValue;
+    private int begin;
+    private int end;
 
     private TrackerInfo trackerInfo;
 
@@ -125,5 +127,21 @@ public class FieldInfo extends BaseInfo{
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public int getBegin() {
+        return begin;
+    }
+
+    public void setBegin(int begin) {
+        this.begin = begin;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public void setEnd(int end) {
+        this.end = end;
     }
 }
