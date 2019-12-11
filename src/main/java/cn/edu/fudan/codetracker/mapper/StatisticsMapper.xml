@@ -249,6 +249,41 @@
         select r.fullname as name,m.file_path from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and r.commitid = #{commitId};
     </select>
 
+    <!-- -->
+    <resultMap id="DeleteStatementUuidList" type="String">
+        <id property="statementUuid" column="statement_uuid"/>
+    </resultMap>
 
+    <select id="getDeleteStatementUuidList" parameterType="String" resultMap="DeleteStatementUuidList">
+        select statement_uuid from issueTracker.raw_statement where committer = #{committer} and repo_uuid = #{repoUuid} and branch = #{branch} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and change_relation = "DELETE";
+    </select>
+
+    <!-- -->
+    <resultMap id="DeleteStatementFormerInfo" type="cn.edu.fudan.codetracker.domain.resultmap.DeleteStatementInfo">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="formerCommitter" column="committer"/>
+        <result property="formerCommitDate" column="commit_date"/>
+        <result property="body" column="body"/>
+    </resultMap>
+
+    <select id="getDeleteStatementInfo" parameterType="String" resultMap="DeleteStatementFormerInfo">
+        select statement_uuid, committer, commit_date, body from issueTracker.raw_statement where change_relation != "DELETE" and statement_uuid = #{statementUuid} order by commit_date desc limit 1;
+    </select>
+
+    <!-- -->
+    <resultMap id="StatementInfoByMethod" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="commitMessage" column="commit_message"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="body" column="body"/>
+        <result property="begin" column="statement_begin"/>
+        <result property="end" column="statement_end"/>
+    </resultMap>
+
+    <select id="getStatementInfoByMethod" parameterType="String" resultMap="StatementInfoByMethod">
+        select statement_uuid, committer, commit_date, commit_message, change_relation, body, statement_begin, statement_end from issueTracker.raw_statement where method_uuid = #{methodUuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%" order by commit_date, statement_begin, statement_end desc;
+    </select>
 
 </mapper>

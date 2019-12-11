@@ -60,6 +60,16 @@ public class StatisticsServiceImpl implements StatisticsService {
         return statisticsDao.getCommitInfoByCommitter(committer);
     }
 
+    @Override
+    public List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate){
+        return statisticsDao.getDeleteStatementFormerInfoByCommitter(committer, repoUuid, branch, beginDate, endDate);
+    }
+
+    @Override
+    public List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate){
+        return statisticsDao.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
+    }
+
 
     /**
      * getter and setter

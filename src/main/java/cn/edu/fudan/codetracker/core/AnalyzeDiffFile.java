@@ -77,8 +77,7 @@ public class AnalyzeDiffFile {
      * no matter how, file、class、method、field will be always "add"
      * package relation need to be modified
      * */
-    void addInfoConstruction(List<String> addFilesList) {
-        RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true);
+    void addInfoConstruction(RepoInfoBuilder addRepoInfo) {
         // 更新packageUUID
         for (PackageInfo packageInfo : addRepoInfo.getPackageInfos()) {
             TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE, packageInfo.getModuleName(), packageInfo.getPackageName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
@@ -106,9 +105,7 @@ public class AnalyzeDiffFile {
      *   基本数据和删除的前一样 relation 为delete表示在这个版本删除 删除人是谁 相关的删除信息等
      *   用curRepoInfo 来初始化 表示在current 这个版本删除
      * */
-    void deleteInfoConstruction(List<String> deleteFilesList) {
-        RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false);
-
+    void deleteInfoConstruction(RepoInfoBuilder deleteRepoInfo) {
         TrackerInfo trackerInfo;
         String relation = RelationShip.DELETE.name();
         for (PackageInfo packageInfo : deleteRepoInfo.getPackageInfos()) {
@@ -793,4 +790,5 @@ public class AnalyzeDiffFile {
         return statementInfos;
     }
 
+    public RepoInfoBuilder getCurRepoInfo() { return curRepoInfo; }
 }

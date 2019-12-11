@@ -218,6 +218,27 @@ public class StatisticsDao {
     }
 
 
+    /**
+     * get delete statement former info by committer in given time
+     */
+    public List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate){
+        List<String> statementUuidList = statisticsMapper.getDeleteStatementUuidList(committer, repoUuid, branch, beginDate, endDate);
+        List<DeleteStatementInfo> deleteStatementInfoList = new ArrayList<>();
+        for (String uuid: statementUuidList) {
+            DeleteStatementInfo deleteStatementInfo = statisticsMapper.getDeleteStatementInfo(uuid);
+            deleteStatementInfoList.add(deleteStatementInfo);
+        }
+        return deleteStatementInfoList;
+    }
+
+
+    /**
+     * get statement info by method and committer in given time
+     */
+    public List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate){
+        return statisticsMapper.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
+    }
+
 
 
 }

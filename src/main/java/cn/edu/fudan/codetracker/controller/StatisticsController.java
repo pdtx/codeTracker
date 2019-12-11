@@ -137,12 +137,42 @@ public class StatisticsController {
     }
 
     /**
+     * 获取某个committer某段时间所删代码的相关信息
+     */
+    @GetMapping(value = {"/statistics/committer/delete/{committer}"})
+    public ResponseBean getCommitHistoryByCommitter(@PathVariable("committer") String committer, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+        try{
+            List<DeleteStatementInfo> data = statisticsService.getDeleteStatementFormerInfoByCommitter(committer, repoUuid, branch, beginDate, endDate);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
      * 获取某个committer的commit历史
      */
     @GetMapping(value = {"/statistics/committer/{committer}"})
-    public ResponseBean getCommitHistoryByCommitter(@PathVariable("committer") String committer){
+    public ResponseBean getDeleteStatementInfoByCommitter(@PathVariable("committer") String committer){
         try{
             List<CommitterHistory> data = statisticsService.getCommitHistoryByCommitter(committer);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 根据method、committer、时间段获取statement信息
+     */
+    @GetMapping(value = {"/statistics/committer/statement/{committer}/{methodUuid}"})
+    public ResponseBean getDeleteStatementInfoByCommitter(@PathVariable("committer") String committer, @PathVariable("methodUuid") String methodUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+        try{
+            List<StatementInfoByMethod> data = statisticsService.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

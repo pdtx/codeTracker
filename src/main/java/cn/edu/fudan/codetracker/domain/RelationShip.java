@@ -16,7 +16,11 @@ public enum RelationShip {
     /**
      * move
      */
-    MOVE("move");
+    MOVE("move"),
+    /**
+     * self change
+     */
+    SELF_CHANGE("selfChange");
 
 
     RelationShip (String name) {

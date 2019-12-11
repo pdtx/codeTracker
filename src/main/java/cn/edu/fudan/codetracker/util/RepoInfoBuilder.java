@@ -28,6 +28,7 @@ public class RepoInfoBuilder {
     private String parentCommit;
     private JGitHelper jGitHelper;
     private BaseInfo baseInfo;
+    private int importCount = 0;
 
     private Map<String, List<PackageInfo>> moduleInfos;
     private List<PackageInfo> packageInfos;
@@ -112,6 +113,7 @@ public class RepoInfoBuilder {
             packageInfo.getFileInfos().add(fileInfoExtractor.getFileInfo());
             // 设置子节点
             packageInfo.setChildren(packageInfo.getFileInfos());
+            importCount += fileInfoExtractor.getImportNames().size();
         }
         travelRepoInfo();
     }
@@ -221,6 +223,10 @@ public class RepoInfoBuilder {
         return branch;
     }
 
+    public int getImportCount() { return importCount; }
+
+    public void setImportCount(int importCount) { this.importCount = importCount; }
+
     @org.jetbrains.annotations.Contract(pure = true)
     private String getParentCommit() {
         return this.parentCommit;
@@ -237,4 +243,6 @@ public class RepoInfoBuilder {
     public List<StatementInfo> getStatementInfos() {
         return statementInfos;
     }
+
+    public BaseInfo getBaseInfo() { return baseInfo; }
 }

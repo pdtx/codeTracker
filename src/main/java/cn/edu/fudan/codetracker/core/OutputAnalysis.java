@@ -30,6 +30,8 @@ public class OutputAnalysis {
     private String outputDir;
     private String commitId;
     private JGitHelper jGitHelper;
+    private int changeImportCount;
+    private String preCommitId;
 
 
     public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
@@ -143,10 +145,14 @@ public class OutputAnalysis {
                 RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
                 RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(proxyDao, preRepoInfo, curRepoInfo);
-                analyzeDiffFile.addInfoConstruction(addFilesList);
-                analyzeDiffFile.deleteInfoConstruction(deleteFilesList);
+                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true);
+                analyzeDiffFile.addInfoConstruction(addRepoInfo);
+                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false);
+                analyzeDiffFile.deleteInfoConstruction(deleteRepoInfo);
                 analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);
+                changeImportCount = addRepoInfo.getImportCount() - deleteRepoInfo.getImportCount() - preRepoInfo.getImportCount() + curRepoInfo.getImportCount();
+                preCommitId = preCommit;
             }
 
         } catch (Exception e) {
@@ -176,5 +182,7 @@ public class OutputAnalysis {
         return pathList;
     }
 
+    public int getChangeImportCount() { return changeImportCount; }
 
+    public String getPreCommitId() { return preCommitId; }
 }

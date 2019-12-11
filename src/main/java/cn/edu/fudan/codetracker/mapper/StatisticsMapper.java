@@ -181,5 +181,23 @@ public interface StatisticsMapper {
     List<BasicInfoByCommitId> getMethodInfoByCommitId(@Param("commitId") String commitId);
 
 
+    /**
+     * get delete statement uuid by committer in given time
+     */
+    List<String> getDeleteStatementUuidList(@Param("committer") String committer, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+    /**
+     * get delete statement info
+     */
+    DeleteStatementInfo getDeleteStatementInfo(@Param("statementUuid") String statementUuid);
+
+
+    /**
+     * get statement info by method and committer in given time
+     */
+    List<StatementInfoByMethod> getStatementInfoByMethod(@Param("committer") String committer, @Param("methodUuid") String methodUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+
 
 }

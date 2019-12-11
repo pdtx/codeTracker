@@ -7,9 +7,11 @@ package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.dao.*;
+import cn.edu.fudan.codetracker.domain.LineInfo;
 import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.core.AnalyzeDiffFile;
 import cn.edu.fudan.codetracker.core.OutputAnalysis;
+import cn.edu.fudan.codetracker.domain.projectinfo.FileInfo;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
@@ -18,8 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import cn.edu.fudan.codetracker.util.JavancssScaner;
 
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -33,11 +36,14 @@ public class ScanServiceImpl implements ScanService {
     private FieldDao fieldDao;
     private MethodDao methodDao;
     private StatementDao statementDao;
+    private LineInfoDao lineInfoDao;
 
     private RestInterfaceManager restInterface;
 
     @Value("${outputDir}")
     private String outputDir;
+
+    private Map<String,LineInfo> lineInfoMap = new HashMap<>();
 
     /**
      * 第一次扫描 存储项目结构
@@ -61,9 +67,72 @@ public class ScanServiceImpl implements ScanService {
                 repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
                 saveData(repoInfo);
                 isInit = true;
+                lineCountFirstScan(repoInfo, repoPath);
             }
             log.info("complete commit：" + num  + "  " + commit);
         }
+    }
+
+    private void lineCountFirstScan(RepoInfoBuilder repoInfo,String repoPath) {
+        LineInfo lineInfo = new LineInfo();
+        lineInfo.setImportCount(repoInfo.getImportCount());
+        lineInfo.setCommitId(repoInfo.getCommit());
+        lineInfo.setCommitter(repoInfo.getCommitter());
+        lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+        int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
+        lineInfo.setLineCount(lineCount);
+        //first time,all files are added
+        lineInfo.setAddCount(lineCount + lineInfo.getImportCount());
+        lineInfo.setDeleteCount(0);
+        lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
+        try {
+            lineInfoDao.insertLineInfo(lineInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, OutputAnalysis analysis, List<AnalyzeDiffFile> analyzeDiffFiles){
+        LineInfo lineInfo = new LineInfo();
+        lineInfo.setCommitId(commitId);
+        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId());
+        lineInfo.setCommitter(repoInfo.getCommitter());
+        lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+
+        if(analyzeDiffFiles.size() > 1) {
+           lineInfo.setImportCount(repoInfo.getImportCount());
+           lineInfo.setAddCount(0);
+           lineInfo.setDeleteCount(0);
+        } else {
+            int preImportCount = lineInfoMap.get(analysis.getPreCommitId()).getImportCount();
+            lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
+
+            for (AnalyzeDiffFile analyzeDiffFile: analyzeDiffFiles) {
+                //scan add、change、delete lint count and set line info
+                int addCount = 0;
+                for (FileInfo addFileInfo: analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name())) {
+                    addCount += JavancssScaner.scanOneFile(addFileInfo.getFilePath());
+                }
+                lineInfo.setAddCount(addCount);
+
+                int deleteCount = 0;
+                for (FileInfo deleteFileInfo: analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name())) {
+                    deleteCount += JavancssScaner.scanOneFile(deleteFileInfo.getFilePath());
+                }
+                lineInfo.setDeleteCount(deleteCount);
+            }
+        }
+
+        int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
+        lineInfo.setLineCount(lineCount);
+
+        lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
+        try {
+            lineInfoDao.insertLineInfo(lineInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
@@ -78,6 +147,10 @@ public class ScanServiceImpl implements ScanService {
         // extra diff info and construct tracking relation
         OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
+
+        jGitHelper.checkout(commitId);
+        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis, analyzeDiffFiles);
+
         // 扫描结果记录入库
         try {
 
@@ -147,7 +220,7 @@ public class ScanServiceImpl implements ScanService {
         }
 
         if("iec-wepm-develop".equals(repoUuid)) {
-            return "E:\\Lab\\project\\iec-wepm-develop";
+            return "/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
         return "E:\\Lab\\project\\IssueTracker-Master-pre";
@@ -190,4 +263,7 @@ public class ScanServiceImpl implements ScanService {
     public void setStatementDao(StatementDao statementDao) {
         this.statementDao = statementDao;
     }
+
+    @Autowired
+    public void setLineInfoDao(LineInfoDao lineInfoDao) { this.lineInfoDao = lineInfoDao; }
 }

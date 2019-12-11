@@ -25,4 +25,8 @@ public interface StatisticsService {
 
     List<CommitterHistory> getCommitHistoryByCommitter(String committer);
 
+    List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate);
+
+    List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate);
+
 }
