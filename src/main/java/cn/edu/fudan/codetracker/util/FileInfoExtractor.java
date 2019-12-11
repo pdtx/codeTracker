@@ -12,16 +12,12 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -29,7 +25,7 @@ import java.util.*;
 public class FileInfoExtractor {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-    private final String prefix = IS_WINDOWS ? "E:\\\\Lab\\\\project\\\\" : "/home/fdse/user/issueTracker/repo/github/";
+    private final String prefix = IS_WINDOWS ? "E:\\Lab\\" : "/home/fdse/user/issueTracker/repo/github/";
 
     private String projectName;
     private String moduleName;
@@ -55,8 +51,7 @@ public class FileInfoExtractor {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            String [] s = path.replace('\\','/').split("/" + moduleName + "/");
-            filePath = moduleName + "/" + s[s.length - 1];
+            filePath = deletePrefix(path).replace('\\','/');
             fileInfo = new FileInfo(baseInfo, fileName, filePath, packageName, moduleName);
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
@@ -70,7 +65,7 @@ public class FileInfoExtractor {
     }
 
     private String deletePrefix(String path) {
-        return  path.substring(path.indexOf(prefix + projectName) + 1);
+        return  path.replace(prefix, "");
     }
 
     /**
@@ -162,14 +157,16 @@ public class FileInfoExtractor {
                 simpleType.append(variableDeclarator.getType());
                 simpleType.append(" ");
             }
-
             //BaseInfo baseInfo, ClassInfo parent, String simpleName, String modifier, String simpleType, String initValue
             FieldInfo fieldInfo = new FieldInfo(baseInfo, parent, simpleName.toString(), modifiers.toString(), simpleType.toString(), initValue.toString());
             fieldInfo.setFullName(fieldDeclaration.toString());
 
+            if (fieldDeclaration.getBegin().isPresent() && fieldDeclaration.getEnd().isPresent()) {
+                fieldInfo.setBegin(fieldDeclaration.getBegin().get().line);
+                fieldInfo.setEnd(fieldDeclaration.getEnd().get().line);
+            }
             // field statement
             /*fieldInfo.setChildren(parseLevelOneStmt());*/
-
             fieldInfos.add(fieldInfo);
         }
         return fieldInfos;
@@ -253,11 +250,13 @@ public class FileInfoExtractor {
         List<StatementInfo> statementInfos = new ArrayList<>();
         // blockStatement expressionStatement
         List<Statement>  statementList = blockStmt.getStatements();
+        int sequence = 0;
         for (Statement statement : statementList) {
             // BaseInfo baseInfo, BaseInfo parent, String body, int begin, int end, String methodUuid
             if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent() && statement.getTokenRange().isPresent()) {
                 String body = statement.getTokenRange().get().toString();
                 StatementInfo statementInfo = new StatementInfo(baseInfo, methodInfo, body, statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                statementInfo.setSequence(++sequence);
                 statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
                 statementInfos.add(statementInfo);
             }
@@ -267,11 +266,13 @@ public class FileInfoExtractor {
 
     private List<StatementInfo> parseLevelTwoStmt(Statement parentStmt, MethodInfo methodInfo, StatementInfo parent) {
         List<StatementInfo> statementInfos = new ArrayList<>();
+        int sequence = 0;
         for (Node node : parentStmt.getChildNodes()) {
             if (node.findFirst(Statement.class).isPresent()) {
                 Statement statement = node.findFirst(Statement.class).get();
                 if ((statement.getTokenRange().isPresent() && statement.getBegin().isPresent() && statement.getEnd().isPresent()) ){
                     StatementInfo statementInfo = new StatementInfo(baseInfo, parent,  statement.getTokenRange().get().toString(), statement.getBegin().get().line, statement.getEnd().get().line, methodInfo.getUuid());
+                    statementInfo.setSequence(++sequence);
                     statementInfo.setChildren(parseLevelTwoStmt(statement, methodInfo, statementInfo));
                     statementInfos.add(statementInfo);
                 }

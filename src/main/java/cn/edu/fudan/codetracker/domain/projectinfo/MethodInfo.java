@@ -30,9 +30,11 @@ public class MethodInfo extends BaseInfo{
     private int end;
     private JSONObject diff;
 
-    // mybatis 无需这种构造函数 只需要无参构造函数就行
-    // 反射机制需要调用类的无参构造函数
-    // mybatis 通过反射实现数据注入
+    /**
+     * mybatis  只需要无参构造函数
+     * 反射机制需要调用类的无参构造函数
+     * mybatis 通过反射实现数据注入
+     */
     public MethodInfo() {
     }
 
