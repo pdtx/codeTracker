@@ -11,7 +11,9 @@
         add_count,
         delete_count,
         committer,
-        commit_date
+        commit_date,
+        repo_uuid,
+        branch
         )
         VALUES
         (
@@ -21,7 +23,9 @@
         #{addCount},
         #{deleteCount},
         #{committer},
-        #{commitDate}
+        #{commitDate},
+        #{repoUuid},
+        #{branch}
         )
     </insert>
 </mapper>

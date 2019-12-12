@@ -3,6 +3,7 @@ package cn.edu.fudan.codetracker.service;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface StatisticsService {
 
@@ -28,5 +29,9 @@ public interface StatisticsService {
     List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate);
 
     List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate);
+
+    Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch);
+
+    Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch);
 
 }

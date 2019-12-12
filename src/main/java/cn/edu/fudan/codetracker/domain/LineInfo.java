@@ -10,6 +10,8 @@ public class LineInfo {
     private int deleteCount;
     private String committer;
     private Date commitDate;
+    private String repoUuid;
+    private String branch;
 
     public LineInfo() {
 
@@ -29,6 +31,10 @@ public class LineInfo {
 
     public Date getCommitDate() { return commitDate; }
 
+    public String getRepoUuid() { return repoUuid; }
+
+    public String getBranch() { return branch; }
+
     public void setCommitId(String commitId) { this.commitId = commitId; }
 
     public void setLineCount(int lineCount) { this.lineCount = lineCount; }
@@ -42,4 +48,8 @@ public class LineInfo {
     public void setCommitter(String committer) { this.committer = committer; }
 
     public void setCommitDate(Date commitDate) { this.commitDate = commitDate; }
+
+    public void setRepoUuid(String repoUuid) { this.repoUuid = repoUuid; }
+
+    public void setBranch(String branch) { this.branch = branch; }
 }

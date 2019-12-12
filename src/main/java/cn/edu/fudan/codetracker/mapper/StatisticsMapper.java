@@ -6,7 +6,6 @@ package cn.edu.fudan.codetracker.mapper;
  */
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import org.apache.ibatis.annotations.Param;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -197,6 +196,33 @@ public interface StatisticsMapper {
      */
     List<StatementInfoByMethod> getStatementInfoByMethod(@Param("committer") String committer, @Param("methodUuid") String methodUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
+
+    /**
+     * get change committer by class
+     */
+    String getChangeCommitterByClass(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("commitDate") String commitDate);
+    /**
+     * get change committer by method
+     */
+    String getChangeCommitterByMethod(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("signature") String signature, @Param("commitDate") String commitDate);
+    /**
+     * get change committer by field
+     */
+    String getChangeCommitterByField(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("simpleName") String simpleName, @Param("commitDate") String commitDate);
+    /**
+     * get change committer by statement
+     */
+    String getChangeCommitterByStatement(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitDate") String commitDate);
+    /**
+     * get meta method uuid by method
+     */
+    String getMetaMethodUuidByMethod(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("signature") String signature, @Param("commitDate") String commitDate);
+
+
+    /**
+     * get committer line info by commit
+     */
+    List<CommitterLineInfo> getCommitterLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("commitDate") String commitDate);
 
 
 

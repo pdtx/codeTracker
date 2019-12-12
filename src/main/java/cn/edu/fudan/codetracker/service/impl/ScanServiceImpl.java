@@ -79,6 +79,8 @@ public class ScanServiceImpl implements ScanService {
         lineInfo.setCommitId(repoInfo.getCommit());
         lineInfo.setCommitter(repoInfo.getCommitter());
         lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+        lineInfo.setRepoUuid(repoInfo.getRepoUuid());
+        lineInfo.setBranch(repoInfo.getBranch());
         int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
         lineInfo.setLineCount(lineCount);
         //first time,all files are added
@@ -98,6 +100,8 @@ public class ScanServiceImpl implements ScanService {
         RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId());
         lineInfo.setCommitter(repoInfo.getCommitter());
         lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+        lineInfo.setRepoUuid(repoInfo.getRepoUuid());
+        lineInfo.setBranch(repoInfo.getBranch());
 
         if(analyzeDiffFiles.size() > 1) {
            lineInfo.setImportCount(repoInfo.getImportCount());

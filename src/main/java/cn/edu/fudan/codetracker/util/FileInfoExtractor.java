@@ -25,7 +25,7 @@ import java.util.*;
 public class FileInfoExtractor {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-    private final String prefix = IS_WINDOWS ? "E:\\Lab\\" : "/home/fdse/user/issueTracker/repo/github/";
+    private final String prefix = IS_WINDOWS ? "E:\\Lab\\" : "/Users/tangyuan/Desktop/demo/";
 
     private String projectName;
     private String moduleName;
@@ -51,7 +51,9 @@ public class FileInfoExtractor {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            filePath = deletePrefix(path).replace('\\','/');
+            //filePath = deletePrefix(path).replace('\\','/');
+            String [] s = path.replace('\\','/').split("/" + moduleName + "/");
+            filePath = moduleName + "/" + s[s.length - 1];
             fileInfo = new FileInfo(baseInfo, fileName, filePath, packageName, moduleName);
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);

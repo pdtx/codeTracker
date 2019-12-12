@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @EnableAutoConfiguration
@@ -180,6 +181,39 @@ public class StatisticsController {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
+
+    /**
+     * 根据repoUuid, commit, repoPath, branch获取某个版本每个committer的贡献情况
+     */
+    @GetMapping(value = {"/statistics/committer/line/count"})
+    public ResponseBean getChangeCommitterInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("commit") String commit, @RequestParam("repoPath") String repoPath, @RequestParam("branch") String branch){
+        try{
+            Map<String,Integer> data = statisticsService.getChangeCommitterInfo(repoUuid, commit, repoPath, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    /**
+     * 根据repoUuid, commit, repoPath, branch获取截至该版本每个committer的代码增加、删除总情况
+     */
+    @GetMapping(value = {"/statistics/committer/line/total/count"})
+    public ResponseBean getCommitterLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("commit") String commit, @RequestParam("repoPath") String repoPath, @RequestParam("branch") String branch){
+        try{
+            Map<String,Map<String,Integer>> data = statisticsService.getCommitterLineInfo(repoUuid, commit, repoPath, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
 
 

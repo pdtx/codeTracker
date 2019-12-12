@@ -190,7 +190,7 @@ public class AnalyzeDiffFile {
         if (diffPathList == null || diffPathList.size() == 0) {
             return;
         }
-        // package file class
+        // package file
         handleModification();
         for (int i = 0; i < diffPathList.size(); i++) {
             String input ;
@@ -288,7 +288,7 @@ public class AnalyzeDiffFile {
                 }
                 ClassInfo curClassInfo = findClassInfoByRange(classInfoList, begin, end);
                 if (curClassInfo != null) {
-                    curClassInfo.setTrackerInfo(RelationShip.CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID());
+                    curClassInfo.setTrackerInfo(RelationShip.SELF_CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID());
                     // 直接入库
                     classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
                 }
@@ -358,7 +358,7 @@ public class AnalyzeDiffFile {
                         backtracking(curMethodInfo.getParent(), null);
                         return;
                     }
-                    curMethodInfo.setTrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
+                    curMethodInfo.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                     curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
                     // 直接入库
                     methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
@@ -579,7 +579,7 @@ public class AnalyzeDiffFile {
             end = rangeAnalyzeEnd(range.split("-")[1]);
             curFieldInfo = findFieldInfoByRange(begin, end, curFieldInfoList);
             TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FIELD, ((ClassInfo)preFieldInfo.getParent()).getFilePath(), ((ClassInfo)preFieldInfo.getParent()).getClassName(), preFieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            curFieldInfo.setTrackerInfo(RelationShip.CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
+            curFieldInfo.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
             fieldInfos.get(RelationShip.CHANGE.name()).add(curFieldInfo);
             curClassInfo = curFieldInfo.getParent();
             preClassInfo = preFieldInfo.getParent();
@@ -677,7 +677,7 @@ public class AnalyzeDiffFile {
                     log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());
                     return;
                 }
-                curStat.setTrackerInfo(changeRelation, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
+                curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                 statementInfos.get(RelationShip.CHANGE.name()).add(curStat);
                 preParentStatement = preStat.getParent();
                 curParentStatement = curStat.getParent();

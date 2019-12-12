@@ -8,7 +8,6 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -239,6 +238,36 @@ public class StatisticsDao {
         return statisticsMapper.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
     }
 
+
+    /**
+     * get change committer
+     */
+    public String getChangeCommitter(String type, String... args) {
+        switch (type) {
+            case "class":
+                return statisticsMapper.getChangeCommitterByClass(args[0], args[1], args[2], args[3], args[4]);
+            case "method":
+                return statisticsMapper.getChangeCommitterByMethod(args[0], args[1], args[2], args[3], args[4], args[5]);
+            case "field":
+                return statisticsMapper.getChangeCommitterByField(args[0], args[1], args[2], args[3], args[4], args[5]);
+            case "statement":
+                return statisticsMapper.getChangeCommitterByStatement(args[0], args[1], args[2]);
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * get committer line info by commit
+     */
+    public List<CommitterLineInfo> getCommitterLineInfo(String repoUuid, String branch, String commitDate) {
+        return statisticsMapper.getCommitterLineInfo(repoUuid, branch, commitDate);
+    }
+
+
+    public String getMetaMethodUuidByMethod(String filePath, String repoUuid, String branch, String className, String signature, String commitDate) {
+        return statisticsMapper.getMetaMethodUuidByMethod(filePath, repoUuid, branch, className, signature, commitDate);
+    }
 
 
 }
