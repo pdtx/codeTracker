@@ -183,12 +183,17 @@ public interface StatisticsMapper {
     /**
      * get delete statement uuid by committer in given time
      */
-    List<String> getDeleteStatementUuidList(@Param("committer") String committer, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<DeleteStatementInfo> getDeleteStatementUuidList(@Param("committer") String committer, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
     /**
-     * get delete statement info
+     * get delete statement last info
      */
-    DeleteStatementInfo getDeleteStatementInfo(@Param("statementUuid") String statementUuid);
+    DeleteStatementInfo getDeleteStatementLastInfo(@Param("statementUuid") String statementUuid);
+
+    /**
+     * get delete statement first info
+     */
+    DeleteStatementInfo getDeleteStatementFirstInfo(@Param("statementUuid") String statementUuid);
 
 
     /**

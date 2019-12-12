@@ -221,10 +221,16 @@ public class StatisticsDao {
      * get delete statement former info by committer in given time
      */
     public List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate){
-        List<String> statementUuidList = statisticsMapper.getDeleteStatementUuidList(committer, repoUuid, branch, beginDate, endDate);
+        List<DeleteStatementInfo> statementUuidList = statisticsMapper.getDeleteStatementUuidList(committer, repoUuid, branch, beginDate, endDate);
         List<DeleteStatementInfo> deleteStatementInfoList = new ArrayList<>();
-        for (String uuid: statementUuidList) {
-            DeleteStatementInfo deleteStatementInfo = statisticsMapper.getDeleteStatementInfo(uuid);
+        for (DeleteStatementInfo deleteStatementInfo : statementUuidList) {
+            DeleteStatementInfo deleteStatementInfo1 = statisticsMapper.getDeleteStatementFirstInfo(deleteStatementInfo.getStatementUuid());
+            DeleteStatementInfo deleteStatementInfo2 = statisticsMapper.getDeleteStatementLastInfo(deleteStatementInfo.getStatementUuid());
+            deleteStatementInfo.setFirstCommitter(deleteStatementInfo1.getFirstCommitter());
+            deleteStatementInfo.setFirstCommitDate(deleteStatementInfo1.getFirstCommitDate());
+            deleteStatementInfo.setLastCommitter(deleteStatementInfo2.getLastCommitter());
+            deleteStatementInfo.setLastCommitDate(deleteStatementInfo2.getLastCommitDate());
+            deleteStatementInfo.setBody(deleteStatementInfo2.getBody());
             deleteStatementInfoList.add(deleteStatementInfo);
         }
         return deleteStatementInfoList;

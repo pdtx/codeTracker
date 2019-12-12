@@ -250,24 +250,37 @@
     </select>
 
     <!-- -->
-    <resultMap id="DeleteStatementUuidList" type="String">
+    <resultMap id="DeleteStatementList" type="cn.edu.fudan.codetracker.domain.resultmap.DeleteStatementInfo">
         <id property="statementUuid" column="statement_uuid"/>
+        <result property="deleteCommitter" column="committer"/>
+        <result property="deleteDate" column="commit_date"/>
     </resultMap>
 
-    <select id="getDeleteStatementUuidList" parameterType="String" resultMap="DeleteStatementUuidList">
-        select statement_uuid from issueTracker.raw_statement where committer = #{committer} and repo_uuid = #{repoUuid} and branch = #{branch} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and change_relation = "DELETE";
+    <select id="getDeleteStatementUuidList" parameterType="String" resultMap="DeleteStatementList">
+        select statement_uuid,committer,commit_date from issueTracker.raw_statement where committer = #{committer} and repo_uuid = #{repoUuid} and branch = #{branch} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and change_relation = "DELETE";
     </select>
 
     <!-- -->
     <resultMap id="DeleteStatementFormerInfo" type="cn.edu.fudan.codetracker.domain.resultmap.DeleteStatementInfo">
         <id property="statementUuid" column="statement_uuid"/>
-        <result property="formerCommitter" column="committer"/>
-        <result property="formerCommitDate" column="commit_date"/>
+        <result property="lastCommitter" column="committer"/>
+        <result property="lastCommitDate" column="commit_date"/>
         <result property="body" column="body"/>
     </resultMap>
 
-    <select id="getDeleteStatementInfo" parameterType="String" resultMap="DeleteStatementFormerInfo">
+    <select id="getDeleteStatementLastInfo" parameterType="String" resultMap="DeleteStatementFormerInfo">
         select statement_uuid, committer, commit_date, body from issueTracker.raw_statement where change_relation != "DELETE" and statement_uuid = #{statementUuid} order by commit_date desc limit 1;
+    </select>
+
+    <!-- -->
+    <resultMap id="DeleteStatementFirstInfo" type="cn.edu.fudan.codetracker.domain.resultmap.DeleteStatementInfo">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="firstCommitter" column="committer"/>
+        <result property="firstCommitDate" column="commit_date"/>
+    </resultMap>
+
+    <select id="getDeleteStatementFirstInfo" parameterType="String" resultMap="DeleteStatementFirstInfo">
+        select statement_uuid, committer, commit_date from issueTracker.raw_statement where change_relation != "DELETE" and statement_uuid = #{statementUuid} order by commit_date asc limit 1;
     </select>
 
     <!-- -->
