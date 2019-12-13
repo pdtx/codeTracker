@@ -131,7 +131,7 @@ public class OutputAnalysis {
                             currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
                             curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                             if (m.getKey().containsKey("diffPath")) {
-                                String diffPath = m.getKey().getString("diffPath");
+                                String diffPath = pathPrefix + "/" + m.getKey().getString("diffPath");
                                 //diffPath = IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath;
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);

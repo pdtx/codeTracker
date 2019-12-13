@@ -224,7 +224,7 @@ public class ScanServiceImpl implements ScanService {
         }
 
         if("iec-wepm-develop".equals(repoUuid)) {
-            return "/Users/tangyuan/Documents/Git/iec-wepm-develop";
+            return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
         return "E:\\Lab\\project\\IssueTracker-Master-pre";
