@@ -181,6 +181,12 @@
             <systemPath>${project.basedir}\jar\org.eclipse.jdt.core-3.12.3.jar</systemPath>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.codehaus.javancss/javancss -->
+        <dependency>
+            <groupId>org.codehaus.javancss</groupId>
+            <artifactId>javancss</artifactId>
+            <version>33.54</version>
+        </dependency>
     </dependencies>
 
     <build>

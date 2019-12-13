@@ -23,7 +23,7 @@ public class ClDiffHelper {
         Global.initLangAndLogger(Constants.RUNNING_LANG.JAVA, Level.WARNING);
         Global.isMethodRangeContainsJavaDoc = false;
         Global.isLink = true;
-        CLDiffLocal clDiffLocal = new CLDiffLocal();
+        CLDiffLocal clDiffLocal = new CLDiffLocal(repoPath);
         clDiffLocal.run(commitId, repoPath, outputDir);
     }
 
