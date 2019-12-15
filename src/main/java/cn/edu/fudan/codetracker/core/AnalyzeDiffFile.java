@@ -10,6 +10,7 @@ import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import cn.edu.fudan.codetracker.exception.ExceptionMessage;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -591,6 +592,9 @@ public class AnalyzeDiffFile {
             begin = rangeAnalyzeBegin(range.split("-")[1]);
             end = rangeAnalyzeEnd(range.split("-")[1]);
             curFieldInfo = findFieldInfoByRange(begin, end, curFieldInfoList);
+            if (baseInfoNullHandler(curFieldInfo, "analyzeModifiedField is null!" + changeRelation)) {
+                return;
+            }
             TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FIELD, ((ClassInfo)preFieldInfo.getParent()).getFilePath(), ((ClassInfo)preFieldInfo.getParent()).getClassName(), preFieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
             if (trackerInfo == null) {
                 log.error("analyzeModifiedField");
@@ -902,8 +906,7 @@ public class AnalyzeDiffFile {
             int hashCode = packageInfo.hashCode();
             if (! modifyPackageUuid.containsKey(hashCode)) {
                 trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE, packageInfo.getModuleName(), packageInfo.getPackageName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-                if (trackerInfo == null) {
-                    log.error("package tracker Info null! commit:{}, module:{}, package:{} ",curRepoInfo.getCommit(), packageInfo.getModuleName(), packageInfo.getPackageName());
+                if (trackerInfoNullHandler(trackerInfo, ProjectInfoLevel.PACKAGE.getName() + ExceptionMessage.TRACKER_INFO_NULL)) {
                     continue;
                 }
                 modifyPackageUuid.put(hashCode, trackerInfo);
