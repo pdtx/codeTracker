@@ -561,6 +561,9 @@ public class AnalyzeDiffFile {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
             curFieldInfo = findFieldInfoByRange(begin, end, curFieldInfoList);
+            if (baseInfoNullHandler(curFieldInfo, "curFieldInfo is null")) {
+                return;
+            }
             fieldInfos.get(RelationShip.ADD.name()).add(curFieldInfo);
             curClassInfo = curFieldInfo.getParent();
             preClassInfo = findClassInfoByRange(preClassInfoList, begin, end);
@@ -705,14 +708,14 @@ public class AnalyzeDiffFile {
                 int begin = rangeAnalyzeBegin(ranges[1]);
                 int end = rangeAnalyzeEnd(ranges[1]);
                 StatementInfo curStat = findStatementInfoByRange(curStatementInfoList, begin, end, -1);
-                backtrackingMethod(curStat);
-                begin = rangeAnalyzeBegin(ranges[0]);
-                end = rangeAnalyzeEnd(ranges[0]);
-                StatementInfo preStat = findStatementInfoByRange(preStatementInfoList, begin, end, -1);
-                if (preStat == null) {
+                if (curStat == null) {
                     log.error("change: preStat is null!");
                     return;
                 }
+                backtrackingMethod(curStat);
+                begin = rangeAnalyzeBegin(ranges[0]);
+                end = rangeAnalyzeEnd(ranges[0]);
+                StatementInfo preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, curStat.getMethodUuid(), preStat.getBody());
                 if (trackerInfo == null) {
                     log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());
