@@ -94,7 +94,7 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, OutputAnalysis analysis, List<AnalyzeDiffFile> analyzeDiffFiles){
+    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, OutputAnalysis analysis){
         LineInfo lineInfo = new LineInfo();
         lineInfo.setCommitId(commitId);
         RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId());
@@ -103,7 +103,7 @@ public class ScanServiceImpl implements ScanService {
         lineInfo.setRepoUuid(repoInfo.getRepoUuid());
         lineInfo.setBranch(repoInfo.getBranch());
 
-        if(analyzeDiffFiles.size() > 1) {
+        if(analysis.getCurFileList().size() == 0 && analysis.getAddFilesList().size() == 0 && analysis.getDeleteFilesList().size() == 0 ) {
            lineInfo.setImportCount(repoInfo.getImportCount());
            lineInfo.setAddCount(0);
            lineInfo.setDeleteCount(0);
@@ -111,20 +111,34 @@ public class ScanServiceImpl implements ScanService {
             int preImportCount = lineInfoMap.get(analysis.getPreCommitId()).getImportCount();
             lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
 
-            for (AnalyzeDiffFile analyzeDiffFile: analyzeDiffFiles) {
-                //scan add、change、delete lint count and set line info
-                int addCount = 0;
-                for (FileInfo addFileInfo: analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name())) {
-                    addCount += JavancssScaner.scanOneFile(addFileInfo.getFilePath());
-                }
-                lineInfo.setAddCount(addCount);
+            int addCount = 0;
+            int deleteCount = 0;
+            int changeCount = 0;
 
-                int deleteCount = 0;
-                for (FileInfo deleteFileInfo: analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name())) {
-                    deleteCount += JavancssScaner.scanOneFile(deleteFileInfo.getFilePath());
-                }
-                lineInfo.setDeleteCount(deleteCount);
+            for (String addPath : analysis.getAddFilesList()) {
+                addCount += JavancssScaner.scanOneFile(addPath);
             }
+
+            for (String deletePath : analysis.getDeleteFilesList()) {
+                deleteCount += JavancssScaner.scanOneFile(deletePath);
+            }
+
+            for (String curPath : analysis.getCurFileList()) {
+                changeCount += JavancssScaner.scanOneFile(curPath);
+            }
+
+            for (String prePath : analysis.getPreFileList()) {
+                changeCount -= JavancssScaner.scanOneFile(prePath);
+            }
+
+            if (changeCount >= 0) {
+                addCount += changeCount;
+            } else {
+                deleteCount += (-changeCount);
+            }
+
+            lineInfo.setAddCount(addCount);
+            lineInfo.setDeleteCount(deleteCount);
         }
 
         int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
@@ -153,7 +167,7 @@ public class ScanServiceImpl implements ScanService {
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
 
         jGitHelper.checkout(commitId);
-        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis, analyzeDiffFiles);
+        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
 
         // 扫描结果记录入库
         try {

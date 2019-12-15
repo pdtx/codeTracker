@@ -60,7 +60,9 @@ public class StatementDao {
                 temp = parent;
             }
         }
-//        statementMapper.insertStatementRelationList(statementRelationInfoList);
+        if (statementRelationInfoList.size() > 0) {
+            statementMapper.insertStatementRelationList(statementRelationInfoList);
+        }
     }
 
     public void updateDeleteInfo(List<StatementInfo> statementInfos) {

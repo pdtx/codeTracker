@@ -32,6 +32,10 @@ public class OutputAnalysis {
     private JGitHelper jGitHelper;
     private int changeImportCount;
     private String preCommitId;
+    private ArrayList<String>  preFileList;
+    private ArrayList<String>  curFileList;
+    private List<String> addFilesList;
+    private List<String> deleteFilesList;
 
 
     public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
@@ -75,10 +79,10 @@ public class OutputAnalysis {
 
             String currFilePath;
             String prevFilePath;
-            ArrayList<String>  preFileList = new ArrayList<>();
-            ArrayList<String>  curFileList = new ArrayList<>();
-            List<String> addFilesList = new ArrayList<>();
-            List<String> deleteFilesList = new ArrayList<>();
+            preFileList = new ArrayList<>();
+            curFileList = new ArrayList<>();
+            addFilesList = new ArrayList<>();
+            deleteFilesList = new ArrayList<>();
             List<String> diffPathList = new ArrayList<>();
             List<String> fileNameList = new ArrayList<>();
             String preCommit ;
@@ -185,4 +189,12 @@ public class OutputAnalysis {
     public int getChangeImportCount() { return changeImportCount; }
 
     public String getPreCommitId() { return preCommitId; }
+
+    public ArrayList<String> getPreFileList() { return preFileList; }
+
+    public ArrayList<String> getCurFileList() { return curFileList; }
+
+    public List<String> getAddFilesList() { return addFilesList; }
+
+    public List<String> getDeleteFilesList() { return deleteFilesList; }
 }
