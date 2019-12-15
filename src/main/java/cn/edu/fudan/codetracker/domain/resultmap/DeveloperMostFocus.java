@@ -8,7 +8,6 @@ public class DeveloperMostFocus {
     private String uuid;
     private String name;
     private int quantity;
-    private List<String> commitMessage;
     private String filePath;
     private List<String> content;
 
@@ -39,10 +38,6 @@ public class DeveloperMostFocus {
     public String getFilePath() { return filePath; }
 
     public void setFilePath(String filePath) { this.filePath = filePath; }
-
-    public List<String> getCommitMessage() { return commitMessage; }
-
-    public void setCommitMessage(List<String> commitMessage) { this.commitMessage = commitMessage; }
 
     public List<String> getContent() { return content; }
 

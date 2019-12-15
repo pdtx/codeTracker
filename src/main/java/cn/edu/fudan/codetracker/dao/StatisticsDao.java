@@ -125,13 +125,10 @@ public class StatisticsDao {
         type = type.toUpperCase();
         List<DeveloperMostFocus> developerMostFocusList = new ArrayList<>();
         List<DeveloperMostFocus> temp;
-        List<String> commitMessage;
         if (ProjectInfoLevel.METHOD.name().equals(type)) {
             temp = statisticsMapper.methodDeveloperFocusMost(committer, beginDate, endDate);
             for (DeveloperMostFocus dmf: temp) {
-                commitMessage = statisticsMapper.getCommitMessageByMethodId(dmf.getUuid(),committer,beginDate,endDate);
                 List<String> content = statisticsMapper.getContentByMethodId(dmf.getUuid(),committer,beginDate,endDate);
-                dmf.setCommitMessage(commitMessage);
                 dmf.setContent(content);
                 developerMostFocusList.add(dmf);
             }
@@ -141,8 +138,6 @@ public class StatisticsDao {
         if (ProjectInfoLevel.CLASS.name().equals(type)) {
             temp = statisticsMapper.classDeveloperFocusMost(committer, beginDate, endDate);
             for (DeveloperMostFocus dmf: temp) {
-                commitMessage = statisticsMapper.getCommitMessageByClassId(dmf.getUuid(),committer,beginDate,endDate);
-                dmf.setCommitMessage(commitMessage);
                 developerMostFocusList.add(dmf);
             }
             return developerMostFocusList;
@@ -151,8 +146,6 @@ public class StatisticsDao {
         if (ProjectInfoLevel.FILE.name().equals(type)) {
             temp = statisticsMapper.fileDeveloperFocusMost(committer, beginDate, endDate);
             for (DeveloperMostFocus dmf: temp) {
-                commitMessage = statisticsMapper.getCommitMessageByFileId(dmf.getUuid(),committer,beginDate,endDate);
-                dmf.setCommitMessage(commitMessage);
                 developerMostFocusList.add(dmf);
             }
             return developerMostFocusList;
@@ -161,8 +154,6 @@ public class StatisticsDao {
         if (ProjectInfoLevel.PACKAGE.name().equals(type)) {
             temp = statisticsMapper.packageDeveloperFocusMost(committer, beginDate, endDate);
             for (DeveloperMostFocus dmf: temp) {
-                commitMessage = statisticsMapper.getCommitMessageByPackageId(dmf.getUuid(),committer,beginDate,endDate);
-                dmf.setCommitMessage(commitMessage);
                 developerMostFocusList.add(dmf);
             }
             return developerMostFocusList;

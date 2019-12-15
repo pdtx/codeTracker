@@ -13,7 +13,6 @@ public class CodeLine {
 
     private int addLines;
     private int deleteLines;
-    private int changeLines;
 
     public CodeLine() {
 
@@ -60,14 +59,6 @@ public class CodeLine {
 
     public void setDeleteLines(int deleteLines) {
         this.deleteLines = deleteLines;
-    }
-
-    public int getChangeLines() {
-        return changeLines;
-    }
-
-    public void setChangeLines(int changeLines) {
-        this.changeLines = changeLines;
     }
 
 }
