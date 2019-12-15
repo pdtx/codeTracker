@@ -59,6 +59,7 @@ public class ScanServiceImpl implements ScanService {
         int num = 0;
         for (String commit : commitList) {
             ++num;
+            log.info("start commit：" + num  + "  " + commit);
             if (isInit) {
                 scan(repoUuid , commit, branch, jGitHelper, repoPath);
             } else {
@@ -69,7 +70,6 @@ public class ScanServiceImpl implements ScanService {
                 isInit = true;
                 lineCountFirstScan(repoInfo, repoPath);
             }
-            log.info("complete commit：" + num  + "  " + commit);
         }
     }
 

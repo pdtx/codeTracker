@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
@@ -35,7 +36,6 @@ public class JGitHelper {
 
     private Repository repository;
     private RevWalk revWalk;
-    private String repoPath;
     private Git git;
 
     /**
@@ -44,7 +44,6 @@ public class JGitHelper {
      *
      */
     public JGitHelper(String repoPath) {
-        this.repoPath = repoPath;
         String gitDir =  IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
@@ -54,7 +53,6 @@ public class JGitHelper {
                     .build();
             git = new Git(repository);
             revWalk = new RevWalk(repository);
-            this.repoPath = repoPath;
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -65,6 +63,13 @@ public class JGitHelper {
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(version).call();
         } catch (Exception e) {
+            try {
+                git.reset().setMode(ResetCommand.ResetType.HARD).call();
+                CheckoutCommand checkoutCommand = git.checkout();
+                checkoutCommand.setName(version).call();
+            }catch (Exception e1) {
+                log.error("JGitHelper second checkout error:{}" +  e1.getMessage());
+            }
             log.error("JGitHelper checkout error: " +  e.getMessage());
         }
     }
@@ -178,10 +183,6 @@ public class JGitHelper {
         for (String s : jGitHelper.getCommitListByBranchAndDuration("develope", "2019.09.20-2019.11.01")) {
             System.out.println(s);
         }
-/*        jGitHelper.checkout(commitId);
-        System.out.println(jGitHelper.getAuthorName(commitId));
-        System.out.println(jGitHelper.getCommitTime(commitId));
-        System.out.println(jGitHelper.getMess(commitId));*/
     }
 
 
