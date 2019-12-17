@@ -110,7 +110,7 @@ public class StatisticsController {
      * 获取指定时间内某个开发人员工作集中在何处
      */
     @GetMapping(value = {"/statistics/developerFocus/{type}"})
-    public ResponseBean getMostModifiedMethod(@PathVariable("type") String type, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+    public ResponseBean getDeveloperFocusMost(@PathVariable("type") String type, @RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
         try{
             List<DeveloperMostFocus> data = statisticsService.getDeveloperFocusMost(type, committer, beginDate, endDate);
             return new ResponseBean(200, "", data);
@@ -206,6 +206,37 @@ public class StatisticsController {
     public ResponseBean getCommitterLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("commit") String commit, @RequestParam("repoPath") String repoPath, @RequestParam("branch") String branch){
         try{
             Map<String,Map<String,Integer>> data = statisticsService.getCommitterLineInfo(repoUuid, commit, repoPath, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    /**
+     * 临时接口
+     */
+    @GetMapping(value = {"/statistics/committer/temp/focus"})
+    public ResponseBean getFocus(@RequestParam("committer") String committer){
+        try{
+            List<TempMostInfo> data = statisticsService.getFocus(committer);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * method历史接口
+     */
+    @GetMapping(value = {"/statistics/committer/temp/method"})
+    public ResponseBean getMethodHistory(@RequestParam("methodUuid") String methodUuid){
+        try{
+            List<MethodHistory> data = statisticsService.getMethodHistory(methodUuid);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

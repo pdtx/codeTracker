@@ -179,6 +179,16 @@ public class StatisticsServiceImpl implements StatisticsService {
         return committerLineInfoMap;
     }
 
+    @Override
+    public List<TempMostInfo> getFocus(String committer) {
+        return statisticsDao.getFocus(committer);
+    }
+
+    @Override
+    public List<MethodHistory> getMethodHistory(String methodUuid) {
+        return statisticsDao.getMethodHistory(methodUuid);
+    }
+
 
     /**
      * getter and setter

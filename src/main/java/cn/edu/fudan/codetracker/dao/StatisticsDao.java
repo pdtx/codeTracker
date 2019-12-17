@@ -267,4 +267,56 @@ public class StatisticsDao {
     }
 
 
+    /**
+     * 临时接口
+     */
+    public List<TempMostInfo> getFocus(String committer) {
+        List<MostModifiedInfo> packageInfos = statisticsMapper.getPackageInfoMost(committer);
+        List<TempMostInfo> packageList = new ArrayList<>();
+        for (MostModifiedInfo mostModifiedInfo: packageInfos) {
+            TempMostInfo packageInfo = new TempMostInfo();
+            packageInfo.setName(mostModifiedInfo.getPackageName());
+            packageInfo.setQuantity(mostModifiedInfo.getVersion());
+            packageInfo.setUuid(mostModifiedInfo.getUuid());
+            List<MostModifiedInfo> classInfos = statisticsMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName());
+            List<TempMostInfo> classList = new ArrayList<>();
+            for (MostModifiedInfo modifiedInfo : classInfos) {
+                TempMostInfo classInfo = new TempMostInfo();
+                classInfo.setName(modifiedInfo.getClassName());
+                classInfo.setQuantity(modifiedInfo.getVersion());
+                classInfo.setUuid(modifiedInfo.getUuid());
+                List<MostModifiedInfo> methodInfos = statisticsMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName());
+                List<TempMostInfo> methodList = new ArrayList<>();
+                for (MostModifiedInfo methodInfo : methodInfos) {
+                    TempMostInfo method = new TempMostInfo();
+                    method.setName(methodInfo.getMethodName());
+                    method.setQuantity(methodInfo.getVersion());
+                    method.setChildInfos(null);
+                    method.setUuid(methodInfo.getUuid());
+                    if (method.getQuantity()>1) {
+                        methodList.add(method);
+                    }
+                }
+                classInfo.setChildInfos(methodList);
+                if (classInfo.getQuantity()>1) {
+                    classList.add(classInfo);
+                }
+            }
+            packageInfo.setChildInfos(classList);
+            if (packageInfo.getQuantity()>1) {
+                packageList.add(packageInfo);
+            }
+        }
+        return packageList;
+    }
+
+
+    /**
+     * 临时接口
+     */
+    public List<MethodHistory> getMethodHistory(String methodUuid) {
+        return statisticsMapper.getMethodHistory(methodUuid);
+    }
+
+
 }

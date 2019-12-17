@@ -229,6 +229,23 @@ public interface StatisticsMapper {
      */
     List<CommitterLineInfo> getCommitterLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("commitDate") String commitDate);
 
+    /**
+     * 演示临时接口
+     */
+    List<MostModifiedInfo> getPackageInfoMost(@Param("committer") String committer);
+    /**
+     * 演示临时接口
+     */
+    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName);
+    /**
+     * 演示临时接口
+     */
+    List<MostModifiedInfo> getMethodInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("className") String className);
 
+
+    /**
+     * 获取method历史
+     */
+    List<MethodHistory> getMethodHistory(@Param("methodUuid") String methodUuid);
 
 }
