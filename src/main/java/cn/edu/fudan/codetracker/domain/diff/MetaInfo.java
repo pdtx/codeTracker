@@ -6,4 +6,5 @@ package cn.edu.fudan.codetracker.domain.diff;
  * create: 2019-12-14 21:05
  **/
 public class MetaInfo {
+
 }

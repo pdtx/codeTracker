@@ -10,8 +10,7 @@ import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.LineInfo;
 import cn.edu.fudan.codetracker.domain.RelationShip;
 import cn.edu.fudan.codetracker.core.AnalyzeDiffFile;
-import cn.edu.fudan.codetracker.core.OutputAnalysis;
-import cn.edu.fudan.codetracker.domain.projectinfo.FileInfo;
+import cn.edu.fudan.codetracker.core.MetaInfoAnalysis;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
@@ -94,7 +93,7 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, OutputAnalysis analysis){
+    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
         LineInfo lineInfo = new LineInfo();
         lineInfo.setCommitId(commitId);
         RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId());
@@ -163,7 +162,7 @@ public class ScanServiceImpl implements ScanService {
         String [] path = repoPath.replace('\\','/').split("/");
         String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + path[path.length -1];
         // extra diff info and construct tracking relation
-        OutputAnalysis analysis = new OutputAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
+        MetaInfoAnalysis analysis = new MetaInfoAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
 
         jGitHelper.checkout(commitId);

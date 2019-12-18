@@ -5,5 +5,7 @@ package cn.edu.fudan.codetracker.domain.diff;
  * @author fancying
  * create: 2019-12-14 21:07
  **/
-public class DiffInfo {
+public final class DiffInfo {
+    private String type;
+
 }

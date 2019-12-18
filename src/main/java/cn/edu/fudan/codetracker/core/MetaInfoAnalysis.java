@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class OutputAnalysis {
+public class MetaInfoAnalysis {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
@@ -38,7 +38,7 @@ public class OutputAnalysis {
     private List<String> deleteFilesList;
 
 
-    public OutputAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
+    public MetaInfoAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
         this.repoUuid = repoUuid;
         this.branch = branch;
         this.outputDir = outputDir;
@@ -130,18 +130,17 @@ public class OutputAnalysis {
                             continue;
                         }
                         if ("MODIFY".equals(m.getValue())) {
-                            prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
-                            preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
-                            currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
-                            curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                             if (m.getKey().containsKey("diffPath")) {
                                 String diffPath = pathPrefix + "/" + m.getKey().getString("diffPath");
-                                //diffPath = IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath;
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
                             }else {
                                 log.error("CHANGE situation: diffPath lack! " + metaPath + " id :" +  m.getKey().getString("id"));
                             }
+                            prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
+                            preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
+                            currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
+                            curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                         }
                     }
                 }
