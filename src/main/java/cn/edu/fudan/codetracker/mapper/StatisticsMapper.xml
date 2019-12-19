@@ -343,4 +343,54 @@
     </select>
 
 
+    <!--演示用临时 -->
+    <resultMap id="PackageInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="root_uuid"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="packageName" column="package_name"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
+        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc limit 5;
+    </select>
+
+    <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="class_uuid"/>
+        <result property="className" column="class_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
+        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc limit 5;
+    </select>
+
+    <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="method_uuid"/>
+        <result property="methodName" column="signature"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
+        select r.method_uuid, r.signature, count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 5;
+    </select>
+
+    <!--获取method历史-->
+    <resultMap id="MethodHistory" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
+        <id property="commit" column="commitid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitMessage" column="commit_message"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="content" column="content"/>
+        <result property="diff" column="diff" jdbcType="OTHER" typeHandler="cn.edu.fudan.codetracker.handler.JsonTypeHandler"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="methodBegin" column="method_begin"/>
+        <result property="methodEnd" column="method_end"/>
+    </resultMap>
+
+    <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
+        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end from issueTracker.raw_method where method_uuid=#{methodUuid} and commit_message not like "Merge%";
+    </select>
+
 </mapper>

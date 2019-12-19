@@ -34,4 +34,12 @@ public interface StatisticsService {
 
     Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch);
 
+    /**
+     临时演示接口
+     */
+    List<TempMostInfo> getFocus(String committer);
+    /**
+     method历史接口
+     */
+    List<MethodHistory> getMethodHistory(String methodUuid);
 }
