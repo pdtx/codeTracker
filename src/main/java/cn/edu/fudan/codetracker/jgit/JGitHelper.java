@@ -60,6 +60,7 @@ public class JGitHelper {
 
     public void checkout(String version) {
         try {
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(version).call();
         } catch (Exception e) {
@@ -68,9 +69,9 @@ public class JGitHelper {
                 CheckoutCommand checkoutCommand = git.checkout();
                 checkoutCommand.setName(version).call();
             }catch (Exception e1) {
-                log.error("JGitHelper second checkout error:{}" +  e1.getMessage());
+                log.error("JGitHelper second checkout error:{}", e1.getMessage());
             }
-            log.error("JGitHelper checkout error: " +  e.getMessage());
+            log.error("JGitHelper checkout error:{} ", e.getMessage());
         }
     }
 
