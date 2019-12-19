@@ -84,6 +84,10 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch) {
         calculateCommitterRemainLine(repoUuid, commit, repoPath, branch);
+        if (committerMap.keySet().contains(null)) {
+            committerMap.put("unknown",committerMap.get(null));
+            committerMap.remove(null);
+        }
         return committerMap;
     }
 
