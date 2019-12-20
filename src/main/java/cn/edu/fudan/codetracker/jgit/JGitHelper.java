@@ -177,12 +177,14 @@ public class JGitHelper {
 
     public static void main(String[] args) {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        String repoPath = "E:\\Lab\\iec-wepm-develop";
+        //String repoPath = "E:\\Lab\\iec-wepm-develop";
+        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
         //String commitId = "56ecb887353075ff557638843e234a8411b5fb8c";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
-        for (String s : jGitHelper.getCommitListByBranchAndDuration("develope", "2019.09.20-2019.11.01")) {
+//        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
+        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
             System.out.println(s);
+            jGitHelper.checkout(s);
         }
     }
 

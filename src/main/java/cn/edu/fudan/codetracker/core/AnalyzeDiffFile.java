@@ -130,8 +130,7 @@ public class AnalyzeDiffFile {
 
         for (FileInfo fileInfo : deleteRepoInfo.getFileInfos()) {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FILE, fileInfo.getFilePath(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            if (trackerInfo == null) {
-                fileInfos.get(RelationShip.ADD.name()).add(fileInfo);
+            if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.FILE_TRACKER_INFO_NULL)) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
@@ -141,7 +140,7 @@ public class AnalyzeDiffFile {
 
         for (ClassInfo classInfo : deleteRepoInfo.getClassInfos()) {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.CLASS, classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            if (trackerInfo == null) {
+            if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.CLASS_TRACKER_INFO_NULL)) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
@@ -151,7 +150,7 @@ public class AnalyzeDiffFile {
 
         for (MethodInfo methodInfo : deleteRepoInfo.getMethodInfos()) {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)methodInfo.getParent()).getFilePath(), ((ClassInfo)methodInfo.getParent()).getClassName(), methodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            if (trackerInfo == null) {
+            if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.METHOD_TRACKER_INFO_NULL)) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
@@ -162,7 +161,7 @@ public class AnalyzeDiffFile {
 
         for (FieldInfo fieldInfo : deleteRepoInfo.getFieldInfos()) {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FIELD, ((ClassInfo)fieldInfo.getParent()).getFilePath(), ((ClassInfo)fieldInfo.getParent()).getClassName(), fieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            if (trackerInfo == null) {
+            if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.FIELD_TRACKER_INFO_NULL)) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
@@ -173,7 +172,7 @@ public class AnalyzeDiffFile {
         for (StatementInfo statementInfo : deleteRepoInfo.getStatementInfos()) {
             statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), statementInfo.getBody());
-            if (trackerInfo == null) {
+            if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.STATEMENT_TRACKER_INFO_NULL)) {
                 continue;
             }
             trackerInfo.setChangeRelation(relation);
@@ -560,7 +559,7 @@ public class AnalyzeDiffFile {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
             curFieldInfo = findFieldInfoByRange(begin, end, curFieldInfoList);
-            if (baseInfoNullHandler(curFieldInfo, "curFieldInfo is null")) {
+            if (baseInfoNullHandler(curFieldInfo, ProjectInfoLevel.FIELD.getName() + ExceptionMessage.CUR_INFO_NULL)) {
                 return;
             }
             fieldInfos.get(RelationShip.ADD.name()).add(curFieldInfo);
@@ -920,6 +919,10 @@ public class AnalyzeDiffFile {
      *  commit committer commitDate commitMessage 都为当前版本的信息
      */
     private void resetBaseInfo(BaseInfo baseInfo) {
+        if (baseInfo == null) {
+            log.error("resetBaseInfo");
+            return;
+        }
         baseInfo.setCommit(curRepoInfo.getCommit());
         baseInfo.setCommitter(curRepoInfo.getCommitter());
         baseInfo.setCommitDate(curRepoInfo.getCommitDate());

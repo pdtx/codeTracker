@@ -34,6 +34,10 @@ public class BaseInfo {
     private BaseInfo parent;
     private List<? extends BaseInfo> children;
     private ProjectInfoLevel projectInfoLevel;
+    /**
+     * mark of mapping
+     */
+    private boolean isMapping = false;
 
     BaseInfo() { }
 
@@ -181,5 +185,13 @@ public class BaseInfo {
 
     public void setChildren(List<? extends BaseInfo> children) {
         this.children = children;
+    }
+
+    public boolean isMapping() {
+        return isMapping;
+    }
+
+    public void setMapping(boolean mapping) {
+        isMapping = mapping;
     }
 }
