@@ -200,6 +200,22 @@ public class StatisticsController {
 
 
     /**
+     * 根据repoUuid, commit, repoPath, branch, beginDate获取某个版本beginDate到commitDate期间每个committer的贡献情况
+     */
+    @GetMapping(value = {"/statistics/committer/line/count/period"})
+    public ResponseBean getChangeCommitterInfoByDate(@RequestParam("repoUuid") String repoUuid, @RequestParam("commit") String commit, @RequestParam("repoPath") String repoPath, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate){
+        try{
+            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    /**
      * 根据repoUuid, commit, repoPath, branch获取截至该版本每个committer的代码增加、删除总情况
      */
     @GetMapping(value = {"/statistics/committer/line/total/count"})

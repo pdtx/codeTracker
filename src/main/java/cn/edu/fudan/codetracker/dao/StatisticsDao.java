@@ -239,19 +239,35 @@ public class StatisticsDao {
     /**
      * get change committer
      */
-    public String getChangeCommitter(String type, String... args) {
-        switch (type) {
-            case "class":
-                return statisticsMapper.getChangeCommitterByClass(args[0], args[1], args[2], args[3], args[4]);
-            case "method":
-                return statisticsMapper.getChangeCommitterByMethod(args[0], args[1], args[2], args[3], args[4], args[5]);
-            case "field":
-                return statisticsMapper.getChangeCommitterByField(args[0], args[1], args[2], args[3], args[4], args[5]);
-            case "statement":
-                return statisticsMapper.getChangeCommitterByStatement(args[0], args[1], args[2]);
-            default:
-                return "";
+    public String getChangeCommitter(String type, String beginDate, String... args) {
+        if (beginDate == null) {
+            switch (type) {
+                case "class":
+                    return statisticsMapper.getChangeCommitterByClass(args[0], args[1], args[2], args[3], args[4]);
+                case "method":
+                    return statisticsMapper.getChangeCommitterByMethod(args[0], args[1], args[2], args[3], args[4], args[5]);
+                case "field":
+                    return statisticsMapper.getChangeCommitterByField(args[0], args[1], args[2], args[3], args[4], args[5]);
+                case "statement":
+                    return statisticsMapper.getChangeCommitterByStatement(args[0], args[1], args[2]);
+                default:
+                    return "";
+            }
+        } else {
+            switch (type) {
+                case "class":
+                    return statisticsMapper.getChangeCommitterByClassDate(args[0], args[1], args[2], args[3], args[4], beginDate);
+                case "method":
+                    return statisticsMapper.getChangeCommitterByMethodDate(args[0], args[1], args[2], args[3], args[4], args[5], beginDate);
+                case "field":
+                    return statisticsMapper.getChangeCommitterByFieldDate(args[0], args[1], args[2], args[3], args[4], args[5], beginDate);
+                case "statement":
+                    return statisticsMapper.getChangeCommitterByStatementDate(args[0], args[1], args[2], beginDate);
+                default:
+                    return "";
+            }
         }
+
     }
 
     /**
@@ -262,8 +278,13 @@ public class StatisticsDao {
     }
 
 
-    public String getMetaMethodUuidByMethod(String filePath, String repoUuid, String branch, String className, String signature, String commitDate) {
-        return statisticsMapper.getMetaMethodUuidByMethod(filePath, repoUuid, branch, className, signature, commitDate);
+    public String getMetaMethodUuidByMethod(String beginDate, String filePath, String repoUuid, String branch, String className, String signature, String commitDate) {
+        if (beginDate == null) {
+            return statisticsMapper.getMetaMethodUuidByMethod(filePath, repoUuid, branch, className, signature, commitDate);
+        } else {
+            return statisticsMapper.getMetaMethodUuidByMethodDate(filePath, repoUuid, branch, className, signature, commitDate, beginDate);
+        }
+
     }
 
 

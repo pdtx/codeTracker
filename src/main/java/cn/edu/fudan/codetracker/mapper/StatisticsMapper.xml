@@ -320,6 +320,23 @@
         select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") and commit_message not like "Merge%" order by commit_date desc limit 1;
     </select>
 
+    <!--起始时间是参数，结束时间为版本时间-->
+    <select id="getChangeCommitterByClassDate" parameterType="String" resultMap="ChangeCommitter">
+        select committer from issueTracker.raw_class as r, issueTracker.meta_class as m where r.class_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.class_name = #{className} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+    </select>
+
+    <select id="getChangeCommitterByMethodDate" parameterType="String" resultMap="ChangeCommitter">
+        select committer from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+    </select>
+
+    <select id="getChangeCommitterByFieldDate" parameterType="String" resultMap="ChangeCommitter">
+        select committer from issueTracker.raw_field as r, issueTracker.meta_field as m where r.field_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.simple_name = #{simpleName} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+    </select>
+
+    <select id="getChangeCommitterByStatementDate" parameterType="String" resultMap="ChangeCommitter">
+        select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and commit_date &gt;= #{beginDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") and commit_message not like "Merge%" order by commit_date desc limit 1;
+    </select>
+
     <!-- -->
     <resultMap id="MetaMethodUuid" type="String">
         <id property="methodUuid" column="method_uuid"/>
@@ -327,6 +344,11 @@
 
     <select id="getMetaMethodUuidByMethod" parameterType="String" resultMap="MetaMethodUuid">
         select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+    </select>
+
+    <!--时间段筛选-->
+    <select id="getMetaMethodUuidByMethodDate" parameterType="String" resultMap="MetaMethodUuid">
+        select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
     </select>
 
 

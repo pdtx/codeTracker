@@ -225,6 +225,28 @@ public interface StatisticsMapper {
 
 
     /**
+     * get change committer by class beginDate
+     */
+    String getChangeCommitterByClassDate(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
+    /**
+     * get change committer by method beginDate
+     */
+    String getChangeCommitterByMethodDate(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("signature") String signature, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
+    /**
+     * get change committer by field beginDate
+     */
+    String getChangeCommitterByFieldDate(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("simpleName") String simpleName, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
+    /**
+     * get change committer by statement beginDate
+     */
+    String getChangeCommitterByStatementDate(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
+    /**
+     * get meta method uuid by method beginDate
+     */
+    String getMetaMethodUuidByMethodDate(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("signature") String signature, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
+
+
+    /**
      * get committer line info by commit
      */
     List<CommitterLineInfo> getCommitterLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("commitDate") String commitDate);
