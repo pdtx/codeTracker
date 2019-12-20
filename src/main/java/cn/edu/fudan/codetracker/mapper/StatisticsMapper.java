@@ -266,7 +266,7 @@ public interface StatisticsMapper {
 
 
     /**
-     * 获取method历史
+     * 获取method历史，默认近两个月
      */
     List<MethodHistory> getMethodHistory(@Param("methodUuid") String methodUuid);
 

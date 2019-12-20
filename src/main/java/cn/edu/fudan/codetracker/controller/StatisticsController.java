@@ -9,6 +9,7 @@ import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -214,6 +215,21 @@ public class StatisticsController {
         }
     }
 
+    /**
+     * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
+     */
+    @GetMapping(value = {"/statistics/committer/line/valid"})
+    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+        try{
+//            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
+            return new ResponseBean(200, "", null);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
     /**
      * 根据repoUuid, commit, repoPath, branch获取截至该版本每个committer的代码增加、删除总情况
@@ -249,7 +265,7 @@ public class StatisticsController {
     /**
      * method历史接口
      */
-    @GetMapping(value = {"/statistics/committer/temp/method"})
+    @GetMapping(value = {"/statistics/temp/method/history"})
     public ResponseBean getMethodHistory(@RequestParam("methodUuid") String methodUuid){
         try{
             List<MethodHistory> data = statisticsService.getMethodHistory(methodUuid);
