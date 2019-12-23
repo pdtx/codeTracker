@@ -278,6 +278,23 @@ public class StatisticsController {
     }
 
 
+    /**
+     * 统计存活周期
+     */
+    @GetMapping(value = {"/statistics/lifecycle"})
+    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @Param("endDate") String endDate){
+        try{
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 00:00:00";
+            Map<String,Map<String,Long>> data = statisticsService.getSurviveStatementStatistics(begin, end);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
 
     @Autowired

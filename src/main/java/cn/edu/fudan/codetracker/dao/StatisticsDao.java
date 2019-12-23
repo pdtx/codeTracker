@@ -11,12 +11,14 @@ import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Repository
 public class StatisticsDao {
     private StatisticsMapper statisticsMapper;
+    private Map<String,List<Long>> committerMap;
 
     @Autowired
     public void setStatisticsMapper(StatisticsMapper statisticsMapper) {
@@ -339,5 +341,62 @@ public class StatisticsDao {
         return statisticsMapper.getMethodHistory(methodUuid);
     }
 
+
+    /**
+     * 统计存活周期
+     */
+    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate) {
+        List<SurviveStatementInfo> surviveStatementInfos = statisticsMapper.getSurviveStatement(beginDate, endDate);
+        committerMap = new HashMap<>();
+        SurviveStatementInfo lastSurviveStatement = null;
+        for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
+            if (lastSurviveStatement != null) {
+                if (surviveStatementInfo.getStatementUuid() != lastSurviveStatement.getStatementUuid()) {
+                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+                        long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
+                        if (days > 0) {
+                            saveInMap(lastSurviveStatement.getCommitter(), days);
+                        }
+                    }
+                } else {
+                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+                        if (surviveStatementInfo.getChangeRelation().equals("SELF_CHANGE") || surviveStatementInfo.getChangeRelation().equals("DELETE")) {
+                            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), surviveStatementInfo.getCommitDate());
+                            if (days > 0) {
+                                saveInMap(lastSurviveStatement.getCommitter(), days);
+                            }
+                        }
+                    }
+                }
+            }
+            lastSurviveStatement = surviveStatementInfo;
+        }
+        return committerMap;
+    }
+
+    private void saveInMap(String name, long days) {
+        List<Long> list = new ArrayList<>();
+        if (committerMap.keySet().contains(name)) {
+            list = committerMap.get(name);
+            list.add(days);
+            committerMap.replace(name, list);
+        } else {
+            list.add(days);
+            committerMap.put(name, list);
+        }
+    }
+
+    private long calBetweenDays(String beginStr, String endStr) {
+        SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date begin = FORMATTER.parse(beginStr);
+            Date end = FORMATTER.parse(endStr);
+            long between = (end.getTime() - begin.getTime()) / (1000L*3600L*24L);
+            return between;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
 }

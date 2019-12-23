@@ -270,4 +270,10 @@ public interface StatisticsMapper {
      */
     List<MethodHistory> getMethodHistory(@Param("methodUuid") String methodUuid);
 
+
+    /**
+     * 获取时间段内存活代码情况
+     */
+    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
 }

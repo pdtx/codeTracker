@@ -45,4 +45,9 @@ public interface StatisticsService {
      method历史接口
      */
     List<MethodHistory> getMethodHistory(String methodUuid);
+
+    /**
+     * 统计存活周期
+     */
+    Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate);
 }
