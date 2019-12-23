@@ -13,6 +13,7 @@ import cn.edu.fudan.codetracker.service.StatisticsService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.MapKey;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -207,6 +208,33 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<MethodHistory> getMethodHistory(String methodUuid) {
         return statisticsDao.getMethodHistory(methodUuid);
+    }
+
+    @Override
+    public Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate) {
+        Map<String,Map<String,Long>> map = new HashMap<>();
+        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate);
+        for (String key : temp.keySet()) {
+            List<Long> list = temp.get(key);
+            list.sort(Comparator.comparingLong(Long::longValue));
+            Map<String,Long> newMap = new HashMap<>();
+            newMap.put("min",list.get(0));
+            newMap.put("max",list.get(list.size()-1));
+            if (list.size()%2 == 0) {
+                long median = (list.get(list.size()/2) + list.get((list.size()/2)-1)) / 2;
+                newMap.put("median",median);
+            } else {
+                newMap.put("median",list.get((list.size()-1)/2));
+            }
+            Long sum = 0L;
+            for (Long l : list) {
+                sum += l;
+            }
+            Long average = sum / list.size();
+            newMap.put("average",average);
+            map.put(key,newMap);
+        }
+        return map;
     }
 
 
