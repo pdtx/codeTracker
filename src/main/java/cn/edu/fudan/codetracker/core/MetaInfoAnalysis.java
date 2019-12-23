@@ -131,26 +131,26 @@ public class MetaInfoAnalysis {
                         }
                         if ("MODIFY".equals(m.getValue())) {
                             if (m.getKey().containsKey("diffPath")) {
-                                String diffPath = pathPrefix + "/" + m.getKey().getString("diffPath");
+                                String diffPath = pathPrefix + m.getKey().getString("diffPath");
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
                             }else {
                                 log.error("CHANGE situation: diffPath lack! " + metaPath + " id :" +  m.getKey().getString("id"));
                             }
-                            prevFilePath = pathPrefix + "/" + m.getKey().getString("prev_file_path");
+                            prevFilePath = pathPrefix + m.getKey().getString("prev_file_path");
                             preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
-                            currFilePath = pathPrefix + "/" + m.getKey().getString("curr_file_path");
+                            currFilePath = pathPrefix + m.getKey().getString("curr_file_path");
                             curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                         }
                     }
                 }
                 // RepoInfoBuilder need to refactor for parentCommit is not null; so
-                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null);
-                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit);
+                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null, fileNameList);
+                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit, fileNameList);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(proxyDao, preRepoInfo, curRepoInfo);
-                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true);
+                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true, null);
                 analyzeDiffFile.addInfoConstruction(addRepoInfo);
-                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false);
+                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false, null);
                 analyzeDiffFile.deleteInfoConstruction(deleteRepoInfo);
                 analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);

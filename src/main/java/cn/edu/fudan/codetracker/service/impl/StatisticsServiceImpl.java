@@ -99,7 +99,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         committerMap = new HashMap<>();
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         jGitHelper.checkout(commit);
-        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
+        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
         List<ClassInfo> classInfoList = repoInfo.getClassInfos();
         List<MethodInfo> methodInfoList = repoInfo.getMethodInfos();
         List<FieldInfo> fieldInfoList = repoInfo.getFieldInfos();
@@ -181,7 +181,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         Map<String,Map<String,Integer>> committerLineInfoMap = new HashMap<>();
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         jGitHelper.checkout(commit);
-        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
+        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
         List<CommitterLineInfo> committerLineInfoList = statisticsDao.getCommitterLineInfo(repoInfo.getRepoUuid(),repoInfo.getBranch(),FORMATTER.format(repoInfo.getCommitDate()));
         for (CommitterLineInfo committerLineInfo : committerLineInfoList) {
             Map<String,Integer> map = new HashMap<>();
