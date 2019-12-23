@@ -5,12 +5,12 @@
  **/
 package cn.edu.fudan.codetracker.controller;
 
+import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +27,7 @@ import java.util.Map;
 public class StatisticsController {
 
     private StatisticsService statisticsService;
+    private RestInterfaceManager restInterface;
 
     /**
      * 获取版本的统计信息
@@ -221,8 +222,11 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/committer/line/valid"})
     public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
         try{
-//            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
-            return new ResponseBean(200, "", null);
+            String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
+            String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
+            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
+            restInterface.freeRepo(repoUuid, repoPath);
+            return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code
@@ -300,5 +304,10 @@ public class StatisticsController {
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;
+    }
+
+    @Autowired
+    public void setRestInterface(RestInterfaceManager restInterface) {
+        this.restInterface = restInterface;
     }
 }
