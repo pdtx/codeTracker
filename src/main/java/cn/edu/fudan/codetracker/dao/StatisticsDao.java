@@ -387,7 +387,7 @@ public class StatisticsDao {
     }
 
     private long calBetweenDays(String beginStr, String endStr) {
-        SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             Date begin = FORMATTER.parse(beginStr);
             Date end = FORMATTER.parse(endStr);
