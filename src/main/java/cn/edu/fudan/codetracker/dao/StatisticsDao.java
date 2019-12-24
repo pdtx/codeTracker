@@ -293,22 +293,22 @@ public class StatisticsDao {
     /**
      * 临时接口
      */
-    public List<TempMostInfo> getFocus(String committer) {
-        List<MostModifiedInfo> packageInfos = statisticsMapper.getPackageInfoMost(committer);
+    public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
+        List<MostModifiedInfo> packageInfos = statisticsMapper.getPackageInfoMost(committer, beginDate, endDate, repoUuid, branch);
         List<TempMostInfo> packageList = new ArrayList<>();
         for (MostModifiedInfo mostModifiedInfo: packageInfos) {
             TempMostInfo packageInfo = new TempMostInfo();
             packageInfo.setName(mostModifiedInfo.getPackageName());
             packageInfo.setQuantity(mostModifiedInfo.getVersion());
             packageInfo.setUuid(mostModifiedInfo.getUuid());
-            List<MostModifiedInfo> classInfos = statisticsMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName());
+            List<MostModifiedInfo> classInfos = statisticsMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
             List<TempMostInfo> classList = new ArrayList<>();
             for (MostModifiedInfo modifiedInfo : classInfos) {
                 TempMostInfo classInfo = new TempMostInfo();
                 classInfo.setName(modifiedInfo.getClassName());
                 classInfo.setQuantity(modifiedInfo.getVersion());
                 classInfo.setUuid(modifiedInfo.getUuid());
-                List<MostModifiedInfo> methodInfos = statisticsMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName());
+                List<MostModifiedInfo> methodInfos = statisticsMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName(),beginDate,endDate,repoUuid,branch);
                 List<TempMostInfo> methodList = new ArrayList<>();
                 for (MostModifiedInfo methodInfo : methodInfos) {
                     TempMostInfo method = new TempMostInfo();
@@ -316,19 +316,13 @@ public class StatisticsDao {
                     method.setQuantity(methodInfo.getVersion());
                     method.setChildInfos(null);
                     method.setUuid(methodInfo.getUuid());
-                    if (method.getQuantity()>1) {
-                        methodList.add(method);
-                    }
+                    methodList.add(method);
                 }
                 classInfo.setChildInfos(methodList);
-                if (classInfo.getQuantity()>1) {
-                    classList.add(classInfo);
-                }
+                classList.add(classInfo);
             }
             packageInfo.setChildInfos(classList);
-            if (packageInfo.getQuantity()>1) {
-                packageList.add(packageInfo);
-            }
+            packageList.add(packageInfo);
         }
         return packageList;
     }
@@ -345,8 +339,8 @@ public class StatisticsDao {
     /**
      * 统计存活周期
      */
-    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate) {
-        List<SurviveStatementInfo> surviveStatementInfos = statisticsMapper.getSurviveStatement(beginDate, endDate);
+    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
+        List<SurviveStatementInfo> surviveStatementInfos = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
         committerMap = new HashMap<>();
         SurviveStatementInfo lastSurviveStatement = null;
         for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {

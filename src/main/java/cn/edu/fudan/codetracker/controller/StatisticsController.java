@@ -220,13 +220,17 @@ public class StatisticsController {
      * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
      */
     @GetMapping(value = {"/statistics/committer/line/valid"})
-    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate){
+    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("developer") String developer){
         try{
             String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
             String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
             Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
             restInterface.freeRepo(repoUuid, repoPath);
-            return new ResponseBean(200, "", data);
+            if (developer == null) {
+                return new ResponseBean(200, "", data);
+            } else {
+                return new ResponseBean(200, "", data.get(developer));
+            }
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code
@@ -255,9 +259,9 @@ public class StatisticsController {
      * 临时接口
      */
     @GetMapping(value = {"/statistics/committer/temp/focus"})
-    public ResponseBean getFocus(@RequestParam("committer") String committer){
+    public ResponseBean getFocus(@RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch){
         try{
-            List<TempMostInfo> data = statisticsService.getFocus(committer);
+            List<TempMostInfo> data = statisticsService.getFocus(committer, beginDate, endDate, repoUuid, branch);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();
@@ -286,12 +290,17 @@ public class StatisticsController {
      * 统计存活周期
      */
     @GetMapping(value = {"/statistics/lifecycle"})
-    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @Param("endDate") String endDate){
+    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 00:00:00";
-            Map<String,Map<String,Long>> data = statisticsService.getSurviveStatementStatistics(begin, end);
-            return new ResponseBean(200, "", data);
+            Map<String,Map<String,Long>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
+            if (developer == null) {
+                return new ResponseBean(200, "", data);
+            } else {
+                return new ResponseBean(200, "" , data.get(developer));
+            }
+
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code

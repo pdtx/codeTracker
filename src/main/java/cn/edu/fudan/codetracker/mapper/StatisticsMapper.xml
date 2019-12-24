@@ -374,7 +374,7 @@
     </resultMap>
 
     <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc limit 5;
+        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc limit 5;
     </select>
 
     <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -385,7 +385,7 @@
     </resultMap>
 
     <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc limit 5;
+        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc limit 5;
     </select>
 
     <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -395,7 +395,7 @@
     </resultMap>
 
     <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
-        select r.method_uuid, r.signature, count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = "issueTracker-Master-pre" and r.branch = "zhonghui20191012" and r.commit_date &gt; "2019-10-11" and r.commit_date &lt; "2019-12-13" and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 5;
+        select r.method_uuid, r.signature, count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 5;
     </select>
 
     <!--获取method历史-->
@@ -425,7 +425,7 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select statement_uuid, committer, commit_date, change_relation from issueTracker.raw_statement where commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and (change_relation = "ADD" OR change_relation = "DELETE" OR change_relation = "SELF_CHANGE") order by statement_uuid, commit_date;
+        select statement_uuid, committer, commit_date, change_relation from issueTracker.raw_statement where commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and (change_relation = "ADD" OR change_relation = "DELETE" OR change_relation = "SELF_CHANGE") and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
     </select>
 
 </mapper>

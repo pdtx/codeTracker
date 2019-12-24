@@ -201,8 +201,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public List<TempMostInfo> getFocus(String committer) {
-        return statisticsDao.getFocus(committer);
+    public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
+        return statisticsDao.getFocus(committer,beginDate,endDate,repoUuid,branch);
     }
 
     @Override
@@ -211,9 +211,9 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate) {
+    public Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
         Map<String,Map<String,Long>> map = new HashMap<>();
-        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate);
+        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
         for (String key : temp.keySet()) {
             List<Long> list = temp.get(key);
             list.sort(Comparator.comparingLong(Long::longValue));

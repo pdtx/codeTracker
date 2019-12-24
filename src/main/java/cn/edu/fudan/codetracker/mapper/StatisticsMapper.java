@@ -254,15 +254,15 @@ public interface StatisticsMapper {
     /**
      * 演示临时接口
      */
-    List<MostModifiedInfo> getPackageInfoMost(@Param("committer") String committer);
+    List<MostModifiedInfo> getPackageInfoMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     /**
      * 演示临时接口
      */
-    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName);
+    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     /**
      * 演示临时接口
      */
-    List<MostModifiedInfo> getMethodInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("className") String className);
+    List<MostModifiedInfo> getMethodInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("className") String className, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
 
     /**
@@ -274,6 +274,6 @@ public interface StatisticsMapper {
     /**
      * 获取时间段内存活代码情况
      */
-    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
 }

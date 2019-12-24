@@ -40,7 +40,7 @@ public interface StatisticsService {
     /**
      临时演示接口
      */
-    List<TempMostInfo> getFocus(String committer);
+    List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch);
     /**
      method历史接口
      */
@@ -49,5 +49,5 @@ public interface StatisticsService {
     /**
      * 统计存活周期
      */
-    Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate);
+    Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
 }
