@@ -39,7 +39,7 @@ public class FileInfoExtractor {
     private CompilationUnit compilationUnit;
     private BaseInfo baseInfo;
 
-    FileInfoExtractor(BaseInfo baseInfo, String path, String projectName) {
+    FileInfoExtractor(BaseInfo baseInfo, String path, String relativePath, String projectName) {
         this.projectName = projectName;
         this.baseInfo = baseInfo;
         importNames = new HashSet<>();
@@ -47,12 +47,12 @@ public class FileInfoExtractor {
             // 根据操作系统修改
             compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
             parsePackageName(compilationUnit);
-            String[] singleDir = path.replace('\\','/').split("/");
+            String[] singleDir = relativePath.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
             //filePath = deletePrefix(path).replace('\\','/');
-            String [] s = path.replace('\\','/').split("/" + moduleName + "/");
+            String [] s = relativePath.replace('\\','/').split( moduleName + "/");
             filePath = moduleName + "/" + s[s.length - 1];
             fileInfo = new FileInfo(baseInfo, fileName, filePath, packageName, moduleName);
             // analyze import package

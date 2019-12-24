@@ -38,20 +38,23 @@ public class RepoInfoBuilder {
     private List<MethodInfo> methodInfos;
     private List<StatementInfo> statementInfos;
 
-    public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit) {
-       constructor(repoUuid, commit, fileList, jGitHelper, branch, parentCommit);
+    public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath) {
+       constructor(repoUuid, commit, fileList, jGitHelper, branch, parentCommit, relativePath);
     }
 
-    public RepoInfoBuilder(String repoUuid, String commit, String repoPath, JGitHelper jGitHelper, String branch, String parentCommit) {
+    public RepoInfoBuilder(String repoUuid, String commit, String repoPath, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath) {
         File file = new File(repoPath);
-        constructor(repoUuid, commit, listJavaFiles(file), jGitHelper, branch, parentCommit);
+        constructor(repoUuid, commit, listJavaFiles(file), jGitHelper, branch, parentCommit, relativePath);
     }
 
-    public RepoInfoBuilder(RepoInfoBuilder repoInfo, List<String> filesList, Boolean isFirst) {
-        constructor(repoInfo.getRepoUuid(), repoInfo.getCommit(), filesList, repoInfo.getJGitHelper(), repoInfo.getBranch(), isFirst ? repoInfo.getCommit() : repoInfo.getParentCommit());
+    public RepoInfoBuilder(RepoInfoBuilder repoInfo, List<String> filesList, Boolean isFirst, List<String> relativePath) {
+        constructor(repoInfo.getRepoUuid(), repoInfo.getCommit(), filesList, repoInfo.getJGitHelper(), repoInfo.getBranch(), isFirst ? repoInfo.getCommit() : repoInfo.getParentCommit(), relativePath);
     }
 
-    private void constructor(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit){
+    private void constructor(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath){
+        if (relativePath == null || relativePath.size() == 0) {
+            relativePath = fileList;
+        }
         this.repoUuid = repoUuid;
         this.commit = commit;
         this.branch = branch;
@@ -77,16 +80,18 @@ public class RepoInfoBuilder {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         statementInfos = new ArrayList<>();
-        analyze(fileList);
+        analyze(fileList, relativePath);
     }
 
-    private void analyze(List<String> fileList) {
+    private void analyze(List<String> fileList, List<String> relativePath) {
         // 一个module内包含哪些package
+        int i = -1;
         for (String path : fileList) {
+            ++i;
             if (path.toLowerCase().contains("test.java")) {
                 continue;
             }
-            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, repoUuid);
+            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, relativePath.get(i), repoUuid);
             String packageName = fileInfoExtractor.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {
@@ -106,6 +111,7 @@ public class RepoInfoBuilder {
                 packageInfos.add(packageInfo);
                 moduleInfos.put(moduleName, packageInfos);
             }
+
             fileInfoExtractor.getFileInfo().setPackageUuid(packageInfo.getUuid());
             // 设置父节点
             fileInfoExtractor.getFileInfo().setParent(packageInfo);
@@ -244,7 +250,7 @@ public class RepoInfoBuilder {
         String repoPath = "E:\\Lab\\iec-wepm-develop";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         String branch = "master";
-        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "e7fecbe0fd950e420f46f3aefaa1e315242503b8",  repoPath, jGitHelper,  branch, "null");
+        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "e7fecbe0fd950e420f46f3aefaa1e315242503b8",  repoPath, jGitHelper,  branch, "null", null);
         System.out.println("done");
     }
 

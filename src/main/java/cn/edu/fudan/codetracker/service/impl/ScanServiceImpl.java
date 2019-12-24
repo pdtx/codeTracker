@@ -63,7 +63,7 @@ public class ScanServiceImpl implements ScanService {
                 scan(repoUuid , commit, branch, jGitHelper, repoPath);
             } else {
                 jGitHelper.checkout(commit);
-                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null);
+                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
                 repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
                 saveData(repoInfo);
                 isInit = true;
@@ -96,7 +96,7 @@ public class ScanServiceImpl implements ScanService {
     private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
         LineInfo lineInfo = new LineInfo();
         lineInfo.setCommitId(commitId);
-        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId());
+        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId(), null);
         lineInfo.setCommitter(repoInfo.getCommitter());
         lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
         lineInfo.setRepoUuid(repoInfo.getRepoUuid());
