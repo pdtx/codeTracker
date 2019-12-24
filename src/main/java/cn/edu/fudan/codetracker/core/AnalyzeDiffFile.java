@@ -675,7 +675,8 @@ public class AnalyzeDiffFile {
             List<StatementInfo> deleteStat = new ArrayList<>(1);
             deleteStat.add(statementInfo);
             handleStatement(deleteStat, RelationShip.DELETE.name());
-            if (parentRange.length() != 0) {
+            String[] parentRanges = parentRange.split("-");
+            if (parentRanges.length == 2 && parentRanges[1].length() > 4) {
                 begin = rangeAnalyzeBegin(parentRange.split("-")[1]);
                 end = rangeAnalyzeEnd(parentRange.split("-")[1]);
                 if (statementInfo.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
@@ -683,6 +684,9 @@ public class AnalyzeDiffFile {
                 } else {
                     curParentStatement = findMethodInfoByRange(curMethodInfoList, begin, end);
                 }
+            }else {
+                log.error("analyzeModifiedStatement, OPT_DELETE, parent range:{}", parentRange);
+                return;
             }
             preParentStatement = statementInfo;
         }
@@ -698,13 +702,17 @@ public class AnalyzeDiffFile {
                 int end = rangeAnalyzeEnd(ranges[1]);
                 StatementInfo curStat = findStatementInfoByRange(curStatementInfoList, begin, end, -1);
                 if (curStat == null) {
-                    log.error("change: preStat is null!");
+                    log.error("change: curStat is null!");
                     return;
                 }
                 backtrackingMethod(curStat);
                 begin = rangeAnalyzeBegin(ranges[0]);
                 end = rangeAnalyzeEnd(ranges[0]);
                 StatementInfo preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
+                if (preStat == null) {
+                    log.error("change: preStat is null!");
+                    return;
+                }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, curStat.getMethodUuid(), preStat.getBody());
                 if (trackerInfo == null) {
                     log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());

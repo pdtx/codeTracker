@@ -84,10 +84,13 @@ public class RepoInfoBuilder {
     }
 
     private void analyze(List<String> fileList, List<String> relativePath) {
+        if (fileList.size() != relativePath.size()) {
+            log.error("fileList：{}，relativePath：{} ", fileList.size(), relativePath.size());
+        }
+        int minSize = Math.min(fileList.size(), relativePath.size());
         // 一个module内包含哪些package
-        int i = -1;
-        for (String path : fileList) {
-            ++i;
+        for (int i = 0; i < minSize ;i++) {
+            String path = fileList.get(i);
             if (path.toLowerCase().contains("test.java")) {
                 continue;
             }

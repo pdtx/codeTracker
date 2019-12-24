@@ -231,9 +231,6 @@ public class FileInfoExtractor {
             //primitiveType
             methodInfo.setPrimitiveType(methodDeclaration.getType().asString());
             methodInfo.setFullname(methodDeclaration.getDeclarationAsString(true,true,true));
-            if (methodInfo.getFullname().length() > 4096) {
-                log.warn("methodInfo fullname is too long, fullname:{}, length:{}", methodInfo.getFullname(), methodInfo.getFullname().length());
-            }
 
             if (methodDeclaration.getTokenRange().isPresent()) {
                 methodInfo.setContent(methodDeclaration.getTokenRange().get().toString());

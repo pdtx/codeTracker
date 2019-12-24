@@ -85,6 +85,8 @@ public class MetaInfoAnalysis {
             deleteFilesList = new ArrayList<>();
             List<String> diffPathList = new ArrayList<>();
             List<String> fileNameList = new ArrayList<>();
+            List<String> addFileNameList = new ArrayList<>();
+            List<String> deleteFileNameList = new ArrayList<>();
             String preCommit ;
             for (int i = 0; i < preCommits.size(); i++) {
                 // construct change file list according to preCommit
@@ -108,6 +110,7 @@ public class MetaInfoAnalysis {
                                 }
                                 currFilePath =  pathPrefix + "/" + path;
                                 addFilesList.add(IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
+                                addFileNameList.add(m.getKey().getString("file_full_name"));
                             }catch (NullPointerException e) {
                                 log.error("ADD situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
@@ -124,6 +127,7 @@ public class MetaInfoAnalysis {
                                 }
                                 prevFilePath = pathPrefix + "/" +   path;
                                 deleteFilesList.add(IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
+                                deleteFileNameList.add(m.getKey().getString("file_full_name"));
                             }catch (NullPointerException e) {
                                 log.error("DELETE situation: curr_file_path and prev_file_path lack" + metaPath);
                             }
@@ -134,13 +138,13 @@ public class MetaInfoAnalysis {
                                 String diffPath = pathPrefix + m.getKey().getString("diffPath");
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
-                            }else {
+                                prevFilePath = pathPrefix + m.getKey().getString("prev_file_path");
+                                preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
+                                currFilePath = pathPrefix + m.getKey().getString("curr_file_path");
+                                curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
+                            } else {
                                 log.error("CHANGE situation: diffPath lack! " + metaPath + " id :" +  m.getKey().getString("id"));
                             }
-                            prevFilePath = pathPrefix + m.getKey().getString("prev_file_path");
-                            preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
-                            currFilePath = pathPrefix + m.getKey().getString("curr_file_path");
-                            curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                         }
                     }
                 }
@@ -148,9 +152,9 @@ public class MetaInfoAnalysis {
                 RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null, fileNameList);
                 RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit, fileNameList);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(proxyDao, preRepoInfo, curRepoInfo);
-                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true, null);
+                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true, addFileNameList);
                 analyzeDiffFile.addInfoConstruction(addRepoInfo);
-                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false, null);
+                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false, deleteFileNameList);
                 analyzeDiffFile.deleteInfoConstruction(deleteRepoInfo);
                 analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);

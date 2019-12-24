@@ -114,6 +114,9 @@ public class StatementInfo extends BaseInfo{
     }
 
     public void setMethodUuid(String methodUuid) {
+        if (methodUuid == null) {
+            return;
+        }
         this.methodUuid = methodUuid;
     }
 
