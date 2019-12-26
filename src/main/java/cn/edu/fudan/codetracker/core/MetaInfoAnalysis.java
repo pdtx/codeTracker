@@ -96,7 +96,8 @@ public class MetaInfoAnalysis {
                     if (m.getKey().getString("parent_commit").equals(preCommit) &&
                             m.getKey().getString("file_full_name").endsWith(".java")) {
                         // ignore test class and enum class
-                        if (m.getKey().getString("file_full_name").toLowerCase().contains("test.java") || m.getKey().getString("file_full_name").toLowerCase().contains("enum.java")) {
+                        if (m.getKey().getString("file_full_name").toLowerCase().contains("test") ||
+                                m.getKey().getString("file_full_name").toLowerCase().contains("enum")) {
                             continue;
                         }
                         if ("ADD".equals(m.getValue())) {
