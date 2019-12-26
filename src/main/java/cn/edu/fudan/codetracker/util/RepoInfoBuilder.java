@@ -91,8 +91,12 @@ public class RepoInfoBuilder {
         // 一个module内包含哪些package
         for (int i = 0; i < minSize ;i++) {
             String path = fileList.get(i);
-            if (path.toLowerCase().contains("test") ||
-                    path.toLowerCase().contains("enum")) {
+            String[] strs = path.split("/");
+            String str = strs[strs.length-1];
+            if (str.toLowerCase().endsWith("test.java") ||
+                    str.toLowerCase().endsWith("tests.java") ||
+                    str.toLowerCase().startsWith("test") ||
+                    str.toLowerCase().endsWith("enum.java")) {
                 continue;
             }
             FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, relativePath.get(i), repoUuid);
