@@ -718,6 +718,10 @@ public class AnalyzeDiffFile {
                     log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());
                     return;
                 }
+                if (curStat.getLevel() != preStat.getLevel()) {
+                    handleLevelMismatch(oneDiff, preStat, curStat, preMethodInfoList, curMethodInfoList);
+                    return;
+                }
                 curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                 statementInfos.get(RelationShip.CHANGE.name()).add(curStat);
                 preParentStatement = preStat.getParent();
@@ -935,6 +939,23 @@ public class AnalyzeDiffFile {
         baseInfo.setCommitter(curRepoInfo.getCommitter());
         baseInfo.setCommitDate(curRepoInfo.getCommitDate());
         baseInfo.setCommitMessage(curRepoInfo.getCommitMessage());
+    }
+
+    private void handleLevelMismatch(JSONObject oneDiff, StatementInfo preStat, StatementInfo curStat, List<MethodInfo> preMethodInfoList, List<MethodInfo> curMethodInfoList) {
+        //father-node-range是否修改待议
+        JSONObject deleteDiff = new JSONObject(oneDiff);
+        deleteDiff.put("type2","DELETE");
+        String deleteRange = "(" + preStat.getBegin() + "," + preStat.getEnd() + ")";
+        deleteDiff.put("range",deleteRange);
+        JSONObject addDiff = new JSONObject(oneDiff);
+        addDiff.put("type2","ADD");
+        String addRange = "(" + curStat.getBegin() + "," + curStat.getEnd() + ")";
+        addDiff.put("range",addRange);
+        //preStatementInfos和curStatementInfos待处理
+        List<StatementInfo> preStatementInfos = new ArrayList<>();
+        List<StatementInfo> curStatementInfos = new ArrayList<>();
+        analyzeModifiedStatement(deleteDiff,preStatementInfos,curStatementInfos,preMethodInfoList,curMethodInfoList);
+        analyzeModifiedStatement(addDiff,preStatementInfos,curStatementInfos,preMethodInfoList,curMethodInfoList);
     }
 
     /**
