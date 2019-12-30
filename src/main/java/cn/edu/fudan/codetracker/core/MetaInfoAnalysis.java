@@ -32,10 +32,13 @@ public class MetaInfoAnalysis {
     private JGitHelper jGitHelper;
     private int changeImportCount;
     private String preCommitId;
-    private ArrayList<String>  preFileList;
-    private ArrayList<String>  curFileList;
-    private List<String> addFilesList;
-    private List<String> deleteFilesList;
+    /**
+     * key commit; value list
+     */
+    private Map<String, List<String>>  preFileListMap;
+    private Map<String, List<String>>  curFileListMap;
+    private Map<String, List<String>> addFilesListMap;
+    private Map<String, List<String>> deleteFilesListMap;
 
 
     public MetaInfoAnalysis(String repoUuid, String branch, String outputDir, JGitHelper jGitHelper, String commitId) {
@@ -44,6 +47,14 @@ public class MetaInfoAnalysis {
         this.outputDir = outputDir;
         this.jGitHelper = jGitHelper;
         this.commitId = commitId;
+        init();
+    }
+
+    private void init() {
+        preFileListMap = new HashMap<>(2);
+        curFileListMap = new HashMap<>(2);
+        addFilesListMap = new HashMap<>(2);
+        deleteFilesListMap = new HashMap<>(2);
     }
 
     /**
@@ -77,20 +88,17 @@ public class MetaInfoAnalysis {
             // if preCommits include not only one record, then take into account merge situation
             preCommits = metaInfoJson.getJSONArray("parents");
 
-            String currFilePath;
-            String prevFilePath;
-            preFileList = new ArrayList<>();
-            curFileList = new ArrayList<>();
-            addFilesList = new ArrayList<>();
-            deleteFilesList = new ArrayList<>();
-            List<String> diffPathList = new ArrayList<>();
-            List<String> fileNameList = new ArrayList<>();
-            List<String> addFileNameList = new ArrayList<>();
-            List<String> deleteFileNameList = new ArrayList<>();
-            String preCommit ;
             for (int i = 0; i < preCommits.size(); i++) {
                 // construct change file list according to preCommit
-                preCommit = preCommits.getString(i);
+                String preCommit = preCommits.getString(i);
+                List<String> diffPathList = new ArrayList<>();
+                List<String> fileNameList = new ArrayList<>();
+                List<String> addFileNameList = new ArrayList<>();
+                List<String> deleteFileNameList = new ArrayList<>();
+                addFilesListMap.put(preCommit, new ArrayList<>());
+                deleteFilesListMap.put(preCommit, new ArrayList<>());
+                preFileListMap.put(preCommit, new ArrayList<>());
+                curFileListMap.put(preCommit, new ArrayList<>());
                 for (Map.Entry<JSONObject, String> m : diffFileAction.entrySet()) {
                     // three types of change relation handler ： ADD、DELETE、MODIFY
                     if (m.getKey().getString("parent_commit").equals(preCommit) &&
@@ -112,8 +120,8 @@ public class MetaInfoAnalysis {
                                     path = m.getKey().getString("prev_file_path") ;
                                     log.error("ADD situation: curr_file_path lack,use prev_file_path" + metaPath);
                                 }
-                                currFilePath =  pathPrefix + "/" + path;
-                                addFilesList.add(IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
+                                String currFilePath =  pathPrefix + "/" + path;
+                                addFilesListMap.get(preCommit).add(IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                                 addFileNameList.add(m.getKey().getString("file_full_name"));
                             }catch (NullPointerException e) {
                                 log.error("ADD situation: curr_file_path and prev_file_path lack" + metaPath);
@@ -129,8 +137,8 @@ public class MetaInfoAnalysis {
                                     path = m.getKey().getString("curr_file_path") ;
                                     log.error("DELETE situation: prev_file_path lack,use curr_file_path" + metaPath);
                                 }
-                                prevFilePath = pathPrefix + "/" +   path;
-                                deleteFilesList.add(IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
+                                String prevFilePath = pathPrefix + "/" +   path;
+                                deleteFilesListMap.get(preCommit).add(IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
                                 deleteFileNameList.add(m.getKey().getString("file_full_name"));
                             }catch (NullPointerException e) {
                                 log.error("DELETE situation: curr_file_path and prev_file_path lack" + metaPath);
@@ -142,10 +150,10 @@ public class MetaInfoAnalysis {
                                 String diffPath = pathPrefix + m.getKey().getString("diffPath");
                                 fileNameList.add(m.getKey().getString("file_full_name"));
                                 diffPathList.add(IS_WINDOWS ? pathUnixToWin(diffPath) : diffPath);
-                                prevFilePath = pathPrefix + m.getKey().getString("prev_file_path");
-                                preFileList.add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
-                                currFilePath = pathPrefix + m.getKey().getString("curr_file_path");
-                                curFileList.add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
+                                String prevFilePath = pathPrefix + m.getKey().getString("prev_file_path");
+                                preFileListMap.get(preCommit).add( IS_WINDOWS ? pathUnixToWin(prevFilePath) : prevFilePath);
+                                String currFilePath = pathPrefix + m.getKey().getString("curr_file_path");
+                                curFileListMap.get(preCommit).add( IS_WINDOWS ? pathUnixToWin(currFilePath) : currFilePath);
                             } else {
                                 log.error("CHANGE situation: diffPath lack! " + metaPath + " id :" +  m.getKey().getString("id"));
                             }
@@ -153,12 +161,12 @@ public class MetaInfoAnalysis {
                     }
                 }
                 // RepoInfoBuilder need to refactor for parentCommit is not null; so
-                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileList, jGitHelper, branch, null, fileNameList);
-                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileList, jGitHelper, branch, preCommit, fileNameList);
+                RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid, preCommit, preFileListMap.get(preCommit), jGitHelper, branch, null, fileNameList);
+                RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid, commitId, curFileListMap.get(preCommit), jGitHelper, branch, preCommit, fileNameList);
                 AnalyzeDiffFile analyzeDiffFile = new AnalyzeDiffFile(proxyDao, preRepoInfo, curRepoInfo);
-                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesList, true, addFileNameList);
+                RepoInfoBuilder addRepoInfo = new RepoInfoBuilder(curRepoInfo, addFilesListMap.get(preCommit), true, addFileNameList);
                 analyzeDiffFile.addInfoConstruction(addRepoInfo);
-                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesList, false, deleteFileNameList);
+                RepoInfoBuilder deleteRepoInfo = new RepoInfoBuilder(curRepoInfo, deleteFilesListMap.get(preCommit), false, deleteFileNameList);
                 analyzeDiffFile.deleteInfoConstruction(deleteRepoInfo);
                 analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);
@@ -197,11 +205,20 @@ public class MetaInfoAnalysis {
 
     public String getPreCommitId() { return preCommitId; }
 
-    public ArrayList<String> getPreFileList() { return preFileList; }
 
-    public ArrayList<String> getCurFileList() { return curFileList; }
+    public Map<String, List<String>> getPreFileListMap() {
+        return preFileListMap;
+    }
 
-    public List<String> getAddFilesList() { return addFilesList; }
+    public Map<String, List<String>> getCurFileListMap() {
+        return curFileListMap;
+    }
 
-    public List<String> getDeleteFilesList() { return deleteFilesList; }
+    public Map<String, List<String>> getAddFilesListMap() {
+        return addFilesListMap;
+    }
+
+    public Map<String, List<String>> getDeleteFilesListMap() {
+        return deleteFilesListMap;
+    }
 }

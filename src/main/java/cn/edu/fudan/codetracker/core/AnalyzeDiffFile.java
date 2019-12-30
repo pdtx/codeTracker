@@ -244,6 +244,31 @@ public class AnalyzeDiffFile {
                     analyzeModifiedStatement(oneDiff, preStatementInfoList, curStatementInfoList, preMethodInfoList, curMethodInfoList);
                 }
             }
+            unMappedHandle(preStatementInfoList, curStatementInfoList);
+        }
+    }
+
+    private void unMappedHandle(List<StatementInfo> preStatementInfoList, List<StatementInfo> curStatementInfoList) {
+        for (StatementInfo statementInfo : preStatementInfoList) {
+            if (! statementInfo.isMapped()) {
+                backtrackingMethod(statementInfo);
+                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
+                TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), statementInfo.getBody());
+                if (trackerInfo == null) {
+                    continue;
+                }
+                resetBaseInfo(statementInfo);
+                statementInfo.setTrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID());
+                statementInfos.get(RelationShip.DELETE.name()).add(statementInfo);
+            }
+        }
+
+        for (StatementInfo statementInfo : curStatementInfoList) {
+            if (! statementInfo.isMapped()) {
+                backtrackingMethod(statementInfo);
+                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
+                statementInfos.get(RelationShip.ADD.name()).add(statementInfo);
+            }
         }
     }
 
@@ -293,6 +318,8 @@ public class AnalyzeDiffFile {
                     curClassInfo.setTrackerInfo(RelationShip.SELF_CHANGE.name(), preTrackerInfo.getVersion() + 1, preTrackerInfo.getRootUUID());
                     // 直接入库
                     classInfos.get(RelationShip.CHANGE.name()).add(curClassInfo);
+                    curClassInfo.setMapped(true);
+                    preClassInfo.setMapped(true);
                 }
             }catch (Exception e) {
                 log.error(e.getMessage());
@@ -312,10 +339,6 @@ public class AnalyzeDiffFile {
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
             changeRelation = ChangeEntityDesc.StageIIOpt.OPT_CHANGE;
         }
-/*        String parentRange = "";
-        if (oneDiff.containsKey("father-node-range")) {
-            parentRange = oneDiff.getString("father-node-range");
-        }*/
 
         String range = oneDiff.getString("range");
         MethodInfo methodInfo ;
@@ -358,6 +381,7 @@ public class AnalyzeDiffFile {
                 MethodInfo curMethodInfo = findMethodInfoByRange(curMethodInfoList, begin, end);
                 if (curMethodInfo != null) {
                     if (trackerInfo == null) {
+                        curMethodInfo.setMapped(true);
                         methodInfos.get(RelationShip.ADD.name()).add(curMethodInfo);
                         backtracking(curMethodInfo.getParent(), null);
                         return;
@@ -367,6 +391,8 @@ public class AnalyzeDiffFile {
                     // 直接入库
                     methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
+                    preMethodInfo.setMapped(true);
+                    curMethodInfo.setMapped(true);
                     preClassInfo = preMethodInfo.getParent();
                     curClassInfo = curMethodInfo.getParent();
                 }
@@ -430,6 +456,7 @@ public class AnalyzeDiffFile {
             methodUuidMap.put(methodInfo.getUuid(), trackerInfo.getRootUUID());
             methodInfo.setTrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID());
         }
+        methodInfo.setMapped(true);
         methodInfos.get(relation).add(methodInfo);
         handleStatement(castBaseInfo(methodInfo.getChildren()), relation);
         return methodInfo;
@@ -441,6 +468,10 @@ public class AnalyzeDiffFile {
         }
         if (relation.equals(RelationShip.DELETE.name())) {
             for (StatementInfo statementInfo : statementInfos) {
+                if (statementInfo == null) {
+                    log.error("statementInfo is null");
+                    continue;
+                }
                 resetBaseInfo(statementInfo);
                 if (methodUuidMap.keySet().contains(statementInfo.getMethodUuid())) {
                     statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
@@ -454,6 +485,7 @@ public class AnalyzeDiffFile {
                 statementInfo.getTrackerInfo().setRootUUID(trackerInfo.getRootUUID());
                 statementInfo.getTrackerInfo().setVersion(trackerInfo.getVersion());
                 this.statementInfos.get(relation).add(statementInfo);
+                statementInfo.setMapped(true);
                 handleStatement(castBaseInfo(statementInfo.getChildren()), relation);
             }
             return;
@@ -464,6 +496,7 @@ public class AnalyzeDiffFile {
                     statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 }
                 handleStatement(castBaseInfo(statementInfo.getChildren()), relation);
+                statementInfo.setMapped(true);
             }
             this.statementInfos.get(relation).addAll(statementInfos);
         }
@@ -488,13 +521,18 @@ public class AnalyzeDiffFile {
         int end = rangeAnalyzeEnd(range);
         ClassInfo classInfo = findClassInfoByRange(classInfoList, begin, end);
         if (classInfo != null) {
+            classInfo.setMapped(true);
             if (relation.equals(RelationShip.ADD.name())) {
                 classInfos.get(relation).add(classInfo);
                 methodInfos.get(relation).addAll(classInfo.getMethodInfos());
                 for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
+                    methodInfo.setMapped(true);
                     handleStatement(castBaseInfo(methodInfo.getChildren()), relation);
                 }
                 fieldInfos.get(relation).addAll(classInfo.getFieldInfos());
+                for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
+                    fieldInfo.setMapped(true);
+                }
             } else if (relation.equals(RelationShip.DELETE.name())){
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.CLASS, classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
                 resetBaseInfo(classInfo);
@@ -508,12 +546,14 @@ public class AnalyzeDiffFile {
                     resetBaseInfo(methodInfo);
                     methodInfos.get(relation).add(methodInfo);
                     handleStatement(castBaseInfo(methodInfo.getChildren()), relation);
+                    methodInfo.setMapped(true);
                 }
 
                 for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
                     trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FIELD, ((ClassInfo)fieldInfo.getParent()).getFilePath(), ((ClassInfo)fieldInfo.getParent()).getClassName(), fieldInfo.getSimpleName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
                     resetBaseInfo(fieldInfo);
                     fieldInfo.setTrackerInfo(relation , trackerInfo.getVersion(), trackerInfo.getRootUUID());
+                    fieldInfo.setMapped(true);
                     fieldInfos.get(relation).add(fieldInfo);
                 }
             }
@@ -562,6 +602,7 @@ public class AnalyzeDiffFile {
             if (baseInfoNullHandler(curFieldInfo, ProjectInfoLevel.FIELD.getName() + ExceptionMessage.CUR_INFO_NULL)) {
                 return;
             }
+            curFieldInfo.setMapped(true);
             fieldInfos.get(RelationShip.ADD.name()).add(curFieldInfo);
             curClassInfo = curFieldInfo.getParent();
             preClassInfo = findClassInfoByRange(preClassInfoList, begin, end);
@@ -581,6 +622,7 @@ public class AnalyzeDiffFile {
             }
             resetBaseInfo(preFieldInfo);
             preFieldInfo.setTrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID());
+            preFieldInfo.setMapped(true);
             fieldInfos.get(RelationShip.DELETE.name()).add(preFieldInfo);
             preClassInfo = preFieldInfo.getParent();
             curClassInfo = findClassInfoByRange(curClassInfoList, begin, end);
@@ -605,11 +647,13 @@ public class AnalyzeDiffFile {
             fieldInfos.get(RelationShip.CHANGE.name()).add(curFieldInfo);
             curClassInfo = curFieldInfo.getParent();
             preClassInfo = preFieldInfo.getParent();
+            preFieldInfo.setMapped(true);
+            curFieldInfo.setMapped(true);
         }
         if (ChangeEntityDesc.StageIIOpt.OPT_MOVE.equals(changeRelation)) {
             return;
         }
-        if (curClassInfo != null) {
+        if (curClassInfo != null && preClassInfo != null) {
             backtracking(curClassInfo, preClassInfo);
             return;
         }
@@ -719,11 +763,13 @@ public class AnalyzeDiffFile {
                     return;
                 }
                 if (curStat.getLevel() != preStat.getLevel()) {
-                    handleLevelMismatch(oneDiff, preStat, curStat, preMethodInfoList, curMethodInfoList);
+                    //handleLevelMismatch(oneDiff, preStat, curStat, preMethodInfoList, curMethodInfoList);
                     return;
                 }
                 curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                 statementInfos.get(RelationShip.CHANGE.name()).add(curStat);
+                curStat.setMapped(true);
+                preStat.setMapped(true);
                 preParentStatement = preStat.getParent();
                 curParentStatement = curStat.getParent();
             }catch (ArrayIndexOutOfBoundsException e) {
@@ -732,7 +778,7 @@ public class AnalyzeDiffFile {
             }
         }
 
-        if (curParentStatement != null) {
+        if (curParentStatement != null && preParentStatement != null) {
             backtracking(curParentStatement, preParentStatement);
         }
     }
@@ -839,6 +885,7 @@ public class AnalyzeDiffFile {
             }
             classInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
             classInfos.get(change).add(classInfo);
+            classInfo.setMapped(true);
         }
 
         if (parent instanceof MethodInfo) {
@@ -852,14 +899,17 @@ public class AnalyzeDiffFile {
                 methodInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                 methodUuidMap.put(methodInfo.getUuid(), trackerInfo.getRootUUID());
                 methodInfos.get(change).add(methodInfo);
+                methodInfo.setMapped(true);
                 backtracking(methodInfo.getParent(), null);
             }
             return;
         }
 
         if (parent instanceof StatementInfo) {
+            parent.setMapped(true);
+            preParent.setMapped(true);
             StatementInfo statementInfo  = (StatementInfo) parent;
-            StatementInfo preStatementInfo  = preParent == null ? statementInfo: (StatementInfo) preParent;
+            StatementInfo preStatementInfo  = (StatementInfo) preParent ;
             if (! statementInfos.get(change).contains(statementInfo)) {
                 if (methodUuidMap.keySet().contains(statementInfo.getMethodUuid())) {
                     statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));

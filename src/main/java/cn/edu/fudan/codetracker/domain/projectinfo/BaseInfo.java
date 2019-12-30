@@ -37,7 +37,7 @@ public class BaseInfo {
     /**
      * mark of mapping
      */
-    private boolean isMapping = false;
+    private boolean mapped = false;
 
     BaseInfo() { }
 
@@ -187,11 +187,11 @@ public class BaseInfo {
         this.children = children;
     }
 
-    public boolean isMapping() {
-        return isMapping;
+    public boolean isMapped() {
+        return mapped;
     }
 
-    public void setMapping(boolean mapping) {
-        isMapping = mapping;
+    public void setMapped(boolean mapped) {
+        this.mapped = mapped;
     }
 }
