@@ -220,7 +220,7 @@ public class StatisticsController {
      * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
      */
     @GetMapping(value = {"/statistics/committer/line/valid"})
-    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("developer") String developer){
+    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
         try{
             String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
             String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
@@ -290,7 +290,7 @@ public class StatisticsController {
      * 统计存活周期
      */
     @GetMapping(value = {"/statistics/lifecycle"})
-    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
+    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @Param("developer") String developer){
         try{
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 00:00:00";
