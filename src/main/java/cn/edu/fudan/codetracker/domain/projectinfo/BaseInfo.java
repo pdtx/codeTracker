@@ -38,6 +38,10 @@ public class BaseInfo {
      * mark of mapping
      */
     private boolean mapped = false;
+    /**
+     * 匹配上的 节点
+     */
+    private  BaseInfo mappingNode = null;
 
     BaseInfo() { }
 
@@ -193,5 +197,13 @@ public class BaseInfo {
 
     public void setMapped(boolean mapped) {
         this.mapped = mapped;
+    }
+
+    public BaseInfo getMappingNode() {
+        return mappingNode;
+    }
+
+    public void setMappingNode(BaseInfo mappingNode) {
+        this.mappingNode = mappingNode;
     }
 }

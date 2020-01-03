@@ -9,11 +9,11 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.RelationShip;
+import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.exception.ExceptionMessage;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import edu.fdu.se.core.miningchangeentity.base.ChangeEntityDesc;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -216,36 +216,39 @@ public class AnalyzeDiffFile {
             List<FieldInfo> preFieldInfoList = getFieldInfoListByFileInfo(preClassInfoList);
             List<StatementInfo> curStatementInfoList = getStatementInfoListByFileInfo(curMethodInfoList);
             List<StatementInfo> preStatementInfoList = getStatementInfoListByFileInfo(preMethodInfoList);
-            // 需要先处理method 以及 class 重命名的情况
-            for (int j = 0; j < diffDetail.size(); j++) {
-                JSONObject oneDiff = diffDetail.getJSONObject(j);
-                String domainType = oneDiff.getString("type1").toLowerCase();
-                if (("classorinterface").equals(domainType)) {
-                    analyzeModifiedClass(oneDiff, preFileInfo, curFileInfo);
+            // 处理diffDetail
+            DiffInfo diffInfo = new DiffInfo(diffDetail);
+            for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.CLASS)) {
+                analyzeModifiedClass(oneDiff, preFileInfo, curFileInfo);
+            }
+            for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.METHOD)) {
+                analyzeModifiedMethod(oneDiff, curMethodInfoList, preMethodInfoList, curClassInfoList, preClassInfoList);
+            }
+            for (MethodInfo methodInfo : curMethodInfoList) {
+                MethodInfo preMethodInfo = findMethodInfoBySignature(methodInfo, preMethodInfoList);
+                methodInfo.setMappingNode(preMethodInfo);
+                if (preMethodInfo != null) {
+                    preMethodInfo.setMappingNode(methodInfo);
                 }
             }
-            for (int j = 0; j < diffDetail.size(); j++) {
-                JSONObject oneDiff = diffDetail.getJSONObject(j);
-                String domainType = oneDiff.getString("type1").toLowerCase();
-                String description = oneDiff.getString("description");
-                // method
-                if ("member".equals(domainType) && description.toLowerCase().contains("method")) {
-                    analyzeModifiedMethod(oneDiff, curMethodInfoList, preMethodInfoList, curClassInfoList, preClassInfoList);
-                }
-                if ("member".equals(domainType) && description.toLowerCase().contains("field")) {
-                    analyzeModifiedField(oneDiff, curFieldInfoList, preFieldInfoList, curClassInfoList, preClassInfoList);
-                }
+            for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.FIELD)) {
+                analyzeModifiedField(oneDiff, curFieldInfoList, preFieldInfoList, curClassInfoList, preClassInfoList);
             }
-
-            for (int j = 0; j < diffDetail.size(); j++) {
-                JSONObject oneDiff = diffDetail.getJSONObject(j);
-                String domainType = oneDiff.getString("type1").toLowerCase();
-                if ("statement".equals(domainType)) {
-                    analyzeModifiedStatement(oneDiff, preStatementInfoList, curStatementInfoList, preMethodInfoList, curMethodInfoList);
-                }
+            for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.STATEMENT)) {
+                analyzeModifiedStatement(oneDiff, preStatementInfoList, curStatementInfoList, preMethodInfoList, curMethodInfoList);
             }
             unMappedHandle(preStatementInfoList, curStatementInfoList);
         }
+    }
+
+    private MethodInfo findMethodInfoBySignature(MethodInfo targetMethodInfo, List<MethodInfo> methodInfoList) {
+        String signature = targetMethodInfo.getSignature();
+        for (MethodInfo methodInfo : methodInfoList) {
+            if (signature.equals(methodInfo.getSignature())) {
+                return methodInfo;
+            }
+        }
+        return null;
     }
 
     private void unMappedHandle(List<StatementInfo> preStatementInfoList, List<StatementInfo> curStatementInfoList) {
@@ -272,14 +275,14 @@ public class AnalyzeDiffFile {
         }
     }
 
-    private void analyzeModifiedClass(JSONObject oneDiff, FileInfo preFileInfo, FileInfo curFileInfo) {
-        String changeRelation = oneDiff.getString("type2");
+    private void analyzeModifiedClass(DiffInfo.OneDiff oneDiff, FileInfo preFileInfo, FileInfo curFileInfo) {
+        String changeRelation = oneDiff.getChangeRelation();
         // Change.Move 是比statement 更细粒度的语句的change
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
             changeRelation = ChangeEntityDesc.StageIIOpt.OPT_CHANGE;
         }
 
-        String range = oneDiff.getString("range");
+        String range = oneDiff.getRange();
         String filePath = curFileInfo.getFilePath();
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
             handleClass(castBaseInfo(curFileInfo.getChildren()), range, RelationShip.ADD.name());
@@ -333,14 +336,14 @@ public class AnalyzeDiffFile {
         log.error("relation error method " + changeRelation);
     }
 
-    private void analyzeModifiedMethod(JSONObject oneDiff, List<MethodInfo> curMethodInfoList, List<MethodInfo> preMethodInfoList, List<ClassInfo> curClassInfoList, List<ClassInfo> preClassInfoList) {
-        String changeRelation = oneDiff.getString("type2");
+    private void analyzeModifiedMethod(DiffInfo.OneDiff oneDiff, List<MethodInfo> curMethodInfoList, List<MethodInfo> preMethodInfoList, List<ClassInfo> curClassInfoList, List<ClassInfo> preClassInfoList) {
+        String changeRelation = oneDiff.getChangeRelation();
         // Change.Move 是比statement 更细粒度的语句的change
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
             changeRelation = ChangeEntityDesc.StageIIOpt.OPT_CHANGE;
         }
 
-        String range = oneDiff.getString("range");
+        String range = oneDiff.getRange();
         MethodInfo methodInfo ;
         BaseInfo preClassInfo = null,curClassInfo = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
@@ -355,8 +358,8 @@ public class AnalyzeDiffFile {
             methodInfo = handleMethod(preMethodInfoList, range, RelationShip.DELETE.name());
             if (methodInfo == null) {
                 log.error("OPT_DELETE: method info is null");
+                return;
             }
-            //Assert.notNull(methodInfo, "OPT_DELETE: method info is null");
             preClassInfo = methodInfo.getParent();
             // 后续修改 正确性有待考究
             curClassInfo = findClassInfoByRange(curClassInfoList, methodInfo.getBegin(), methodInfo.getEnd());
@@ -391,8 +394,7 @@ public class AnalyzeDiffFile {
                     // 直接入库
                     methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
-                    preMethodInfo.setMapped(true);
-                    curMethodInfo.setMapped(true);
+                    recordMapped(preMethodInfo, curMethodInfo);
                     preClassInfo = preMethodInfo.getParent();
                     curClassInfo = curMethodInfo.getParent();
                 }
@@ -481,9 +483,7 @@ public class AnalyzeDiffFile {
                     log.error("handleStatement: tracker info is null");
                     return;
                 }
-                statementInfo.getTrackerInfo().setChangeRelation(relation);
-                statementInfo.getTrackerInfo().setRootUUID(trackerInfo.getRootUUID());
-                statementInfo.getTrackerInfo().setVersion(trackerInfo.getVersion());
+                statementInfo.setTrackerInfo(relation, trackerInfo.getVersion(), trackerInfo.getRootUUID());
                 this.statementInfos.get(relation).add(statementInfo);
                 statementInfo.setMapped(true);
                 handleStatement(castBaseInfo(statementInfo.getChildren()), relation);
@@ -492,11 +492,11 @@ public class AnalyzeDiffFile {
         }
         if (relation.equals(RelationShip.ADD.name())) {
             for (StatementInfo statementInfo : statementInfos) {
+                statementInfo.setMapped(true);
                 if (methodUuidMap.keySet().contains(statementInfo.getMethodUuid())) {
                     statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 }
                 handleStatement(castBaseInfo(statementInfo.getChildren()), relation);
-                statementInfo.setMapped(true);
             }
             this.statementInfos.get(relation).addAll(statementInfos);
         }
@@ -586,13 +586,13 @@ public class AnalyzeDiffFile {
         return Integer.valueOf(range.substring(0,range.length() - 1).split(",")[1]);
     }
 
-    private void analyzeModifiedField(JSONObject oneDiff, List<FieldInfo> curFieldInfoList, List<FieldInfo> preFieldInfoList, List<ClassInfo> curClassInfoList, List<ClassInfo> preClassInfoList) {
-        String changeRelation = oneDiff.getString("type2");
+    private void analyzeModifiedField(DiffInfo.OneDiff oneDiff, List<FieldInfo> curFieldInfoList, List<FieldInfo> preFieldInfoList, List<ClassInfo> curClassInfoList, List<ClassInfo> preClassInfoList) {
+        String changeRelation = oneDiff.getChangeRelation();
         // Change.Move 是比statement 更细粒度的语句的change
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
             changeRelation = ChangeEntityDesc.StageIIOpt.OPT_CHANGE;
         }
-        String range = oneDiff.getString("range");
+        String range = oneDiff.getRange();
         FieldInfo preFieldInfo, curFieldInfo ;
         BaseInfo preClassInfo = null,curClassInfo = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
@@ -679,60 +679,61 @@ public class AnalyzeDiffFile {
         return null;
     }
 
-    private void analyzeModifiedStatement(JSONObject oneDiff, List<StatementInfo> preStatementInfoList, List<StatementInfo> curStatementInfoList, List<MethodInfo> preMethodInfoList, List<MethodInfo> curMethodInfoList) {
-        String changeRelation = oneDiff.getString("type2");
-        String parentRange = "";
-        if (oneDiff.containsKey("father-node-range")) {
-            parentRange = oneDiff.getString("father-node-range");
-        }
+    private void analyzeModifiedStatement(DiffInfo.OneDiff oneDiff, List<StatementInfo> preStatementInfoList, List<StatementInfo> curStatementInfoList, List<MethodInfo> preMethodInfoList, List<MethodInfo> curMethodInfoList) {
+        String changeRelation = oneDiff.getChangeRelation();
+        String parentRange = oneDiff.getParentRange();
         final int level = -1;
-        String range = oneDiff.getString("range");
+        String range = oneDiff.getRange();
         // statement
-        StatementInfo statementInfo ;
+        StatementInfo preStat, curStat;
         BaseInfo preParentStatement = null;
         BaseInfo curParentStatement = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
-            statementInfo = findStatementInfoByRange(curStatementInfoList, begin, end, level);
-            if (statementInfo == null) {
+            curStat = findStatementInfoByRange(curStatementInfoList, begin, end, level);
+            if (curStat == null) {
                 log.error("analyzeModifiedStatement OPT_INSERT statementInfo is null, range:{}", range);
                 return;
             }
-            backtrackingMethod(statementInfo);
+            backtrackingMethod(curStat);
             List<StatementInfo> addStat = new ArrayList<>(1);
-            addStat.add(statementInfo);
+            addStat.add(curStat);
             if (parentRange.length() != 0) {
                 begin = rangeAnalyzeBegin(parentRange.split("-")[0]);
                 end = rangeAnalyzeEnd(parentRange.split("-")[0]);
-                preParentStatement = statementInfo.getLevel() > ProjectInfoLevel.STATEMENT.getLevel() ? findStatementInfoByRange(preStatementInfoList, begin, end, statementInfo.getLevel() - 1) : findMethodInfoByRange(curMethodInfoList, begin, end);
+                preParentStatement = curStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel() ? findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel() - 1) : findMethodInfoByRange(preMethodInfoList, begin, end);
             }
             handleStatement(addStat, RelationShip.ADD.name());
-            curParentStatement = statementInfo.getParent();
+            curParentStatement = curStat.getParent();
         }
 
         if (ChangeEntityDesc.StageIIOpt.OPT_DELETE.equals(changeRelation)) {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
-            statementInfo = findStatementInfoByRange(preStatementInfoList, begin, end, level);
-            backtrackingMethod(statementInfo);
+            preStat = findStatementInfoByRange(preStatementInfoList, begin, end, level);
+            backtrackingMethod(preStat);
             List<StatementInfo> deleteStat = new ArrayList<>(1);
-            deleteStat.add(statementInfo);
+            deleteStat.add(preStat);
             handleStatement(deleteStat, RelationShip.DELETE.name());
             String[] parentRanges = parentRange.split("-");
             if (parentRanges.length == 2 && parentRanges[1].length() > 4) {
                 begin = rangeAnalyzeBegin(parentRange.split("-")[1]);
                 end = rangeAnalyzeEnd(parentRange.split("-")[1]);
-                if (statementInfo.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
-                    curParentStatement = findStatementInfoByRange(curStatementInfoList, begin, end, statementInfo.getLevel() - 1);
+                if (preStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
+                    curParentStatement = findStatementInfoByRange(curStatementInfoList, begin, end, preStat.getLevel() - 1);
                 } else {
                     curParentStatement = findMethodInfoByRange(curMethodInfoList, begin, end);
                 }
             }else {
-                log.error("analyzeModifiedStatement, OPT_DELETE, parent range:{}", parentRange);
-                return;
+                log.warn("analyzeModifiedStatement, OPT_DELETE, parent range:{}", parentRange);
+                if (preStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
+                    return;
+                } else {
+                    curParentStatement = preStat.getParent().getMappingNode();
+                }
             }
-            preParentStatement = statementInfo;
+            preParentStatement = preStat.getParent();
         }
 
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_MOVE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
@@ -744,7 +745,7 @@ public class AnalyzeDiffFile {
                 }
                 int begin = rangeAnalyzeBegin(ranges[1]);
                 int end = rangeAnalyzeEnd(ranges[1]);
-                StatementInfo curStat = findStatementInfoByRange(curStatementInfoList, begin, end, -1);
+                curStat = findStatementInfoByRange(curStatementInfoList, begin, end, -1);
                 if (curStat == null) {
                     log.error("change: curStat is null!");
                     return;
@@ -752,7 +753,7 @@ public class AnalyzeDiffFile {
                 backtrackingMethod(curStat);
                 begin = rangeAnalyzeBegin(ranges[0]);
                 end = rangeAnalyzeEnd(ranges[0]);
-                StatementInfo preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
+                preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
                 if (preStat == null) {
                     log.error("change: preStat is null!");
                     return;
@@ -763,7 +764,6 @@ public class AnalyzeDiffFile {
                     return;
                 }
                 if (curStat.getLevel() != preStat.getLevel()) {
-                    //handleLevelMismatch(oneDiff, preStat, curStat, preMethodInfoList, curMethodInfoList);
                     return;
                 }
                 curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
@@ -775,6 +775,7 @@ public class AnalyzeDiffFile {
             }catch (ArrayIndexOutOfBoundsException e) {
                 log.error(e.getMessage());
                 log.error("statement range lack! range:{}", range);
+                return;
             }
         }
 
@@ -783,33 +784,6 @@ public class AnalyzeDiffFile {
         }
     }
 
-//    private StatementInfo findPreParentStatement(List<StatementInfo> preStatementInfoList, BaseInfo baseInfo) {
-//        StatementInfo preParentStatement = null;
-//        if (baseInfo instanceof StatementInfo) {
-//            StatementInfo curParentStatement = (StatementInfo) baseInfo;
-//            int level = curParentStatement.getLevel();
-//            BaseInfo method = curParentStatement.getParent();
-//            while (!(method instanceof MethodInfo)) {
-//                method = method.getParent();
-//            }
-//            MethodInfo curMethod = (MethodInfo) method;
-//            String preMethodSignature;
-//            if (methodChangedMap.keySet().contains(curMethod.getUuid())) {
-//                preMethodSignature = methodChangedMap.get(curMethod.getUuid());
-//            } else {
-//                preMethodSignature = curMethod.getSignature();
-//            }
-//
-//            // method signature may change
-//            for (StatementInfo statementInfo : preStatementInfoList) {
-//                // 同一个method 并且层级相同
-//                if (statementInfo.getLevel() == level && statementInfo.getMethodUuid().equals(preMethodUuid)) {
-//
-//                }
-//            }
-//        }
-//        return preParentStatement;
-//    }
 
     private void backtrackingMethod(StatementInfo statementInfo) {
         if (statementInfo == null) {
@@ -829,7 +803,7 @@ public class AnalyzeDiffFile {
         StatementInfo result = null;
         int r  = -1;
         for (StatementInfo statementInfo : statementInfoList) {
-            if (level != -1 && statementInfo.getLevel() != level ) {
+            if ((level != -1 && statementInfo.getLevel() != level)) {
                 continue;
             }
             // 先找父statement
@@ -906,6 +880,9 @@ public class AnalyzeDiffFile {
         }
 
         if (parent instanceof StatementInfo) {
+            if (parent.isMapped() || preParent.isMapped()) {
+                return;
+            }
             parent.setMapped(true);
             preParent.setMapped(true);
             StatementInfo statementInfo  = (StatementInfo) parent;
@@ -915,7 +892,6 @@ public class AnalyzeDiffFile {
                     statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
                 }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), preStatementInfo.getBody());
-                //Assert.notNull(trackerInfo, "backtracking statementInfo's tracker info is null!" );
                 if (trackerInfo == null) {
                     log.error("backtracking statementInfo's tracker info is null!");
                     return;
@@ -991,21 +967,11 @@ public class AnalyzeDiffFile {
         baseInfo.setCommitMessage(curRepoInfo.getCommitMessage());
     }
 
-    private void handleLevelMismatch(JSONObject oneDiff, StatementInfo preStat, StatementInfo curStat, List<MethodInfo> preMethodInfoList, List<MethodInfo> curMethodInfoList) {
-        //father-node-range是否修改待议
-        JSONObject deleteDiff = new JSONObject(oneDiff);
-        deleteDiff.put("type2","DELETE");
-        String deleteRange = "(" + preStat.getBegin() + "," + preStat.getEnd() + ")";
-        deleteDiff.put("range",deleteRange);
-        JSONObject addDiff = new JSONObject(oneDiff);
-        addDiff.put("type2","ADD");
-        String addRange = "(" + curStat.getBegin() + "," + curStat.getEnd() + ")";
-        addDiff.put("range",addRange);
-        //preStatementInfos和curStatementInfos待处理
-        List<StatementInfo> preStatementInfos = new ArrayList<>();
-        List<StatementInfo> curStatementInfos = new ArrayList<>();
-        analyzeModifiedStatement(deleteDiff,preStatementInfos,curStatementInfos,preMethodInfoList,curMethodInfoList);
-        analyzeModifiedStatement(addDiff,preStatementInfos,curStatementInfos,preMethodInfoList,curMethodInfoList);
+    private void recordMapped(BaseInfo preBaseInfo, MethodInfo curBaseInfo) {
+        preBaseInfo.setMapped(true);
+        preBaseInfo.setMappingNode(curBaseInfo);
+        curBaseInfo.setMapped(true);
+        curBaseInfo.setMappingNode(preBaseInfo);
     }
 
     /**
