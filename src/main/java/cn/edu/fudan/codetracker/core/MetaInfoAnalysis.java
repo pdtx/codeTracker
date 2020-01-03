@@ -31,7 +31,7 @@ public class MetaInfoAnalysis {
     private String commitId;
     private JGitHelper jGitHelper;
     private int changeImportCount;
-    private String preCommitId;
+    private List<String> preCommitIds;
     /**
      * key commit; value list
      */
@@ -55,6 +55,7 @@ public class MetaInfoAnalysis {
         curFileListMap = new HashMap<>(2);
         addFilesListMap = new HashMap<>(2);
         deleteFilesListMap = new HashMap<>(2);
+        preCommitIds = new ArrayList<>();
     }
 
     /**
@@ -171,7 +172,7 @@ public class MetaInfoAnalysis {
                 analyzeDiffFile.modifyInfoConstruction(fileNameList, diffPathList);
                 analyzeDiffFiles.add(analyzeDiffFile);
                 changeImportCount = addRepoInfo.getImportCount() - deleteRepoInfo.getImportCount() - preRepoInfo.getImportCount() + curRepoInfo.getImportCount();
-                preCommitId = preCommit;
+                preCommitIds.add(preCommit);
             }
 
         } catch (Exception e) {
@@ -203,7 +204,7 @@ public class MetaInfoAnalysis {
 
     public int getChangeImportCount() { return changeImportCount; }
 
-    public String getPreCommitId() { return preCommitId; }
+    public List<String> getPreCommitIds() { return preCommitIds; }
 
 
     public Map<String, List<String>> getPreFileListMap() {

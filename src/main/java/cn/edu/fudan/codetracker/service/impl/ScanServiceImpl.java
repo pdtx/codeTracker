@@ -50,6 +50,7 @@ public class ScanServiceImpl implements ScanService {
     @Override
     public void firstScan(String repoUuid, String branch, String duration) {
         String repoPath = IS_WINDOWS ? getRepoPathByUuid(repoUuid) : restInterface.getRepoPath(repoUuid);
+//        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         log.info("commit size : " +  commitList.size());
@@ -70,6 +71,7 @@ public class ScanServiceImpl implements ScanService {
                 lineCountFirstScan(repoInfo, repoPath);
             }
         }
+        restInterface.freeRepo(repoUuid, repoPath);
     }
 
     private void lineCountFirstScan(RepoInfoBuilder repoInfo,String repoPath) {
@@ -93,64 +95,75 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-//    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
-//        LineInfo lineInfo = new LineInfo();
-//        lineInfo.setCommitId(commitId);
-//        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, analysis.getPreCommitId(), null);
-//        lineInfo.setCommitter(repoInfo.getCommitter());
-//        lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
-//        lineInfo.setRepoUuid(repoInfo.getRepoUuid());
-//        lineInfo.setBranch(repoInfo.getBranch());
-//
-//        if(analysis.getCurFileList().size() == 0 && analysis.getAddFilesList().size() == 0 && analysis.getDeleteFilesList().size() == 0 ) {
-//           lineInfo.setImportCount(repoInfo.getImportCount());
-//           lineInfo.setAddCount(0);
-//           lineInfo.setDeleteCount(0);
-//        } else {
-//            int preImportCount = lineInfoMap.get(analysis.getPreCommitId()).getImportCount();
-//            lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
-//
-//            int addCount = 0;
-//            int deleteCount = 0;
-//            int changeCount = 0;
-//
-//            for (String addPath : analysis.getAddFilesList()) {
-//                addCount += JavancssScaner.scanOneFile(addPath);
-//            }
-//
-//            for (String deletePath : analysis.getDeleteFilesList()) {
-//                deleteCount += JavancssScaner.scanOneFile(deletePath);
-//            }
-//
-//            for (String curPath : analysis.getCurFileList()) {
-//                changeCount += JavancssScaner.scanOneFile(curPath);
-//            }
-//
-//            for (String prePath : analysis.getPreFileList()) {
-//                changeCount -= JavancssScaner.scanOneFile(prePath);
-//            }
-//
-//            if (changeCount >= 0) {
-//                addCount += changeCount;
-//            } else {
-//                deleteCount += (-changeCount);
-//            }
-//
-//            lineInfo.setAddCount(addCount);
-//            lineInfo.setDeleteCount(deleteCount);
-//        }
-//
-//        int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
-//        lineInfo.setLineCount(lineCount);
-//
-//        lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
-//        try {
-//            lineInfoDao.insertLineInfo(lineInfo);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
+    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
+        LineInfo lineInfo = new LineInfo();
+        lineInfo.setCommitId(commitId);
+        RepoInfoBuilder repoInfo;
+
+        if (analysis.getPreCommitIds().size() > 1) {
+            repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, null, null);
+            lineInfo.setImportCount(repoInfo.getImportCount());
+            lineInfo.setAddCount(0);
+            lineInfo.setDeleteCount(0);
+        } else {
+            String preCommitId = analysis.getPreCommitIds().get(0);
+            repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, preCommitId, null);
+            if (analysis.getCurFileListMap().get(preCommitId).size() == 0 &&
+                    analysis.getAddFilesListMap().get(preCommitId).size() == 0 &&
+                    analysis.getDeleteFilesListMap().get(preCommitId).size() == 0) {
+                lineInfo.setImportCount(repoInfo.getImportCount());
+                lineInfo.setAddCount(0);
+                lineInfo.setDeleteCount(0);
+            } else {
+                int preImportCount = lineInfoMap.get(preCommitId).getImportCount();
+                lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
+
+                int addCount = 0;
+                int deleteCount = 0;
+                int changeCount = 0;
+
+                for (String addPath : analysis.getAddFilesListMap().get(preCommitId)) {
+                    addCount += JavancssScaner.scanOneFile(addPath);
+                }
+
+                for (String deletePath : analysis.getDeleteFilesListMap().get(preCommitId)) {
+                    deleteCount += JavancssScaner.scanOneFile(deletePath);
+                }
+
+                for (String curPath : analysis.getCurFileListMap().get(preCommitId)) {
+                    changeCount += JavancssScaner.scanOneFile(curPath);
+                }
+
+                for (String prePath : analysis.getPreFileListMap().get(preCommitId)) {
+                    changeCount -= JavancssScaner.scanOneFile(prePath);
+                }
+
+                if (changeCount >= 0) {
+                    addCount += changeCount;
+                } else {
+                    deleteCount += (-changeCount);
+                }
+
+                lineInfo.setAddCount(addCount);
+                lineInfo.setDeleteCount(deleteCount);
+            }
+        }
+        lineInfo.setCommitter(repoInfo.getCommitter());
+        lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+        lineInfo.setRepoUuid(repoInfo.getRepoUuid());
+        lineInfo.setBranch(repoInfo.getBranch());
+
+        int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
+        lineInfo.setLineCount(lineCount);
+
+        lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
+        try {
+            lineInfoDao.insertLineInfo(lineInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
         if (jGitHelper != null) {
@@ -166,7 +179,7 @@ public class ScanServiceImpl implements ScanService {
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
 
         jGitHelper.checkout(commitId);
-        //lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
+        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
 
         // 扫描结果记录入库
         try {
@@ -240,7 +253,7 @@ public class ScanServiceImpl implements ScanService {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
-        return "E:\\Lab\\project\\IssueTracker-Master-pre";
+        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
     }
 
     /**
@@ -283,4 +296,5 @@ public class ScanServiceImpl implements ScanService {
 
     @Autowired
     public void setLineInfoDao(LineInfoDao lineInfoDao) { this.lineInfoDao = lineInfoDao; }
+    
 }
