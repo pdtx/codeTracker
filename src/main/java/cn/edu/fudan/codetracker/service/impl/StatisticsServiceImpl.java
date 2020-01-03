@@ -237,6 +237,16 @@ public class StatisticsServiceImpl implements StatisticsService {
         return map;
     }
 
+    @Override
+    public Boolean isScan(String repoUuid, String branch) {
+        String uuid = statisticsDao.findIsScan(repoUuid, branch);
+        if (uuid == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     /**
      * getter and setter

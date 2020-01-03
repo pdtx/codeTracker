@@ -428,4 +428,13 @@
         select statement_uuid, committer, commit_date, change_relation from issueTracker.raw_statement where commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and (change_relation = "ADD" OR change_relation = "DELETE" OR change_relation = "SELF_CHANGE") and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
     </select>
 
+    <resultMap id="ScanInfo" type="String">
+        <id property="uuid" column="uuid"/>
+    </resultMap>
+
+    <!--判断某个repo的某个branch是否扫描过-->
+    <select id="findIsScan" parameterType="String" resultMap="ScanInfo">
+        select uuid from issueTracker.meta_package where repo_uuid = #{repoUuid} and branch = #{branch} limit 1;
+    </select>
+
 </mapper>

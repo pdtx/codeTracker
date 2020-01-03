@@ -224,6 +224,7 @@ public class StatisticsController {
         try{
             String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
             String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
+            log.info("commit: " + commit + "  repoPath: " + repoPath);
             Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
             restInterface.freeRepo(repoUuid, repoPath);
             if (developer == null) {
@@ -309,6 +310,20 @@ public class StatisticsController {
     }
 
 
+    /**
+     * 判断某个repo的某个branch是否扫描过
+     */
+    @GetMapping(value = {"/isScan"})
+    public ResponseBean isScan(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
+        try {
+            Boolean data = statisticsService.isScan(repoUuid, branch);
+            return new ResponseBean(200, "", data);
+        } catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
 
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
