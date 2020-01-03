@@ -237,7 +237,7 @@ public class AnalyzeDiffFile {
             for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.STATEMENT)) {
                 analyzeModifiedStatement(oneDiff, preStatementInfoList, curStatementInfoList, preMethodInfoList, curMethodInfoList);
             }
-            unMappedHandle(preStatementInfoList, curStatementInfoList);
+            //unMappedHandle(preStatementInfoList, curStatementInfoList);
         }
     }
 
@@ -696,6 +696,9 @@ public class AnalyzeDiffFile {
                 log.error("analyzeModifiedStatement OPT_INSERT statementInfo is null, range:{}", range);
                 return;
             }
+            if (curStat.isMapped()) {
+                return;
+            }
             backtrackingMethod(curStat);
             List<StatementInfo> addStat = new ArrayList<>(1);
             addStat.add(curStat);
@@ -712,6 +715,9 @@ public class AnalyzeDiffFile {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
             preStat = findStatementInfoByRange(preStatementInfoList, begin, end, level);
+            if (preStat.isMapped()) {
+                return;
+            }
             backtrackingMethod(preStat);
             List<StatementInfo> deleteStat = new ArrayList<>(1);
             deleteStat.add(preStat);
@@ -756,6 +762,9 @@ public class AnalyzeDiffFile {
                 preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
                 if (preStat == null) {
                     log.error("change: preStat is null!");
+                    return;
+                }
+                if (preStat.isMapped() || curStat.isMapped()) {
                     return;
                 }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, curStat.getMethodUuid(), preStat.getBody());
