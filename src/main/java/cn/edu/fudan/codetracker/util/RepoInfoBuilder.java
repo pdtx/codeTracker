@@ -93,7 +93,8 @@ public class RepoInfoBuilder {
             String path = fileList.get(i);
             String[] strs = path.split("/");
             String str = strs[strs.length-1];
-            if (str.toLowerCase().endsWith("test.java") ||
+            if (path.toLowerCase().contains("/test/") ||
+                    str.toLowerCase().endsWith("test.java") ||
                     str.toLowerCase().endsWith("tests.java") ||
                     str.toLowerCase().startsWith("test") ||
                     str.toLowerCase().endsWith("enum.java")) {

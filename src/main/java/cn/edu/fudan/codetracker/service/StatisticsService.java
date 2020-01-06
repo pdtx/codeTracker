@@ -51,8 +51,5 @@ public interface StatisticsService {
      */
     Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
 
-    /**
-     * 判断某个repo的某个branch是否扫描过
-     */
-    Boolean isScan(String repoUuid, String branch);
+
 }

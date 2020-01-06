@@ -10,6 +10,8 @@ public class StatementRelationInfo {
     private int distance;
     private Date validBegin;
     private Date validEnd;
+    private String repoUuid;
+    private String branch;
 
     public StatementRelationInfo () {
 
@@ -38,4 +40,20 @@ public class StatementRelationInfo {
     public Date getValidEnd() { return validEnd; }
 
     public void setValidEnd(Date validEnd) { this.validEnd = validEnd; }
+
+    public String getRepoUuid() {
+        return repoUuid;
+    }
+
+    public void setRepoUuid(String repoUuid) {
+        this.repoUuid = repoUuid;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
 }

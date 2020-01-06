@@ -276,8 +276,4 @@ public interface StatisticsMapper {
      */
     List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
-    /**
-     * 判断某个repo的某个branch是否扫描过
-     */
-    String findIsScan(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

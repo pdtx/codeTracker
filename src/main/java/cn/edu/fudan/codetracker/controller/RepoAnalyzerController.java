@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @EnableAutoConfiguration
 public class RepoAnalyzerController {
@@ -26,6 +29,23 @@ public class RepoAnalyzerController {
     public ResponseBean scan(@RequestBody JSONObject requestParam) {
         try {
             scanService.firstScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("duration"));
+            return new ResponseBean(200, "start scan", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * @param requestParam 包含：repoId、branch、commitList
+     */
+    @PostMapping(value = {"/project/auto"})
+    public ResponseBean autoScan(@RequestBody JSONObject requestParam) {
+        try {
+            List<String> commitList = new ArrayList<>();
+            for (Object object: requestParam.getJSONArray("commitList")) {
+                commitList.add((String)object);
+            }
+            scanService.autoScan(requestParam.getString("repoId"), requestParam.getString("branch"), commitList);
             return new ResponseBean(200, "start scan", null);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);

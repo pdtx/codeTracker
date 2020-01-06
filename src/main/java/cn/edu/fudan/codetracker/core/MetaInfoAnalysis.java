@@ -106,7 +106,9 @@ public class MetaInfoAnalysis {
                             m.getKey().getString("file_short_name").endsWith(".java")) {
                         // ignore test class and enum class
                         String shortName = m.getKey().getString("file_short_name").toLowerCase();
-                        if (shortName.endsWith("test.java") ||
+                        String fullName = m.getKey().getString("file_full_name").toLowerCase();
+                        if (fullName.contains("/test/") ||
+                                shortName.endsWith("test.java") ||
                                 shortName.endsWith("tests.java") ||
                                 shortName.startsWith("test") ||
                                 shortName.endsWith("enum.java")) {

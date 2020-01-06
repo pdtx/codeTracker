@@ -56,6 +56,8 @@ public class StatementDao {
                 statementRelationInfo.setDescendantUuid(descendantUuid);
                 statementRelationInfo.setDistance(level-parentLevel);
                 statementRelationInfo.setValidBegin(temp.getCommitDate());
+                statementRelationInfo.setRepoUuid(temp.getRepoUuid());
+                statementRelationInfo.setBranch(temp.getBranch());
                 statementRelationInfoList.add(statementRelationInfo);
                 temp = parent;
             }
