@@ -157,10 +157,6 @@ public class MethodInfo extends BaseInfo{
         return diff;
     }
 
-    public void setDiff(JSONObject diff) {
-        this.diff = diff;
-    }
-
     public String getSimpleName() {
         return simpleName;
     }

@@ -63,6 +63,7 @@ public final class DiffInfo {
         private String parentRange;
 
         private int beginLine;
+        private JSONObject diffJson;
 //        private int preBegin = -1;
 //        private int preEnd = -1;
 //        private int curBegin = -1;
@@ -75,6 +76,7 @@ public final class DiffInfo {
         private String delimiter = "-";
 
         OneDiff(JSONObject oneDiff) {
+            diffJson = oneDiff;
             description = oneDiff.getString("description");
             changeRelation = oneDiff.getString("type2");
             parentRange = "";
@@ -121,6 +123,10 @@ public final class DiffInfo {
 
         int getBeginLine() {
             return beginLine;
+        }
+
+        public JSONObject getDiffJson() {
+            return diffJson;
         }
 //        public int getPreBegin() {
 //            return preBegin;

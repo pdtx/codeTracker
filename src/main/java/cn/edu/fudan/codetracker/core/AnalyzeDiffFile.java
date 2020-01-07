@@ -225,20 +225,91 @@ public class AnalyzeDiffFile {
                 analyzeModifiedMethod(oneDiff, curMethodInfoList, preMethodInfoList, curClassInfoList, preClassInfoList);
             }
             for (MethodInfo methodInfo : curMethodInfoList) {
+                if (methodInfo.isMapped()) {
+                    continue;
+                }
                 MethodInfo preMethodInfo = findMethodInfoBySignature(methodInfo, preMethodInfoList);
                 methodInfo.setMappingNode(preMethodInfo);
                 if (preMethodInfo != null) {
                     preMethodInfo.setMappingNode(methodInfo);
                 }
             }
+
             for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.FIELD)) {
                 analyzeModifiedField(oneDiff, curFieldInfoList, preFieldInfoList, curClassInfoList, preClassInfoList);
             }
             for (DiffInfo.OneDiff oneDiff : diffInfo.getDiffInfo().get(ProjectInfoLevel.STATEMENT)) {
+                // 处理 statement 内容变化 引起的 method 内容变化
+                analyzeMethodModifiedByStat(oneDiff, curMethodInfoList, preMethodInfoList);
                 analyzeModifiedStatement(oneDiff, preStatementInfoList, curStatementInfoList, preMethodInfoList, curMethodInfoList);
             }
-            //unMappedHandle(preStatementInfoList, curStatementInfoList);
         }
+    }
+
+    private void analyzeMethodModifiedByStat(DiffInfo.OneDiff oneDiff, List<MethodInfo> curMethodInfoList, List<MethodInfo> preMethodInfoList) {
+        String range = oneDiff.getRange();
+        String changeRelation = oneDiff.getChangeRelation();
+        MethodInfo curMethodInfo = null;
+        if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
+            int begin = rangeAnalyzeBegin(range);
+            int end = rangeAnalyzeEnd(range);
+            curMethodInfo = handleMethodModifiedByStat(curMethodInfoList, begin, end, oneDiff, true);
+        }
+        if (ChangeEntityDesc.StageIIOpt.OPT_DELETE.equals(changeRelation)) {
+            int begin = rangeAnalyzeBegin(range);
+            int end = rangeAnalyzeEnd(range);
+            curMethodInfo = handleMethodModifiedByStat(preMethodInfoList, begin, end, oneDiff, false);
+        }
+        if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_MOVE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
+            String[] ranges = range.split("-");
+            if (ranges.length != 2  || ranges[0].length() < 5 || ranges[1].length() < 5) {
+                int begin = rangeAnalyzeBegin(range.split("-")[1]);
+                int end = rangeAnalyzeEnd(range.split("-")[1]);
+                curMethodInfo = handleMethodModifiedByStat(curMethodInfoList, begin, end, oneDiff, true);
+            } else {
+                int begin = rangeAnalyzeBegin(ranges[0]);
+                int end = rangeAnalyzeEnd(ranges[0]);
+                curMethodInfo = range.startsWith("-") ?
+                        handleMethodModifiedByStat(curMethodInfoList, begin, end, oneDiff, true) :
+                        handleMethodModifiedByStat(preMethodInfoList, begin, end, oneDiff, false) ;
+            }
+        }
+
+        if (curMethodInfo != null) {
+            methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
+            backtracking(curMethodInfo.getParent(), curMethodInfo.getMappingNode().getParent());
+        }
+    }
+
+    private MethodInfo handleMethodModifiedByStat(List<MethodInfo> methodInfoList, int begin, int end, DiffInfo.OneDiff oneDiff, boolean isCur) {
+        String relation = RelationShip.CHANGE.name();
+        MethodInfo methodInfo, curMethodInfo, preMethodInfo;
+        methodInfo = findMethodInfoByRange(methodInfoList, begin, end);
+        if (methodInfo == null) {
+            return null;
+        }
+        if (isCur) {
+            curMethodInfo = methodInfo;
+            preMethodInfo = (MethodInfo) curMethodInfo.getMappingNode();
+        } else {
+            preMethodInfo = methodInfo;
+            curMethodInfo = (MethodInfo) preMethodInfo.getMappingNode();
+        }
+        curMethodInfo.getDiff().getJSONArray("data").add(oneDiff.getDiffJson());
+        if (methodInfo.isMapped()) {
+            return null;
+        }
+        preMethodInfo.setMapped(true);
+        curMethodInfo.setMapped(true);
+        TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)preMethodInfo.getParent()).getFilePath(), ((ClassInfo)preMethodInfo.getParent()).getClassName(), preMethodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+        curMethodInfo.setTrackerInfo(relation, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
+        if (! methodUuidMap.keySet().contains(curMethodInfo.getUuid())) {
+            methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
+        }
+        if (! methodUuidMap.keySet().contains(preMethodInfo.getUuid())) {
+            methodUuidMap.put(preMethodInfo.getUuid(), trackerInfo.getRootUUID());
+        }
+        return curMethodInfo;
     }
 
     private MethodInfo findMethodInfoBySignature(MethodInfo targetMethodInfo, List<MethodInfo> methodInfoList) {
@@ -249,30 +320,6 @@ public class AnalyzeDiffFile {
             }
         }
         return null;
-    }
-
-    private void unMappedHandle(List<StatementInfo> preStatementInfoList, List<StatementInfo> curStatementInfoList) {
-        for (StatementInfo statementInfo : preStatementInfoList) {
-            if (! statementInfo.isMapped()) {
-                backtrackingMethod(statementInfo);
-                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
-                TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, statementInfo.getMethodUuid(), statementInfo.getBody());
-                if (trackerInfo == null) {
-                    continue;
-                }
-                resetBaseInfo(statementInfo);
-                statementInfo.setTrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID());
-                statementInfos.get(RelationShip.DELETE.name()).add(statementInfo);
-            }
-        }
-
-        for (StatementInfo statementInfo : curStatementInfoList) {
-            if (! statementInfo.isMapped()) {
-                backtrackingMethod(statementInfo);
-                statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
-                statementInfos.get(RelationShip.ADD.name()).add(statementInfo);
-            }
-        }
     }
 
     private void analyzeModifiedClass(DiffInfo.OneDiff oneDiff, FileInfo preFileInfo, FileInfo curFileInfo) {
@@ -371,8 +418,6 @@ public class AnalyzeDiffFile {
             MethodInfo preMethodInfo = findMethodInfoByRange(preMethodInfoList, begin, end);
             if (preMethodInfo == null) {
                 log.error("preMethodInfo NULL ERROR: ");
-                // debug
-                findMethodInfoByRange(curMethodInfoList, begin, end);
                 return;
             }
             try {
@@ -390,7 +435,7 @@ public class AnalyzeDiffFile {
                         return;
                     }
                     curMethodInfo.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
-                    curMethodInfo.getDiff().getJSONArray("data").add(oneDiff);
+                    curMethodInfo.getDiff().getJSONArray("data").add(oneDiff.getDiffJson());
                     // 直接入库
                     methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
@@ -686,60 +731,44 @@ public class AnalyzeDiffFile {
         String range = oneDiff.getRange();
         // statement
         StatementInfo preStat, curStat;
-        BaseInfo preParentStatement = null;
-        BaseInfo curParentStatement = null;
+        StatementInfo preParentStatement = null;
+        StatementInfo curParentStatement = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
             curStat = findStatementInfoByRange(curStatementInfoList, begin, end, level);
             if (curStat == null) {
-                log.error("analyzeModifiedStatement OPT_INSERT statementInfo is null, range:{}", range);
+                log.warn("analyzeModifiedStatement OPT_INSERT statementInfo is null, range:{}", range);
                 return;
             }
             if (curStat.isMapped()) {
                 return;
             }
-            backtrackingMethod(curStat);
+            curStat.setMethodUuid(methodUuidMap.get(curStat.getMethodUuid()));
             List<StatementInfo> addStat = new ArrayList<>(1);
             addStat.add(curStat);
-            if (parentRange.length() != 0) {
-                begin = rangeAnalyzeBegin(parentRange.split("-")[0]);
-                end = rangeAnalyzeEnd(parentRange.split("-")[0]);
-                preParentStatement = curStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel() ? findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel() - 1) : findMethodInfoByRange(preMethodInfoList, begin, end);
-            }
+            preParentStatement = handleStatParent(parentRange, curStat, preStatementInfoList, false);
             handleStatement(addStat, RelationShip.ADD.name());
-            curParentStatement = curStat.getParent();
+            curParentStatement = preParentStatement == null ? null : (StatementInfo) curStat.getParent();
         }
 
         if (ChangeEntityDesc.StageIIOpt.OPT_DELETE.equals(changeRelation)) {
             int begin = rangeAnalyzeBegin(range);
             int end = rangeAnalyzeEnd(range);
             preStat = findStatementInfoByRange(preStatementInfoList, begin, end, level);
+            if (preStat == null) {
+                log.warn("analyzeModifiedStatement OPT_INSERT statementInfo is null, range:{}", range);
+                return;
+            }
             if (preStat.isMapped()) {
                 return;
             }
-            backtrackingMethod(preStat);
+            preStat.setMethodUuid(methodUuidMap.get(preStat.getMethodUuid()));
             List<StatementInfo> deleteStat = new ArrayList<>(1);
             deleteStat.add(preStat);
             handleStatement(deleteStat, RelationShip.DELETE.name());
-            String[] parentRanges = parentRange.split("-");
-            if (parentRanges.length == 2 && parentRanges[1].length() > 4) {
-                begin = rangeAnalyzeBegin(parentRange.split("-")[1]);
-                end = rangeAnalyzeEnd(parentRange.split("-")[1]);
-                if (preStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
-                    curParentStatement = findStatementInfoByRange(curStatementInfoList, begin, end, preStat.getLevel() - 1);
-                } else {
-                    curParentStatement = findMethodInfoByRange(curMethodInfoList, begin, end);
-                }
-            }else {
-                log.warn("analyzeModifiedStatement, OPT_DELETE, parent range:{}", parentRange);
-                if (preStat.getLevel() > ProjectInfoLevel.STATEMENT.getLevel()) {
-                    return;
-                } else {
-                    curParentStatement = preStat.getParent().getMappingNode();
-                }
-            }
-            preParentStatement = preStat.getParent();
+            curParentStatement = handleStatParent(parentRange, preStat, curStatementInfoList, true);
+            preParentStatement = curParentStatement == null ? null : (StatementInfo) preStat.getParent();
         }
 
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_MOVE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
@@ -756,7 +785,6 @@ public class AnalyzeDiffFile {
                     log.error("change: curStat is null!");
                     return;
                 }
-                backtrackingMethod(curStat);
                 begin = rangeAnalyzeBegin(ranges[0]);
                 end = rangeAnalyzeEnd(ranges[0]);
                 preStat = findStatementInfoByRange(preStatementInfoList, begin, end, curStat.getLevel());
@@ -764,7 +792,7 @@ public class AnalyzeDiffFile {
                     log.error("change: preStat is null!");
                     return;
                 }
-                if (preStat.isMapped() || curStat.isMapped()) {
+                if (preStat.isMapped() || curStat.isMapped() ) {
                     return;
                 }
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, curStat.getMethodUuid(), preStat.getBody());
@@ -772,15 +800,14 @@ public class AnalyzeDiffFile {
                     log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());
                     return;
                 }
-                if (curStat.getLevel() != preStat.getLevel()) {
-                    return;
-                }
                 curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
                 statementInfos.get(RelationShip.CHANGE.name()).add(curStat);
                 curStat.setMapped(true);
                 preStat.setMapped(true);
-                preParentStatement = preStat.getParent();
-                curParentStatement = curStat.getParent();
+                if (preStat.getLevel() != ProjectInfoLevel.STATEMENT.getLevel()) {
+                    preParentStatement = (StatementInfo) preStat.getParent();
+                    curParentStatement = (StatementInfo) curStat.getParent();
+                }
             }catch (ArrayIndexOutOfBoundsException e) {
                 log.error(e.getMessage());
                 log.error("statement range lack! range:{}", range);
@@ -793,19 +820,19 @@ public class AnalyzeDiffFile {
         }
     }
 
-
-    private void backtrackingMethod(StatementInfo statementInfo) {
-        if (statementInfo == null) {
-            log.error("backtrackingMethod: statementInfo is null!");
-            return;
+    private StatementInfo handleStatParent(String parentRange, StatementInfo stat, List<StatementInfo> statementInfoList, boolean isCur) {
+        if (stat.getLevel() == ProjectInfoLevel.STATEMENT.getLevel()) {
+            return null;
         }
-        // 找到statement后，先回溯找到 meta_method 的uuid
-        BaseInfo baseInfo = statementInfo.getParent();
-        while(!(baseInfo instanceof MethodInfo)) {
-            baseInfo = baseInfo.getParent();
+        String[] parentRanges = parentRange.split("-");
+        if (parentRanges.length == 2 && parentRanges[1].length() > 4) {
+            int begin = isCur ? rangeAnalyzeBegin(parentRanges[1]) : rangeAnalyzeBegin(parentRanges[0]);
+            int end = isCur ? rangeAnalyzeEnd(parentRanges[1]) : rangeAnalyzeBegin(parentRanges[0]);
+            return findStatementInfoByRange(statementInfoList, begin, end, stat.getLevel() - 1);
+        }else {
+            log.warn("analyzeModifiedStatement, OPT_DELETE, parent range:{}", parentRange);
         }
-        backtracking(baseInfo, null);
-        statementInfo.setMethodUuid(methodUuidMap.get(statementInfo.getMethodUuid()));
+        return null;
     }
 
     private StatementInfo findStatementInfoByRange(List<StatementInfo> statementInfoList, int begin, int end, int level) {
@@ -856,38 +883,6 @@ public class AnalyzeDiffFile {
 
     private void backtracking(BaseInfo parent, BaseInfo preParent) {
         String change = RelationShip.CHANGE.name();
-        if (parent instanceof ClassInfo) {
-            ClassInfo classInfo = (ClassInfo) parent;
-            if (classInfos.get(change).contains(classInfo)) {
-                return;
-            }
-            TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.CLASS, classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-            if (trackerInfo == null) {
-                log.error("backtracking classInfo's tracker info is null! path: " + classInfo.getFilePath() + ",name: "+  classInfo.getClassName());
-                return;
-            }
-            classInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
-            classInfos.get(change).add(classInfo);
-            classInfo.setMapped(true);
-        }
-
-        if (parent instanceof MethodInfo) {
-            MethodInfo methodInfo = (MethodInfo) parent;
-            if (! methodInfos.get(change).contains(methodInfo)) {
-                TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)methodInfo.getParent()).getFilePath(), ((ClassInfo)methodInfo.getParent()).getClassName(), methodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
-                if (trackerInfo == null) {
-                    log.error("backtracking methodInfo's tracker info is null! path: " + ((ClassInfo)methodInfo.getParent()).getFilePath() + ",name: "+  methodInfo.getSignature());
-                    return;
-                }
-                methodInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
-                methodUuidMap.put(methodInfo.getUuid(), trackerInfo.getRootUUID());
-                methodInfos.get(change).add(methodInfo);
-                methodInfo.setMapped(true);
-                backtracking(methodInfo.getParent(), null);
-            }
-            return;
-        }
-
         if (parent instanceof StatementInfo) {
             if (parent.isMapped() || preParent.isMapped()) {
                 return;
@@ -910,6 +905,21 @@ public class AnalyzeDiffFile {
                 backtracking(statementInfo.getParent(), preStatementInfo.getParent());
             }
         }
+        if (parent instanceof ClassInfo) {
+            ClassInfo classInfo = (ClassInfo) parent;
+            if (classInfos.get(change).contains(classInfo)) {
+                return;
+            }
+            TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.CLASS, classInfo.getFilePath(), classInfo.getClassName(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+            if (trackerInfo == null) {
+                log.error("backtracking classInfo's tracker info is null! path: " + classInfo.getFilePath() + ",name: "+  classInfo.getClassName());
+                return;
+            }
+            classInfo.setTrackerInfo(change, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
+            classInfos.get(change).add(classInfo);
+            classInfo.setMapped(true);
+        }
+
     }
 
     private List<MethodInfo> getMethodInfoListByFileInfo(List<ClassInfo> classInfoList) {

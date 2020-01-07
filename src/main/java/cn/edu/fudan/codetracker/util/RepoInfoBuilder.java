@@ -25,6 +25,9 @@ public class RepoInfoBuilder {
     private Date commitDate;
     private String commitMessage;
     private String branch;
+    /**
+     * 最近一次引起变化的commit
+     */
     private String parentCommit;
     private JGitHelper jGitHelper;
     private BaseInfo baseInfo;
@@ -93,10 +96,8 @@ public class RepoInfoBuilder {
             String path = fileList.get(i);
             String[] strs = path.split("/");
             String str = strs[strs.length-1];
-            if (str.toLowerCase().endsWith("test.java") ||
-                    str.toLowerCase().endsWith("tests.java") ||
-                    str.toLowerCase().startsWith("test") ||
-                    str.toLowerCase().endsWith("enum.java")) {
+            // 特定文件过滤
+            if (FileFilter.filenameFilter(str)) {
                 continue;
             }
             FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, relativePath.get(i), repoUuid);
