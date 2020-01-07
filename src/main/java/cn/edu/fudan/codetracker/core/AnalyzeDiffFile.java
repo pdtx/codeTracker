@@ -262,9 +262,9 @@ public class AnalyzeDiffFile {
         }
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_MOVE.equals(changeRelation) || ChangeEntityDesc.StageIIOpt.OPT_CHANGE_MOVE.equals(changeRelation)) {
             String[] ranges = range.split("-");
-            if (ranges.length != 2  || ranges[0].length() < 5 || ranges[1].length() < 5) {
-                int begin = rangeAnalyzeBegin(range.split("-")[1]);
-                int end = rangeAnalyzeEnd(range.split("-")[1]);
+            if (ranges.length == 2) {
+                int begin = rangeAnalyzeBegin(ranges[1]);
+                int end = rangeAnalyzeEnd(ranges[1]);
                 curMethodInfo = handleMethodModifiedByStat(curMethodInfoList, begin, end, oneDiff, true);
             } else {
                 int begin = rangeAnalyzeBegin(ranges[0]);
