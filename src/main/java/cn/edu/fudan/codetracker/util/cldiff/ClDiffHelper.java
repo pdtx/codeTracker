@@ -22,16 +22,16 @@ public class ClDiffHelper {
         Global.granularity = Constants.GRANULARITY.STATEMENT;
         Global.initLangAndLogger(Constants.RUNNING_LANG.JAVA, Level.WARNING);
         Global.isMethodRangeContainsJavaDoc = false;
-        Global.isLink = true;
+        Global.isLink = false;
         CLDiffLocal clDiffLocal = new CLDiffLocal(repoPath);
         clDiffLocal.run(commitId, repoPath, outputDir);
     }
 
     public static void main(String[] args) {
 
-        String repo = "E:\\Lab\\project\\IssueTracker-Master";
-        String commitId = "d81d2b4c232392228a9375bc12e3c3ebe349407c";
-        String outputDir = "E:\\Lab\\project\\new";
+        String repo = "/Users/tangyuan/Documents/Git/iec-wepm-develop";
+        String commitId = "6b2cafe873e520843a637733188fa3495929d02a";
+        String outputDir = "/Users/tangyuan/Desktop/CLDdemo";
 
         ClDiffHelper.executeDiff(repo, commitId, outputDir);
     }
