@@ -19,4 +19,9 @@ public interface PackageMapper {
     void updateDeleteInfo(List<PackageInfo> packageInfoList);
 
     void updateChangeInfo(List<PackageInfo> packageInfoList);
+
+    /**
+     * 判断某个repo的某个branch是否扫描过
+     */
+    String findIsScan(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

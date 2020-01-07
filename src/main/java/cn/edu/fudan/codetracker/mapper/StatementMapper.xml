@@ -88,7 +88,9 @@
         ancestor_uuid,
         descendant_uuid,
         distance,
-        valid_begin
+        valid_begin,
+        repo_uuid,
+        branch
         )
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -97,7 +99,9 @@
             #{item.ancestorUuid},
             #{item.descendantUuid},
             #{item.distance},
-            #{item.validBegin}
+            #{item.validBegin},
+            #{item.repoUuid},
+            #{item.branch}
             )
         </foreach>
     </insert>

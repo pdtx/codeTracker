@@ -115,5 +115,13 @@
         </foreach>
     </update>
 
+    <resultMap id="ScanInfo" type="String">
+        <id property="uuid" column="uuid"/>
+    </resultMap>
+
+    <!--判断某个repo的某个branch是否扫描过-->
+    <select id="findIsScan" parameterType="String" resultMap="ScanInfo">
+        select uuid from issueTracker.meta_package where repo_uuid = #{repoUuid} and branch = #{branch} limit 1;
+    </select>
 
 </mapper>

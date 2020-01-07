@@ -16,10 +16,12 @@ public final class FileFilter {
      * false： 不过滤
      */
     public  static boolean filenameFilter(String str) {
-        boolean isContinue = str.toLowerCase().endsWith("test.java") ||
+        boolean isContinue =  str.toLowerCase().contains("/test/") ||
+                str.toLowerCase().endsWith("test.java") ||
                 str.toLowerCase().endsWith("tests.java") ||
                 str.toLowerCase().startsWith("test") ||
-                str.toLowerCase().endsWith("enum.java") || str.contains(JPMS);
+                str.toLowerCase().endsWith("enum.java") ||
+                str.contains(JPMS);
         return isContinue;
     }
 }
