@@ -438,6 +438,7 @@ public class AnalyzeDiffFile {
                     curMethodInfo.getDiff().getJSONArray("data").add(oneDiff.getDiffJson());
                     // 直接入库
                     methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
+                    methodUuidMap.put(preMethodInfo.getUuid(), trackerInfo.getRootUUID());
                     methodInfos.get(RelationShip.CHANGE.name()).add(curMethodInfo);
                     recordMapped(preMethodInfo, curMethodInfo);
                     preClassInfo = preMethodInfo.getParent();
@@ -499,9 +500,11 @@ public class AnalyzeDiffFile {
                 log.error("handleMethod! tracker info is null");
                 return methodInfo;
             }
-            resetBaseInfo(methodInfo);
             methodUuidMap.put(methodInfo.getUuid(), trackerInfo.getRootUUID());
+            resetBaseInfo(methodInfo);
             methodInfo.setTrackerInfo(RelationShip.DELETE.name(), trackerInfo.getVersion(), trackerInfo.getRootUUID());
+        } else {
+            methodUuidMap.put(methodInfo.getUuid(), methodInfo.getUuid());
         }
         methodInfo.setMapped(true);
         methodInfos.get(relation).add(methodInfo);
@@ -572,6 +575,7 @@ public class AnalyzeDiffFile {
                 methodInfos.get(relation).addAll(classInfo.getMethodInfos());
                 for (MethodInfo methodInfo : classInfo.getMethodInfos()) {
                     methodInfo.setMapped(true);
+                    methodUuidMap.put(methodInfo.getUuid(), methodInfo.getUuid());
                     handleStatement(castBaseInfo(methodInfo.getChildren()), relation);
                 }
                 fieldInfos.get(relation).addAll(classInfo.getFieldInfos());
