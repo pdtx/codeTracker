@@ -100,6 +100,18 @@ public class JGitHelper {
         return time;
     }
 
+    public Long getLongCommitTime(String version) {
+        try {
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
+            long timestamp = revCommit.getCommitTime() * 1000L;
+            return timestamp;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+
     public String getMess(String version) {
         String message = null;
         try {
@@ -186,6 +198,28 @@ public class JGitHelper {
             System.out.println(s);
             jGitHelper.checkout(s);
         }
+    }
+
+
+    public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit) {
+        checkout(branchName);
+        Map<String, Long> commitMap = new HashMap<>(512);
+        Long start = getLongCommitTime(beginCommit);
+        if (start == 0) {
+            throw new RuntimeException("beginCommit Error!");
+        }
+        try {
+            Iterable<RevCommit> commits = git.log().call();
+            for (RevCommit commit : commits) {
+                Long commitTime = commit.getCommitTime() * 1000L;
+                if (commitTime >= start) {
+                    commitMap.put(commit.getName(), commitTime);
+                }
+            }
+        } catch (GitAPIException e) {
+            e.getMessage();
+        }
+        return new ArrayList<>(sortByValue(commitMap).keySet());
     }
 
 

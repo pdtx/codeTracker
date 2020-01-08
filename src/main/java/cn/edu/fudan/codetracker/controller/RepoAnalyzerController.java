@@ -41,11 +41,7 @@ public class RepoAnalyzerController {
     @PostMapping(value = {"/project/auto"})
     public ResponseBean autoScan(@RequestBody JSONObject requestParam) {
         try {
-            List<String> commitList = new ArrayList<>();
-            for (Object object: requestParam.getJSONArray("commitList")) {
-                commitList.add((String)object);
-            }
-            scanService.autoScan(requestParam.getString("repoId"), requestParam.getString("branch"), commitList);
+            scanService.autoScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("beginCommit"));
             return new ResponseBean(200, "start scan", null);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);

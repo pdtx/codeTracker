@@ -11,6 +11,6 @@ public interface ScanService {
 
     void firstScan(String repoUuid, String branch, String duration);
 
-    void autoScan(String repoUuid, String branch, List<String> commitList);
+    void autoScan(String repoUuid, String branch, String beginCommit);
 
 }

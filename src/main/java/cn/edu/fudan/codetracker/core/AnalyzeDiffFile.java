@@ -795,9 +795,10 @@ public class AnalyzeDiffFile {
                 if (preStat.isMapped() || curStat.isMapped() ) {
                     return;
                 }
+                curStat.setMethodUuid(methodUuidMap.get(curStat.getMethodUuid()));
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT, curStat.getMethodUuid(), preStat.getBody());
                 if (trackerInfo == null) {
-                    log.error("StatementInfo tracker info is null! method:{}", preStat.getMethodUuid());
+                    log.error("StatementInfo tracker info is null! method:{}", curStat.getMethodUuid());
                     return;
                 }
                 curStat.setTrackerInfo(RelationShip.SELF_CHANGE.name(), trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());

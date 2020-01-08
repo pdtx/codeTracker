@@ -75,9 +75,10 @@ public class ScanServiceImpl implements ScanService {
     }
 
     @Override
-    public void autoScan(String repoUuid, String branch, List<String> commitList) {
+    public void autoScan(String repoUuid, String branch, String beginCommit) {
         String repoPath = restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
         log.info("commit size : " +  commitList.size());
         RepoInfoBuilder repoInfo;
         boolean isInit = isScan(repoUuid, branch);
