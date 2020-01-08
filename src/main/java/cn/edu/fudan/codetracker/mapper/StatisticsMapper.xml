@@ -401,6 +401,7 @@
     <!--获取method历史-->
     <resultMap id="MethodHistory" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
         <id property="commit" column="commitid"/>
+        <result property="parentCommit" column="parent_commit"/>
         <result property="committer" column="committer"/>
         <result property="commitMessage" column="commit_message"/>
         <result property="commitDate" column="commit_date"/>
@@ -412,7 +413,7 @@
     </resultMap>
 
     <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
-        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end from issueTracker.raw_method where method_uuid=#{methodUuid} and (commit_message not like "Merge%" or change_relation="ADD") order by commit_date;
+        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from issueTracker.raw_method where method_uuid=#{methodUuid} and (commit_message not like "Merge%" or change_relation="ADD") order by commit_date;
     </select>
 
 

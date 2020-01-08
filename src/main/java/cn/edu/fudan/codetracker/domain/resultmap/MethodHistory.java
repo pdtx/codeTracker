@@ -13,6 +13,7 @@ public class MethodHistory {
     private String changeRelation;
     private int methodBegin;
     private int methodEnd;
+    private String parentCommit;
 
 
     MethodHistory() {
@@ -54,4 +55,12 @@ public class MethodHistory {
     public JSONObject getDiff() { return diff; }
 
     public void setMethodEnd(int methodEnd) { this.methodEnd = methodEnd; }
+
+    public String getParentCommit() {
+        return parentCommit;
+    }
+
+    public void setParentCommit(String parentCommit) {
+        this.parentCommit = parentCommit;
+    }
 }
