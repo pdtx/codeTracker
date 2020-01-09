@@ -9,8 +9,6 @@ import cn.edu.fudan.codetracker.domain.projectinfo.StatementInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.StatementRelationInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.StatementMapper;
-import com.sun.jmx.remote.internal.ArrayQueue;
-import org.apache.kafka.common.protocol.types.Field;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -108,4 +106,7 @@ public class StatementDao {
     }
 
 
+    public TrackerInfo getTrackerInfoWithBodyUsingSplice(String methodUuid, String body) {
+        return statementMapper.getTrackerInfoWithBodyUsingSplice(methodUuid, body);
+    }
 }

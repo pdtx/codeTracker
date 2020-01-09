@@ -8,7 +8,9 @@ package cn.edu.fudan.codetracker.dao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ProxyDao {
 
     private RepoInfoBuilder repoInfo;
@@ -50,7 +52,20 @@ public class ProxyDao {
             case FIELD:
                 return fieldDao.getTrackerInfo(args[0], args[1], args[2], args[3], args[4]);
             case STATEMENT:
-                return statementDao.getTrackerInfo(args[0], args[1]);
+                TrackerInfo trackerInfo = statementDao.getTrackerInfo(args[0], args[1]);
+                if (trackerInfo == null) {
+                    try{
+                       log.warn("method: {}", args[0]);
+                       log.warn("==========================================================");
+                        System.out.println(args[1]);
+                       log.warn("==========================================================");
+                        //trackerInfo = statementDao.getTrackerInfoWithBodyUsingSplice(args[0], args[1]);
+                    }catch (Exception e) {
+                        log.error(e.getMessage());
+                        return null;
+                    }
+                }
+                return trackerInfo;
             default:
                 return null;
         }

@@ -12,8 +12,6 @@ import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.StatisticsService;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.MapKey;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -137,68 +137,70 @@ public class ScanServiceImpl implements ScanService {
     }
 
     private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
-        LineInfo lineInfo = new LineInfo();
-        lineInfo.setCommitId(commitId);
-        RepoInfoBuilder repoInfo;
+        try {
+            jGitHelper.checkout(commitId);
+            LineInfo lineInfo = new LineInfo();
+            lineInfo.setCommitId(commitId);
+            RepoInfoBuilder repoInfo;
 
-        if (analysis.getPreCommitIds().size() > 1) {
-            repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, null, null);
-            lineInfo.setImportCount(repoInfo.getImportCount());
-            lineInfo.setAddCount(0);
-            lineInfo.setDeleteCount(0);
-        } else {
-            String preCommitId = analysis.getPreCommitIds().get(0);
-            repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, preCommitId, null);
-            if (analysis.getCurFileListMap().get(preCommitId).size() == 0 &&
-                    analysis.getAddFilesListMap().get(preCommitId).size() == 0 &&
-                    analysis.getDeleteFilesListMap().get(preCommitId).size() == 0) {
+            if (analysis.getPreCommitIds().size() > 1) {
+                repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, null, null);
                 lineInfo.setImportCount(repoInfo.getImportCount());
                 lineInfo.setAddCount(0);
                 lineInfo.setDeleteCount(0);
             } else {
-                int preImportCount = lineInfoMap.get(preCommitId).getImportCount();
-                lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
-
-                int addCount = 0;
-                int deleteCount = 0;
-                int changeCount = 0;
-
-                for (String addPath : analysis.getAddFilesListMap().get(preCommitId)) {
-                    addCount += JavancssScaner.scanOneFile(addPath);
-                }
-
-                for (String deletePath : analysis.getDeleteFilesListMap().get(preCommitId)) {
-                    deleteCount += JavancssScaner.scanOneFile(deletePath);
-                }
-
-                for (String curPath : analysis.getCurFileListMap().get(preCommitId)) {
-                    changeCount += JavancssScaner.scanOneFile(curPath);
-                }
-
-                for (String prePath : analysis.getPreFileListMap().get(preCommitId)) {
-                    changeCount -= JavancssScaner.scanOneFile(prePath);
-                }
-
-                if (changeCount >= 0) {
-                    addCount += changeCount;
+                String preCommitId = analysis.getPreCommitIds().get(0);
+                repoInfo = new RepoInfoBuilder(repoUuid, commitId, repoPath, jGitHelper, branch, preCommitId, null);
+                if (analysis.getCurFileListMap().get(preCommitId).size() == 0 &&
+                        analysis.getAddFilesListMap().get(preCommitId).size() == 0 &&
+                        analysis.getDeleteFilesListMap().get(preCommitId).size() == 0) {
+                    lineInfo.setImportCount(repoInfo.getImportCount());
+                    lineInfo.setAddCount(0);
+                    lineInfo.setDeleteCount(0);
                 } else {
-                    deleteCount += (-changeCount);
+                    int preImportCount = lineInfoMap.get(preCommitId).getImportCount();
+                    lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
+
+                    int addCount = 0;
+                    int deleteCount = 0;
+                    int changeCount = 0;
+
+                    for (String addPath : analysis.getAddFilesListMap().get(preCommitId)) {
+                        addCount += JavancssScaner.scanOneFile(addPath);
+                    }
+
+                    for (String deletePath : analysis.getDeleteFilesListMap().get(preCommitId)) {
+                        deleteCount += JavancssScaner.scanOneFile(deletePath);
+                    }
+
+                    for (String curPath : analysis.getCurFileListMap().get(preCommitId)) {
+                        changeCount += JavancssScaner.scanOneFile(curPath);
+                    }
+
+                    for (String prePath : analysis.getPreFileListMap().get(preCommitId)) {
+                        changeCount -= JavancssScaner.scanOneFile(prePath);
+                    }
+
+                    if (changeCount >= 0) {
+                        addCount += changeCount;
+                    } else {
+                        deleteCount += (-changeCount);
+                    }
+
+                    lineInfo.setAddCount(addCount);
+                    lineInfo.setDeleteCount(deleteCount);
                 }
-
-                lineInfo.setAddCount(addCount);
-                lineInfo.setDeleteCount(deleteCount);
             }
-        }
-        lineInfo.setCommitter(repoInfo.getCommitter());
-        lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
-        lineInfo.setRepoUuid(repoInfo.getRepoUuid());
-        lineInfo.setBranch(repoInfo.getBranch());
+            lineInfo.setCommitter(repoInfo.getCommitter());
+            lineInfo.setCommitDate(repoInfo.getBaseInfo().getCommitDate());
+            lineInfo.setRepoUuid(repoInfo.getRepoUuid());
+            lineInfo.setBranch(repoInfo.getBranch());
 
-        int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
-        lineInfo.setLineCount(lineCount);
+            int lineCount = JavancssScaner.scanFile(repoPath) - lineInfo.getImportCount();
+            lineInfo.setLineCount(lineCount);
 
-        lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
-        try {
+            lineInfoMap.put(lineInfo.getCommitId(),lineInfo);
+
             lineInfoDao.insertLineInfo(lineInfo);
         } catch (Exception e) {
             e.printStackTrace();
@@ -218,40 +220,33 @@ public class ScanServiceImpl implements ScanService {
         // extra diff info and construct tracking relation
         MetaInfoAnalysis analysis = new MetaInfoAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
-
-        jGitHelper.checkout(commitId);
         lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
-
+        if (analysis.isMergeWithoutConflict()) {
+            return;
+        }
         // 扫描结果记录入库
-        try {
-
-            for (AnalyzeDiffFile analyzeDiffFile : analyzeDiffFiles) {
-
-                //add
-                packageDao.setAddInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.ADD.name()));
-                fileDao.setAddInfo(analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name()));
-                classDao.setAddInfo(analyzeDiffFile.getClassInfos().get(RelationShip.ADD.name()));
-                methodDao.setAddInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.ADD.name()));
-                fieldDao.setAddInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.ADD.name()));
-                statementDao.setAddInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.ADD.name()));
-                //delete
-                packageDao.setDeleteInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.DELETE.name()));
-                fileDao.setDeleteInfo(analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name()));
-                classDao.setDeleteInfo(analyzeDiffFile.getClassInfos().get(RelationShip.DELETE.name()));
-                methodDao.setDeleteInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.DELETE.name()));
-                fieldDao.setDeleteInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.DELETE.name()));
-                statementDao.setDeleteInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.DELETE.name()));
-                //change
-                packageDao.setChangeInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.CHANGE.name()));
-                fileDao.setChangeInfo(analyzeDiffFile.getFileInfos().get(RelationShip.CHANGE.name()));
-                classDao.setChangeInfo(analyzeDiffFile.getClassInfos().get(RelationShip.CHANGE.name()));
-                methodDao.setChangeInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.CHANGE.name()));
-                fieldDao.setChangeInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.CHANGE.name()));
-                statementDao.setChangeInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.CHANGE.name()));
-
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
+        for (AnalyzeDiffFile analyzeDiffFile : analyzeDiffFiles) {
+            //add
+            packageDao.setAddInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.ADD.name()));
+            fileDao.setAddInfo(analyzeDiffFile.getFileInfos().get(RelationShip.ADD.name()));
+            classDao.setAddInfo(analyzeDiffFile.getClassInfos().get(RelationShip.ADD.name()));
+            methodDao.setAddInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.ADD.name()));
+            fieldDao.setAddInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.ADD.name()));
+            statementDao.setAddInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.ADD.name()));
+            //delete
+            packageDao.setDeleteInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.DELETE.name()));
+            fileDao.setDeleteInfo(analyzeDiffFile.getFileInfos().get(RelationShip.DELETE.name()));
+            classDao.setDeleteInfo(analyzeDiffFile.getClassInfos().get(RelationShip.DELETE.name()));
+            methodDao.setDeleteInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.DELETE.name()));
+            fieldDao.setDeleteInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.DELETE.name()));
+            statementDao.setDeleteInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.DELETE.name()));
+            //change
+            packageDao.setChangeInfo(analyzeDiffFile.getPackageInfos().get(RelationShip.CHANGE.name()));
+            fileDao.setChangeInfo(analyzeDiffFile.getFileInfos().get(RelationShip.CHANGE.name()));
+            classDao.setChangeInfo(analyzeDiffFile.getClassInfos().get(RelationShip.CHANGE.name()));
+            methodDao.setChangeInfo(analyzeDiffFile.getMethodInfos().get(RelationShip.CHANGE.name()));
+            fieldDao.setChangeInfo(analyzeDiffFile.getFieldInfos().get(RelationShip.CHANGE.name()));
+            statementDao.setChangeInfo(analyzeDiffFile.getStatementInfos().get(RelationShip.CHANGE.name()));
         }
 
     }

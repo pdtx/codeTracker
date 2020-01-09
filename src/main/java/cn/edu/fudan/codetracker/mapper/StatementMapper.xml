@@ -172,4 +172,7 @@
         select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1;
     </select>
 
+    <select id="getTrackerInfoWithBodyUsingSplice" resultMap="trackerInfo" parameterType="String">
+        select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
+    </select>
 </mapper>

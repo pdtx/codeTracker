@@ -23,4 +23,5 @@ public interface StatementMapper {
 
     TrackerInfo getTrackerInfo(@Param("methodUuid") String methodUuid, @Param("body") String body);
 
+    TrackerInfo getTrackerInfoWithBodyUsingSplice(@Param("methodUuid")String methodUuid, @Param("body") String body);
 }
