@@ -295,13 +295,21 @@ public class AnalyzeDiffFile {
             preMethodInfo = methodInfo;
             curMethodInfo = (MethodInfo) preMethodInfo.getMappingNode();
         }
-        curMethodInfo.getDiff().getJSONArray("data").add(oneDiff.getDiffJson());
+        if (curMethodInfo != null) {
+            curMethodInfo.getDiff().getJSONArray("data").add(oneDiff.getDiffJson());
+        } else {
+            log.error("getDiff or oneDiff is null");
+            return null;
+        }
         if (methodInfo.isMapped()) {
             return null;
         }
         preMethodInfo.setMapped(true);
         curMethodInfo.setMapped(true);
         TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)preMethodInfo.getParent()).getFilePath(), ((ClassInfo)preMethodInfo.getParent()).getClassName(), preMethodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
+        if (trackerInfoNullHandler(trackerInfo, ExceptionMessage.METHOD_TRACKER_INFO_NULL)) {
+            return null;
+        }
         curMethodInfo.setTrackerInfo(relation, trackerInfo.getVersion() + 1, trackerInfo.getRootUUID());
         if (! methodUuidMap.keySet().contains(curMethodInfo.getUuid())) {
             methodUuidMap.put(curMethodInfo.getUuid(), trackerInfo.getRootUUID());
