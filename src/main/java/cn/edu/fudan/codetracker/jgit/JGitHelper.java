@@ -8,18 +8,16 @@ package cn.edu.fudan.codetracker.jgit;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.springframework.beans.factory.annotation.Value;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +31,9 @@ import java.util.stream.Stream;
 public class JGitHelper {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-
+    private static final int MERGE_WITH_CONFLICT = -1;
+    private static final int MERGE_WITHOUT_CONFLICT = 2;
+    private static final int NOT_MERGE = 1;
     private Repository repository;
     private RevWalk revWalk;
     private Git git;
@@ -58,27 +58,20 @@ public class JGitHelper {
         }
     }
 
-    public void checkout(String version) {
+    public void checkout(String commit) {
         try {
             git.reset().setMode(ResetCommand.ResetType.HARD).call();
             CheckoutCommand checkoutCommand = git.checkout();
-            checkoutCommand.setName(version).call();
+            checkoutCommand.setName(commit).call();
         } catch (Exception e) {
-            try {
-                git.reset().setMode(ResetCommand.ResetType.HARD).call();
-                CheckoutCommand checkoutCommand = git.checkout();
-                checkoutCommand.setName(version).call();
-            }catch (Exception e1) {
-                log.error("JGitHelper second checkout error:{}", e1.getMessage());
-            }
             log.error("JGitHelper checkout error:{} ", e.getMessage());
         }
     }
 
-    public String getAuthorName(String version) {
+    public String getAuthorName(String commit) {
         String authorName = null;
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             authorName = revCommit.getAuthorIdent().getName();
         }catch (Exception e) {
             e.printStackTrace();
@@ -86,11 +79,11 @@ public class JGitHelper {
         return authorName;
     }
 
-    public String getCommitTime(String version) {
+    public String getCommitTime(String commit) {
         String time = null;
         final String format = "yyyy-MM-dd HH:mm:ss";
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             int t = revCommit.getCommitTime() ;
             long timestamp = Long.parseLong(String.valueOf(t)) * 1000;
             time = new java.text.SimpleDateFormat(format).format(new java.util.Date(timestamp));
@@ -100,11 +93,10 @@ public class JGitHelper {
         return time;
     }
 
-    public Long getLongCommitTime(String version) {
+    private Long getLongCommitTime(String version) {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
-            long timestamp = revCommit.getCommitTime() * 1000L;
-            return timestamp;
+            return revCommit.getCommitTime() * 1000L;
         }catch (Exception e) {
             e.printStackTrace();
             return 0L;
@@ -112,10 +104,10 @@ public class JGitHelper {
     }
 
 
-    public String getMess(String version) {
+    public String getMess(String commit) {
         String message = null;
         try {
-            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             message = revCommit.getFullMessage();
         }catch (Exception e) {
             e.printStackTrace();
@@ -129,78 +121,7 @@ public class JGitHelper {
             repository.close();
         }
     }
-
-
-    public Repository openJGitRepository(String repoPath) throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-
-        return builder.setGitDir(new File(repoPath))
-                .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
-                .build();
-    }
-
-    public Repository createNewRepository() throws IOException {
-        // prepare a new folder
-        File localPath = File.createTempFile("TestGitRepository", "");
-        if(!localPath.delete()) {
-            throw new IOException("Could not delete temporary file " + localPath);
-        }
-
-        // create the directory
-        Repository repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
-        repository.create();
-
-        return repository;
-    }
-
-    public void gitCheckout(String repoDir, String version) {
-
-        File RepoGitDir = new File(repoDir + "\\.git");
-        if (!RepoGitDir.exists()) {
-            System.out.println("Error! Not Exists : " + RepoGitDir.getAbsolutePath());
-            //logger.info("Error! Not Exists : " + RepoGitDir.getAbsolutePath());
-        } else {
-            Repository repo = null;
-            try {
-                repo = new FileRepository(RepoGitDir.getAbsolutePath());
-                Git git = new Git(repo);
-                CheckoutCommand checkout = git.checkout();
-                checkout.setName(version);
-                checkout.call();
-                System.out.println("Checkout to " + version);
-                //logger.info("Checkout to " + version);
-
-                PullCommand pullCmd = git.pull();
-                pullCmd.call();
-                System.out.println("Pulled from remote repository to local repository at " + repo.getDirectory());
-                //logger.info();
-            } catch (Exception e) {
-                System.out.println(e.getMessage() + " : " + RepoGitDir.getAbsolutePath());
-                //logger.info(e.getMessage() + " : " + RepoGitDir.getAbsolutePath());
-            } finally {
-                if (repo != null) {
-                    repo.close();
-                }
-            }
-        }
-    }
-
-
-    public static void main(String[] args) {
-        String a = "aaaa";
-        //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
-        //String repoPath = "E:\\Lab\\iec-wepm-develop";
-        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
-        //String commitId = "56ecb887353075ff557638843e234a8411b5fb8c";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-//        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
-        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
-            System.out.println(s);
-            jGitHelper.checkout(s);
-        }
-    }
-
+    
 
     public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit) {
         checkout(branchName);
@@ -276,8 +197,83 @@ public class JGitHelper {
         }catch (ParseException e) {
             e.getMessage();
         }
-
         return 0;
+    }
+
+    public String[] getCommitParents(String commit) {
+        try {
+            RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(commit));
+            RevCommit[] parentCommits = revCommit.getParents();
+            String[] result = new String[parentCommits.length];
+            for (int i = 0; i < parentCommits.length; i++) {
+                result[i] = parentCommits[i].getName();
+            }
+            return result;
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public Map<String, List<DiffEntry>> getMappedFileList(String commit) {
+        Map<String, List<DiffEntry>> result = new HashMap<>(8);
+        try {
+            RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
+            RevCommit[] parentCommits = currCommit.getParents();
+            for (RevCommit p : parentCommits) {
+                RevCommit parentCommit = revWalk.parseCommit(ObjectId.fromString(p.getName()));
+                ObjectReader reader = git.getRepository().newObjectReader();
+                CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
+                currTreeIter.reset(reader, currCommit.getTree().getId());
+
+                CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
+                parentTreeIter.reset(reader, parentCommit.getTree().getId());
+                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+                diffFormatter.setRepository(git.getRepository());
+                List<DiffEntry> entries = diffFormatter.scan(currTreeIter, parentTreeIter);
+                result.put(parentCommit.getName(), entries);
+            }
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int mergeJudgment(String commit) {
+        Map<String, List<DiffEntry>> diffList = getMappedFileList(commit);
+        if (diffList.keySet().size() == NOT_MERGE) {
+            return NOT_MERGE;
+        }
+        Set<String> stringSet = new HashSet<>();
+        boolean isFirst = true;
+        for (List<DiffEntry> diffEntryList : diffList.values()) {
+            for (DiffEntry diffEntry : diffEntryList) {
+                if (isFirst) {
+                    stringSet.add(diffEntry.getOldPath());
+                } else if (stringSet.contains(diffEntry.getOldPath())){
+                    return MERGE_WITH_CONFLICT;
+                }
+            }
+            isFirst = false;
+        }
+        return MERGE_WITHOUT_CONFLICT;
+    }
+
+    public static void main(String[] args) {
+        //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
+        //String repoPath = "E:\\Lab\\iec-wepm-develop";
+        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
+        String commitId = "dd0397bd851369b219b8c89defaf84e5339ecaf0";
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        String s[] = jGitHelper.getCommitParents(commitId);
+        int m = jGitHelper.mergeJudgment(commitId);
+        System.out.println(m);
+//        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
+//        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
+//            System.out.println(s);
+//            jGitHelper.checkout(s);
+//        }
     }
 
 }
