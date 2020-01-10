@@ -188,6 +188,7 @@ public class JGitHelper {
 
 
     public static void main(String[] args) {
+        String a = "aaaa";
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
         String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";

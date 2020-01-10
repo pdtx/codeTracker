@@ -54,23 +54,8 @@ public class ScanServiceImpl implements ScanService {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         log.info("commit size : " +  commitList.size());
-        RepoInfoBuilder repoInfo;
         boolean isInit = false;
-        int num = 0;
-        for (String commit : commitList) {
-            ++num;
-            log.info("start commit：" + num  + "  " + commit);
-            if (isInit) {
-                scan(repoUuid , commit, branch, jGitHelper, repoPath);
-            } else {
-                jGitHelper.checkout(commit);
-                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
-                repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
-                saveData(repoInfo);
-                isInit = true;
-                lineCountFirstScan(repoInfo, repoPath);
-            }
-        }
+        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
@@ -80,8 +65,36 @@ public class ScanServiceImpl implements ScanService {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
         log.info("commit size : " +  commitList.size());
+        Boolean isInit = false;
+        String commitId = findScanLatest(repoUuid, branch);
+        if (commitId != null) {
+            isInit = true;
+            if (jGitHelper.getLongCommitTime(commitId) > jGitHelper.getLongCommitTime(beginCommit)) {
+                log.error("beginCommit error");
+                return;
+            }
+        }
+        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        restInterface.freeRepo(repoUuid, repoPath);
+    }
+
+    @Override
+    public void autoUpdate(String repoUuid, String branch) {
+        String repoPath = restInterface.getRepoPath(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        Boolean isInit = false;
+        String commitId = findScanLatest(repoUuid, branch);
+        if (commitId != null) {
+            isInit = true;
+        }
+        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId);
+        log.info("commit size : " +  commitList.size());
+        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        restInterface.freeRepo(repoUuid, repoPath);
+    }
+
+    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, Boolean isInit) {
         RepoInfoBuilder repoInfo;
-        boolean isInit = isScan(repoUuid, branch);
         int num = 0;
         for (String commit : commitList) {
             ++num;
@@ -97,22 +110,16 @@ public class ScanServiceImpl implements ScanService {
                 lineCountFirstScan(repoInfo, repoPath);
             }
         }
-        restInterface.freeRepo(repoUuid, repoPath);
     }
 
     /**
-     * 判断项目是否扫描过，扫描过返回true，否则返回false
+     * 返回库里扫描过最新的commitId
      * @param repoUuid
      * @param branch
      * @return
      */
-    private Boolean isScan(String repoUuid, String branch) {
-        String uuid = packageDao.findIsScan(repoUuid, branch);
-        if (uuid == null) {
-            return false;
-        } else {
-            return true;
-        }
+    private String findScanLatest(String repoUuid, String branch) {
+        return packageDao.findScanLatest(repoUuid, branch);
     }
 
     private void lineCountFirstScan(RepoInfoBuilder repoInfo,String repoPath) {
@@ -289,7 +296,7 @@ public class ScanServiceImpl implements ScanService {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
-        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        return "/app/fudan/issuetracker/user/issueTracker/repo/gitlab/open_api/openapi-admin-master_duplicate_fdse-0";
     }
 
     /**

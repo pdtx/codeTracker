@@ -70,8 +70,8 @@ public class PackageDao {
     /**
      * 判断某个repo的某个branch是否扫描过
      */
-    public String findIsScan(String repoUuid, String branch) {
-        return packageMapper.findIsScan(repoUuid, branch);
+    public String findScanLatest(String repoUuid, String branch) {
+        return packageMapper.findScanLatest(repoUuid, branch);
     }
 
 }

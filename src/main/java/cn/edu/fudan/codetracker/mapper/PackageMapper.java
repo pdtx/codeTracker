@@ -23,5 +23,5 @@ public interface PackageMapper {
     /**
      * 判断某个repo的某个branch是否扫描过
      */
-    String findIsScan(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    String findScanLatest(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

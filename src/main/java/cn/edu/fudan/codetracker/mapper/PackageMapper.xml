@@ -116,12 +116,12 @@
     </update>
 
     <resultMap id="ScanInfo" type="String">
-        <id property="uuid" column="uuid"/>
+        <id property="commitId" column="commitid"/>
     </resultMap>
 
     <!--判断某个repo的某个branch是否扫描过-->
-    <select id="findIsScan" parameterType="String" resultMap="ScanInfo">
-        select uuid from issueTracker.meta_package where repo_uuid = #{repoUuid} and branch = #{branch} limit 1;
+    <select id="findScanLatest" parameterType="String" resultMap="ScanInfo">
+        select commitid from issueTracker.raw_package where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date desc limit 1;
     </select>
 
 </mapper>
