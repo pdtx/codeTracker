@@ -93,7 +93,7 @@ public class JGitHelper {
         return time;
     }
 
-    private Long getLongCommitTime(String version) {
+    public Long getLongCommitTime(String version) {
         try {
             RevCommit revCommit = revWalk.parseCommit(ObjectId.fromString(version));
             return revCommit.getCommitTime() * 1000L;
@@ -121,9 +121,9 @@ public class JGitHelper {
             repository.close();
         }
     }
-    
 
-    public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit) {
+
+    public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit, Boolean isUpdate) {
         checkout(branchName);
         Map<String, Long> commitMap = new HashMap<>(512);
         Long start = getLongCommitTime(beginCommit);
@@ -134,9 +134,16 @@ public class JGitHelper {
             Iterable<RevCommit> commits = git.log().call();
             for (RevCommit commit : commits) {
                 Long commitTime = commit.getCommitTime() * 1000L;
-                if (commitTime >= start) {
-                    commitMap.put(commit.getName(), commitTime);
+                if (isUpdate) {
+                    if (commitTime > start) {
+                        commitMap.put(commit.getName(), commitTime);
+                    }
+                } else {
+                    if (commitTime >= start) {
+                        commitMap.put(commit.getName(), commitTime);
+                    }
                 }
+
             }
         } catch (GitAPIException e) {
             e.getMessage();
