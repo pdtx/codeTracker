@@ -63,18 +63,14 @@ public class ScanServiceImpl implements ScanService {
     public void autoScan(String repoUuid, String branch, String beginCommit) {
         String repoPath = restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
-        log.info("commit size : " +  commitList.size());
-        Boolean isInit = false;
         String commitId = findScanLatest(repoUuid, branch);
         if (commitId != null) {
-            isInit = true;
-            if (jGitHelper.getLongCommitTime(commitId) > jGitHelper.getLongCommitTime(beginCommit)) {
-                log.error("beginCommit error");
-                return;
-            }
+            log.error("First Scan Error: this repo has already been scanned!");
+            return;
         }
-        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
+        log.info("commit size : " +  commitList.size());
+        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
@@ -82,14 +78,14 @@ public class ScanServiceImpl implements ScanService {
     public void autoUpdate(String repoUuid, String branch) {
         String repoPath = restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        Boolean isInit = false;
         String commitId = findScanLatest(repoUuid, branch);
-        if (commitId != null) {
-            isInit = true;
+        if (commitId == null) {
+            log.error("Update Scan Error: this repo hasn't been scanned!");
+            return;
         }
-        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
-        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, true);
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
@@ -296,7 +292,7 @@ public class ScanServiceImpl implements ScanService {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
-        return "/app/fudan/issuetracker/user/issueTracker/repo/gitlab/open_api/openapi-admin-master_duplicate_fdse-0";
+        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
     }
 
     /**
