@@ -89,7 +89,7 @@ public class ScanServiceImpl implements ScanService {
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
-    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, Boolean isInit) {
+    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
         RepoInfoBuilder repoInfo;
         int num = 0;
         for (String commit : commitList) {
@@ -224,7 +224,7 @@ public class ScanServiceImpl implements ScanService {
         MetaInfoAnalysis analysis = new MetaInfoAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
         lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
-        if (analysis.isMergeWithoutConflict()) {
+        if (analysis.getMergeNum() != JGitHelper.getNotMerge()) {
             return;
         }
         // 扫描结果记录入库

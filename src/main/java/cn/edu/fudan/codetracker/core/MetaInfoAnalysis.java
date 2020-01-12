@@ -33,7 +33,7 @@ public class MetaInfoAnalysis {
     private JGitHelper jGitHelper;
     private int changeImportCount;
     private List<String> preCommitIds;
-    private boolean isMergeWithoutConflict;
+    private int mergeNum;
     /**
      * key commit; value list
      */
@@ -183,13 +183,8 @@ public class MetaInfoAnalysis {
             changeImportCount = addRepoInfo.getImportCount() - deleteRepoInfo.getImportCount() - preRepoInfo.getImportCount() + curRepoInfo.getImportCount();
             preCommitIds.add(preCommit);
         }
-        isMergeWithoutConflict = isMergeWithoutConflict(preCommits.size());
+        mergeNum = jGitHelper.mergeJudgment(commitId) ;
         return analyzeDiffFiles;
-    }
-
-    private boolean isMergeWithoutConflict(int size) {
-        String mergeMess = "Merge";
-        return size > 1 && jGitHelper.getMess(commitId).startsWith(mergeMess);
     }
 
     private String pathUnixToWin(String path) {
@@ -234,7 +229,7 @@ public class MetaInfoAnalysis {
         return deleteFilesListMap;
     }
 
-    public boolean isMergeWithoutConflict() {
-        return isMergeWithoutConflict;
+    public int getMergeNum() {
+        return mergeNum;
     }
 }

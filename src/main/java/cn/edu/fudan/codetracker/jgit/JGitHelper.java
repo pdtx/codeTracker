@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.FooterLine;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -273,6 +274,7 @@ public class JGitHelper {
         String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
         String commitId = "dd0397bd851369b219b8c89defaf84e5339ecaf0";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
+        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
         String s[] = jGitHelper.getCommitParents(commitId);
         int m = jGitHelper.mergeJudgment(commitId);
         System.out.println(m);
@@ -283,4 +285,16 @@ public class JGitHelper {
 //        }
     }
 
+
+    public static int getMergeWithConflict() {
+        return MERGE_WITH_CONFLICT;
+    }
+
+    public static int getMergeWithoutConflict() {
+        return MERGE_WITHOUT_CONFLICT;
+    }
+
+    public static int getNotMerge() {
+        return NOT_MERGE;
+    }
 }
