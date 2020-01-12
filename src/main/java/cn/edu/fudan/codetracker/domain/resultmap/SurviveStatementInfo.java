@@ -8,6 +8,8 @@ public class SurviveStatementInfo {
     private String committer;
     private String commitDate;
     private String changeRelation;
+    private String commit;
+    private String body;
 
     SurviveStatementInfo() {
 
@@ -43,6 +45,22 @@ public class SurviveStatementInfo {
 
     public void setChangeRelation(String changeRelation) {
         this.changeRelation = changeRelation;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public void setCommit(String commit) {
+        this.commit = commit;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
 }

@@ -429,4 +429,18 @@
         select statement_uuid, committer, commit_date, change_relation from issueTracker.raw_statement where commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and (change_relation = "ADD" OR change_relation = "DELETE" OR change_relation = "SELF_CHANGE") and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
     </select>
 
+
+    <!--获取语句所有切片-->
+    <resultMap id="StatementHistory" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="commit" column="commitid"/>
+        <result property="committer" column="committer"/>
+        <result property="body" column="body"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="statementUuid" column="statement_uuid"/>
+    </resultMap>
+
+    <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
+        select statement_uuid, commitid, committer, body, change_relation from issueTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from issueTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
+    </select>
+
 </mapper>

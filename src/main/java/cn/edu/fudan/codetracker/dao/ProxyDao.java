@@ -59,7 +59,8 @@ public class ProxyDao {
                        log.warn("==========================================================");
                         System.out.println(args[1]);
                        log.warn("==========================================================");
-                        //trackerInfo = statementDao.getTrackerInfoWithBodyUsingSplice(args[0], args[1]);
+//                        String body = "'" + args[1] + "'";
+//                       trackerInfo = statementDao.getTrackerInfoWithBodyUsingSplice(args[0], body);
                     }catch (Exception e) {
                         log.error(e.getMessage());
                         return null;

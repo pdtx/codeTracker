@@ -9,15 +9,14 @@ import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.StatisticsService;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -305,6 +304,28 @@ public class StatisticsController {
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    /**
+     * 获取语句历史
+     * @param requestParam 包括methodUuid,以及语句body的数组
+     * @return
+     */
+    @PostMapping(value = {"/statistics/statement/history"})
+    public ResponseBean getStatementHistory(@RequestBody JSONObject requestParam) {
+        try {
+            String methodUuid = requestParam.getString("methodUuid");
+            List<String> bodyList = new ArrayList<>();
+            for (Object obj : requestParam.getJSONArray("statementList")) {
+                bodyList.add(obj.toString());
+            }
+            Map<String,List<SurviveStatementInfo>> data = statisticsService.getStatementHistory(methodUuid, bodyList);
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseBean(401, e.getMessage(), null);
         }
     }

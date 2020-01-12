@@ -236,6 +236,18 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
 
+    @Override
+    public Map<String,List<SurviveStatementInfo>> getStatementHistory(String methodUuid, List<String> statementBodyList) {
+        Map<String,List<SurviveStatementInfo>> statementHistoryMap = new HashMap<>(5);
+        for (String body : statementBodyList) {
+            String queryBody = body + "%";
+            List<SurviveStatementInfo> statementInfoList = statisticsDao.getStatementHistory(methodUuid, queryBody);
+            statementHistoryMap.put(body, statementInfoList);
+        }
+        return statementHistoryMap;
+    }
+
+
 
 
     /**

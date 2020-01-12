@@ -51,5 +51,8 @@ public interface StatisticsService {
      */
     Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
 
-
+    /**
+     * 获取语句历史
+     */
+    Map<String,List<SurviveStatementInfo>> getStatementHistory(String methodUuid, List<String> statementBodyList);
 }

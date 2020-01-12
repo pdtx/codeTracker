@@ -393,4 +393,11 @@ public class StatisticsDao {
         }
     }
 
+    /**
+     * 获取语句历史切片
+     */
+    public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body) {
+        return statisticsMapper.getStatementHistory(methodUuid, body);
+    }
+
 }

@@ -276,4 +276,10 @@ public interface StatisticsMapper {
      */
     List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
+
+    /**
+     * 获取语句历史切片
+     */
+    List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body);
+
 }
