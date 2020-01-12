@@ -65,7 +65,7 @@ public class ScanServiceImpl implements ScanService {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit);
         log.info("commit size : " +  commitList.size());
-        Boolean isInit = false;
+        boolean isInit = false;
         String commitId = findScanLatest(repoUuid, branch);
         if (commitId != null) {
             isInit = true;
@@ -82,7 +82,7 @@ public class ScanServiceImpl implements ScanService {
     public void autoUpdate(String repoUuid, String branch) {
         String repoPath = restInterface.getRepoPath(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        Boolean isInit = false;
+        boolean isInit = false;
         String commitId = findScanLatest(repoUuid, branch);
         if (commitId != null) {
             isInit = true;
@@ -93,7 +93,7 @@ public class ScanServiceImpl implements ScanService {
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
-    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, Boolean isInit) {
+    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
         RepoInfoBuilder repoInfo;
         int num = 0;
         for (String commit : commitList) {
@@ -228,7 +228,7 @@ public class ScanServiceImpl implements ScanService {
         MetaInfoAnalysis analysis = new MetaInfoAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
         lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
-        if (analysis.isMergeWithoutConflict()) {
+        if (analysis.getMergeNum() != JGitHelper.getNotMerge()) {
             return;
         }
         // 扫描结果记录入库
