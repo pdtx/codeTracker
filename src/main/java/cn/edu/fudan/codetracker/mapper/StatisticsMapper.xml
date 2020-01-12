@@ -90,19 +90,19 @@
     </resultMap>
 
     <select id="getMostDevelopersInvolvedMethod" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.method_uuid as uuid,r.fullname as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m  where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.method_uuid  order by quantity desc;
+        select r.method_uuid as uuid,r.fullname as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m  where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.method_uuid order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedClass" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.class_uuid as uuid,r.fullname as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.class_uuid  order by quantity desc;
+        select r.class_uuid as uuid,r.fullname as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.class_uuid  order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedFile" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.file_uuid as uuid ,r.file_name as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.meta_file as m  where r.file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.file_uuid  order by quantity desc;
+        select r.file_uuid as uuid ,r.file_name as name,m.file_path,count(distinct(r.committer)) as quantity from issueTracker.raw_file as r,issueTracker.meta_file as m  where r.file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.file_uuid  order by quantity desc;
     </select>
 
     <select id="getMostDevelopersInvolvedPackage" parameterType="String" resultMap="mostDevelopersInfo">
-        select r.root_uuid as uuid ,m.package_name as name,count(distinct(r.committer)) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_message not like "Merge%" group by r.root_uuid  order by quantity desc;
+        select r.root_uuid as uuid ,m.package_name as name,count(distinct(r.committer)) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} group by r.root_uuid  order by quantity desc;
     </select>
 
     <!-- -->
@@ -153,19 +153,19 @@
     </resultMap>
 
     <select id="packageDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.root_uuid as uuid, r.repo_uuid, r.branch, m.package_name as name , count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m where r.root_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.root_uuid order by quantity desc limit 20;
+        select r.root_uuid as uuid, r.repo_uuid, r.branch, m.package_name as name , count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m where r.root_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.root_uuid order by quantity desc limit 20;
     </select>
 
     <select id="fileDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.file_uuid as uuid, r.repo_uuid, r.branch, r.file_name as name , m.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.meta_file as m where r.file_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.file_uuid order by quantity desc limit 20;
+        select r.file_uuid as uuid, r.repo_uuid, r.branch, r.file_name as name , m.file_path,count(*) as quantity from issueTracker.raw_file as r,issueTracker.meta_file as m where r.file_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.file_uuid order by quantity desc limit 20;
     </select>
 
     <select id="classDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.class_uuid as uuid, r.repo_uuid, r.branch, r.class_name as name , m.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m where r.class_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.class_uuid order by quantity desc limit 20;
+        select r.class_uuid as uuid, r.repo_uuid, r.branch, r.class_name as name , m.file_path,count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m where r.class_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.class_uuid order by quantity desc limit 20;
     </select>
 
     <select id="methodDeveloperFocusMost" parameterType="String" resultMap="developerFocusMost">
-        select r.method_uuid as uuid, r.repo_uuid, r.branch, r.fullname as name , m.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.commit_message not like "Merge%" group by r.method_uuid order by quantity desc limit 20;
+        select r.method_uuid as uuid, r.repo_uuid, r.branch, r.fullname as name , m.file_path,count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid = m.uuid and r.committer = #{committer} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} group by r.method_uuid order by quantity desc limit 20;
     </select>
 
     <!-- -->
@@ -174,19 +174,19 @@
     </resultMap>
 
     <select id="getCommitMessageByPackageId" parameterType="String" resultMap="CommitMessageInfo">
-        select commit_message from issueTracker.raw_package where root_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+        select commit_message from issueTracker.raw_package where root_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate};
     </select>
 
     <select id="getCommitMessageByFileId" parameterType="String" resultMap="CommitMessageInfo">
-        select commit_message from issueTracker.raw_file where file_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+        select commit_message from issueTracker.raw_file where file_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate};
     </select>
 
     <select id="getCommitMessageByClassId" parameterType="String" resultMap="CommitMessageInfo">
-        select commit_message from issueTracker.raw_method where class_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+        select commit_message from issueTracker.raw_method where class_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate};
     </select>
 
     <select id="getCommitMessageByMethodId" parameterType="String" resultMap="CommitMessageInfo">
-        select commit_message from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+        select commit_message from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate};
     </select>
 
     <!-- -->
@@ -195,7 +195,7 @@
     </resultMap>
 
     <select id="getContentByMethodId" parameterType="String" resultMap="ContentInfo">
-        select content from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%";
+        select content from issueTracker.raw_method where method_uuid = #{uuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate};
     </select>
 
 
@@ -209,19 +209,19 @@
     </resultMap>
 
     <select id="packageCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_package where root_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_package where root_uuid = #{uuid} order by commit_date;
     </select>
 
     <select id="fileCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_file where file_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_file where file_uuid = #{uuid} order by commit_date;
     </select>
 
     <select id="classCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_class where class_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_class where class_uuid = #{uuid} order by commit_date;
     </select>
 
     <select id="methodCommitTimeLine" parameterType="String" resultMap="commitTimeLine">
-        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_method where method_uuid = #{uuid} and commit_message not like "Merge%" order by commit_date;
+        select commitid,committer,commit_date,change_relation,commit_message from issueTracker.raw_method where method_uuid = #{uuid} order by commit_date;
     </select>
 
     <!-- -->
@@ -232,7 +232,7 @@
     </resultMap>
 
     <select id="getCommitInfoByCommitter" parameterType="String" resultMap="commitInfoByCommitter">
-        select distinct commitid,commit_date,commit_message from issueTracker.raw_method where committer = #{committer} and commit_message not like "Merge%" order by commit_date;
+        select distinct commitid,commit_date,commit_message from issueTracker.raw_method where committer = #{committer} order by commit_date;
     </select>
 
     <!-- -->
@@ -296,7 +296,7 @@
     </resultMap>
 
     <select id="getStatementInfoByMethod" parameterType="String" resultMap="StatementInfoByMethod">
-        select statement_uuid, committer, commit_date, commit_message, change_relation, body, statement_begin, statement_end from issueTracker.raw_statement where method_uuid = #{methodUuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} and commit_message not like "Merge%" order by commit_date, statement_begin, statement_end desc;
+        select statement_uuid, committer, commit_date, commit_message, change_relation, body, statement_begin, statement_end from issueTracker.raw_statement where method_uuid = #{methodUuid} and committer = #{committer} and commit_date &gt; #{beginDate} and commit_date &lt; #{endDate} order by commit_date, statement_begin, statement_end desc;
     </select>
 
     <!-- -->
@@ -305,36 +305,36 @@
     </resultMap>
 
     <select id="getChangeCommitterByClass" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_class as r, issueTracker.meta_class as m where r.class_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.class_name = #{className} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_class as r, issueTracker.meta_class as m where r.class_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.class_name = #{className} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByMethod" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByField" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_field as r, issueTracker.meta_field as m where r.field_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.simple_name = #{simpleName} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_field as r, issueTracker.meta_field as m where r.field_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.simple_name = #{simpleName} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByStatement" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") and commit_message not like "Merge%" order by commit_date desc limit 1;
+        select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") order by commit_date desc limit 1;
     </select>
 
     <!--起始时间是参数，结束时间为版本时间-->
     <select id="getChangeCommitterByClassDate" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_class as r, issueTracker.meta_class as m where r.class_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.class_name = #{className} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_class as r, issueTracker.meta_class as m where r.class_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.class_name = #{className} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByMethodDate" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByFieldDate" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_field as r, issueTracker.meta_field as m where r.field_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.simple_name = #{simpleName} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select committer from issueTracker.raw_field as r, issueTracker.meta_field as m where r.field_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.simple_name = #{simpleName} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <select id="getChangeCommitterByStatementDate" parameterType="String" resultMap="ChangeCommitter">
-        select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and commit_date &gt;= #{beginDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") and commit_message not like "Merge%" order by commit_date desc limit 1;
+        select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and commit_date &gt;= #{beginDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") order by commit_date desc limit 1;
     </select>
 
     <!-- -->
@@ -343,12 +343,12 @@
     </resultMap>
 
     <select id="getMetaMethodUuidByMethod" parameterType="String" resultMap="MetaMethodUuid">
-        select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
     <!--时间段筛选-->
     <select id="getMetaMethodUuidByMethodDate" parameterType="String" resultMap="MetaMethodUuid">
-        select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") and r.commit_message not like "Merge%" order by r.commit_date desc limit 1;
+        select method_uuid from issueTracker.raw_method as r, issueTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
 
@@ -374,7 +374,7 @@
     </resultMap>
 
     <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and r.commit_message not like "Merge%" and r.change_relation != "ADD" group by r.root_uuid order by quantity desc limit 5;
+        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from issueTracker.raw_package as r,issueTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and r.change_relation != "ADD" group by r.root_uuid order by quantity desc limit 5;
     </select>
 
     <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -385,7 +385,7 @@
     </resultMap>
 
     <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.commit_message not like "Merge%" and r.change_relation != "ADD" group by r.class_uuid order by quantity desc limit 5;
+        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from issueTracker.raw_class as r,issueTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation != "ADD" group by r.class_uuid order by quantity desc limit 5;
     </select>
 
     <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -395,7 +395,7 @@
     </resultMap>
 
     <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
-        select r.method_uuid, r.signature, count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.commit_message not like "Merge%" and r.change_relation != "ADD" group by r.method_uuid order by quantity desc limit 5;
+        select r.method_uuid, r.signature, count(*) as quantity from issueTracker.raw_method as r,issueTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation != "ADD" group by r.method_uuid order by quantity desc limit 5;
     </select>
 
     <!--获取method历史-->
@@ -413,7 +413,7 @@
     </resultMap>
 
     <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
-        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from issueTracker.raw_method where method_uuid=#{methodUuid} and (commit_message not like "Merge%" or change_relation="ADD") order by commit_date;
+        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from issueTracker.raw_method where method_uuid=#{methodUuid} order by commit_date;
     </select>
 
 
