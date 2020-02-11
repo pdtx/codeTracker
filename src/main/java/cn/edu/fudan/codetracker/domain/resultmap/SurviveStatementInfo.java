@@ -10,6 +10,8 @@ public class SurviveStatementInfo {
     private String changeRelation;
     private String commit;
     private String body;
+    private int begin;
+    private int end;
 
     SurviveStatementInfo() {
 
@@ -61,6 +63,22 @@ public class SurviveStatementInfo {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public int getBegin() {
+        return begin;
+    }
+
+    public void setBegin(int begin) {
+        this.begin = begin;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public void setEnd(int end) {
+        this.end = end;
     }
 
 }

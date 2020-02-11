@@ -437,10 +437,12 @@
         <result property="body" column="body"/>
         <result property="changeRelation" column="change_relation"/>
         <result property="statementUuid" column="statement_uuid"/>
+        <result property="begin" column="statement_begin"/>
+        <result property="end" column="statement_end"/>
     </resultMap>
 
     <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select statement_uuid, commitid, committer, body, change_relation from issueTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from issueTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
+        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from issueTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from issueTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
     </select>
 
 </mapper>
