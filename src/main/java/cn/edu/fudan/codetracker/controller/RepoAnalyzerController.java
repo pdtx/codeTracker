@@ -8,13 +8,13 @@ package cn.edu.fudan.codetracker.controller;
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.service.ScanService;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@Slf4j
 @RestController
 @EnableAutoConfiguration
 public class RepoAnalyzerController {
@@ -28,7 +28,12 @@ public class RepoAnalyzerController {
     @PostMapping(value = {"/project"})
     public ResponseBean scan(@RequestBody JSONObject requestParam) {
         try {
-            scanService.firstScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("duration"));
+            String status = scanService.getScanStatus(requestParam.getString("repoId"), requestParam.getString("branch"));
+            if (status == null || !status.equals("scanning")) {
+                scanService.firstScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("duration"));
+            } else {
+                log.info(requestParam.getString("repoId") + ":已在扫描中");
+            }
             return new ResponseBean(200, "start scan", null);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);
@@ -36,17 +41,45 @@ public class RepoAnalyzerController {
     }
 
     /**
-     * @param requestParam 包含：repoId、branch、commitList
+     * @param requestParam 包含：repoId、branch、beginCommit
      */
     @PostMapping(value = {"/project/auto"})
     public ResponseBean autoScan(@RequestBody JSONObject requestParam) {
         try {
-            scanService.autoScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("beginCommit"));
+            String status = scanService.getScanStatus(requestParam.getString("repoId"), requestParam.getString("branch"));
+            if (status == null || !status.equals("scanning")) {
+                scanService.autoScan(requestParam.getString("repoId"), requestParam.getString("branch"), requestParam.getString("beginCommit"));
+            } else {
+                log.info(requestParam.getString("repoId") + ":已在扫描中");
+            }
             return new ResponseBean(200, "start scan", null);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
+
+    /**
+     * @param requestParam 包含：repoId、branch
+     */
+    @PostMapping(value = {"/project/auto/update"})
+    public ResponseBean autoUpdate(@RequestBody JSONObject requestParam) {
+        try {
+            String status = scanService.getScanStatus(requestParam.getString("repoId"), requestParam.getString("branch"));
+            if (status != null && !status.equals("scanning")) {
+                scanService.autoUpdate(requestParam.getString("repoId"), requestParam.getString("branch"));
+            } else if (status == null){
+                log.error("Update Scan Error: this repo hasn't been scanned!");
+            } else {
+                log.info(requestParam.getString("repoId") + ":已在扫描中");
+            }
+            return new ResponseBean(200, "start scan", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
 
     @Autowired
     public void setScanService(ScanService scanService) {
@@ -55,3 +88,4 @@ public class RepoAnalyzerController {
 
 
 }
+

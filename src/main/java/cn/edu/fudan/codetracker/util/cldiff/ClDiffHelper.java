@@ -16,7 +16,7 @@ public class ClDiffHelper {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
-    public static void executeDiff(String repoPath, String commitId, String outputDir) {
+    public synchronized static void executeDiff(String repoPath, String commitId, String outputDir) {
         repoPath = IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
         Global.runningMode = Constants.COMMAND_LINE;
         Global.granularity = Constants.GRANULARITY.STATEMENT;

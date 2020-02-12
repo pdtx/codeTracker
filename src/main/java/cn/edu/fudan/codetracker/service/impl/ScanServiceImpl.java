@@ -18,6 +18,7 @@ import cn.edu.fudan.codetracker.util.cldiff.ClDiffHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import cn.edu.fudan.codetracker.util.JavancssScaner;
 
@@ -36,19 +37,25 @@ public class ScanServiceImpl implements ScanService {
     private MethodDao methodDao;
     private StatementDao statementDao;
     private LineInfoDao lineInfoDao;
+    private RepoDao repoDao;
 
     private RestInterfaceManager restInterface;
 
     @Value("${outputDir}")
     private String outputDir;
 
-    private Map<String,LineInfo> lineInfoMap = new HashMap<>();
-
     /**
      * 第一次扫描 存储项目结构
      * */
+    @Async("taskExecutor")
     @Override
     public void firstScan(String repoUuid, String branch, String duration) {
+        if (findScanLatest(repoUuid, branch) == null) {
+            repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, "scanning");
+        } else {
+            log.error("First Scan Error: this repo has already been scanned!");
+            return;
+        }
         String repoPath = IS_WINDOWS ? getRepoPathByUuid(repoUuid) : restInterface.getRepoPath(repoUuid);
 //        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
@@ -56,55 +63,65 @@ public class ScanServiceImpl implements ScanService {
         log.info("commit size : " +  commitList.size());
         boolean isInit = false;
         scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        repoDao.updateScanStatus(repoUuid, branch, "scanned");
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
+    @Async("taskExecutor")
     @Override
     public void autoScan(String repoUuid, String branch, String beginCommit) {
-        String repoPath = restInterface.getRepoPath(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        String commitId = findScanLatest(repoUuid, branch);
-        if (commitId != null) {
+        if (findScanLatest(repoUuid, branch) == null) {
+            repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, "scanning");
+        } else {
             log.error("First Scan Error: this repo has already been scanned!");
             return;
         }
+        String repoPath = restInterface.getRepoPath(repoUuid);
+//        String repoPath = getRepoPathByUuid(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
         scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
+        repoDao.updateScanStatus(repoUuid, branch, "scanned");
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
+    @Async("taskExecutor")
     @Override
     public void autoUpdate(String repoUuid, String branch) {
-        String repoPath = restInterface.getRepoPath(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
         String commitId = findScanLatest(repoUuid, branch);
         if (commitId == null) {
             log.error("Update Scan Error: this repo hasn't been scanned!");
             return;
         }
+        repoDao.updateScanStatus(repoUuid, branch, "scanning");
+        String repoPath = restInterface.getRepoPath(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
         scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, true);
+        repoDao.updateScanStatus(repoUuid, branch, "scanned");
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
     private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
         RepoInfoBuilder repoInfo;
+        Map<String,LineInfo> lineInfoMap = new HashMap<>();
         int num = 0;
         for (String commit : commitList) {
             ++num;
             log.info("start commit：" + num  + "  " + commit);
             if (isInit) {
-                scan(repoUuid , commit, branch, jGitHelper, repoPath);
+                scan(repoUuid , commit, branch, jGitHelper, repoPath, lineInfoMap);
             } else {
                 jGitHelper.checkout(commit);
                 repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
                 repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
                 saveData(repoInfo);
                 isInit = true;
-                lineCountFirstScan(repoInfo, repoPath);
+                lineCountFirstScan(repoInfo, repoPath, lineInfoMap);
             }
+            repoDao.updateLatestCommit(repoUuid, branch, commit);
         }
     }
 
@@ -115,10 +132,15 @@ public class ScanServiceImpl implements ScanService {
      * @return
      */
     private String findScanLatest(String repoUuid, String branch) {
-        return packageDao.findScanLatest(repoUuid, branch);
+        return repoDao.getLatestScan(repoUuid, branch);
     }
 
-    private void lineCountFirstScan(RepoInfoBuilder repoInfo,String repoPath) {
+    @Override
+    public String getScanStatus(String repoId, String branch) {
+        return repoDao.getScanStatus(repoId, branch);
+    }
+
+    private void lineCountFirstScan(RepoInfoBuilder repoInfo,String repoPath,Map<String,LineInfo> lineInfoMap) {
         LineInfo lineInfo = new LineInfo();
         lineInfo.setImportCount(repoInfo.getImportCount());
         lineInfo.setCommitId(repoInfo.getCommit());
@@ -139,7 +161,7 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis){
+    private void lineCountScan(String repoUuid, String commitId, String repoPath, JGitHelper jGitHelper, String branch, MetaInfoAnalysis analysis,Map<String,LineInfo> lineInfoMap){
         try {
             jGitHelper.checkout(commitId);
             LineInfo lineInfo = new LineInfo();
@@ -211,7 +233,7 @@ public class ScanServiceImpl implements ScanService {
 
     }
 
-    private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
+    private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath,Map<String,LineInfo> lineInfoMap) {
         if (jGitHelper != null) {
             jGitHelper = new JGitHelper(repoPath);
         }
@@ -223,7 +245,7 @@ public class ScanServiceImpl implements ScanService {
         // extra diff info and construct tracking relation
         MetaInfoAnalysis analysis = new MetaInfoAnalysis(repoUuid, branch, outputPath, jGitHelper, commitId);
         List<AnalyzeDiffFile> analyzeDiffFiles = analysis.analyzeMetaInfo(new ProxyDao(packageDao, fileDao, classDao, fieldDao, methodDao, statementDao));
-        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis);
+        lineCountScan(repoUuid, commitId, repoPath, jGitHelper, branch, analysis, lineInfoMap);
         if (analysis.getMergeNum() != JGitHelper.getNotMerge()) {
             return;
         }
@@ -335,5 +357,9 @@ public class ScanServiceImpl implements ScanService {
 
     @Autowired
     public void setLineInfoDao(LineInfoDao lineInfoDao) { this.lineInfoDao = lineInfoDao; }
-    
+
+    @Autowired
+    public void setRepoDao(RepoDao repoDao) {
+        this.repoDao = repoDao;
+    }
 }
