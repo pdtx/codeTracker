@@ -36,6 +36,11 @@ public interface StatisticsService {
 
     Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch);
 
+    /**
+     * 优化有效行数查询
+     */
+    Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate);
+
 
     /**
      临时演示接口

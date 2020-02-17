@@ -221,11 +221,7 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/committer/line/valid"})
     public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
         try{
-            String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
-            String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
-            log.info("commit: " + commit + "  repoPath: " + repoPath);
-            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
-            restInterface.freeRepo(repoUuid, repoPath);
+            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, beginDate, endDate);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
             } else {
@@ -237,6 +233,29 @@ public class StatisticsController {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
+//    /**
+//     * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
+//     */
+//    @GetMapping(value = {"/statistics/committer/line/valid"})
+//    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
+//        try{
+//            String commit = restInterface.getLatestCommit(repoUuid, beginDate, endDate);
+//            String repoPath = restInterface.getCodeServiceRepo(repoUuid, commit);
+//            log.info("commit: " + commit + "  repoPath: " + repoPath);
+//            Map<String,Integer> data = statisticsService.getChangeCommitterInfoByDate(repoUuid, commit, repoPath, branch, beginDate);
+//            restInterface.freeRepo(repoUuid, repoPath);
+//            if (developer == null) {
+//                return new ResponseBean(200, "", data);
+//            } else {
+//                return new ResponseBean(200, "", data.get(developer));
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            // 需要修改code
+//            return new ResponseBean(401, e.getMessage(), null);
+//        }
+//    }
 
 
     /**

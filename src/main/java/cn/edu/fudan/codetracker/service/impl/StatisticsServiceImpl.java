@@ -79,6 +79,33 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
+    public Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate) {
+        Map<String,Integer> map = new TreeMap<>();
+        List<ValidLineInfo> list = new ArrayList<>();
+        list.addAll(statisticsDao.getValidLineInfo("class", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("method", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("field", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("statement", repoUuid, branch, beginDate, endDate));
+        String lastMetaUuid = "";
+        for (ValidLineInfo validInfo: list) {
+            if (validInfo.getMetaUuid().equals(lastMetaUuid)) {
+                continue;
+            }
+            if (validInfo.getChangeRelation().equals("DELETE")) {
+                lastMetaUuid = validInfo.getMetaUuid();
+                continue;
+            }
+            lastMetaUuid = validInfo.getMetaUuid();
+            if (map.keySet().contains(validInfo.getCommitter())) {
+                map.replace(validInfo.getCommitter(), map.get(validInfo.getCommitter())+1);
+            } else {
+                map.put(validInfo.getCommitter(), 1);
+            }
+        }
+        return map;
+    }
+
+    @Override
     public Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch) {
         calculateCommitterRemainLine(repoUuid, commit, repoPath, branch, null);
         Map<String,Integer> sortMap = new TreeMap<String, Integer>();

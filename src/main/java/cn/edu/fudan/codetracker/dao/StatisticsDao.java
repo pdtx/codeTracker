@@ -273,6 +273,24 @@ public class StatisticsDao {
     }
 
     /**
+     * get valid line info
+     */
+    public List<ValidLineInfo> getValidLineInfo(String type, String repoUuid, String branch, String beginDate, String endDate) {
+        switch (type) {
+            case "class":
+                return statisticsMapper.getValidLineInfoByClass(repoUuid, branch, beginDate, endDate);
+            case "method":
+                return statisticsMapper.getValidLineInfoByMethod(repoUuid, branch, beginDate, endDate);
+            case "field":
+                return statisticsMapper.getValidLineInfoByField(repoUuid, branch, beginDate, endDate);
+            case "statement":
+                return statisticsMapper.getValidLineInfoByStatement(repoUuid, branch, beginDate, endDate);
+            default:
+                return null;
+        }
+    }
+
+    /**
      * get committer line info by commit
      */
     public List<CommitterLineInfo> getCommitterLineInfo(String repoUuid, String branch, String commitDate) {

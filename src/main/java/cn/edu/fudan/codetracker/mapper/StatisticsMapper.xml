@@ -337,6 +337,51 @@
         select committer from issueTracker.raw_statement where statement_uuid in (select distinct statement_uuid from issueTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and commit_date &gt;= #{beginDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") order by commit_date desc limit 1;
     </select>
 
+    <!--valid line 相关-->
+    <resultMap id="ValidLineInfoClass" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="class_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
+        select uuid,committer,class_uuid,change_relation from issueTracker.raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by class_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="method_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
+        select uuid,committer,method_uuid,change_relation from issueTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by method_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="field_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
+        select uuid,committer,field_uuid,change_relation from issueTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by field_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="statement_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
+        select uuid,committer,statement_uuid,change_relation from issueTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by statement_uuid,commit_date desc;
+    </select>
+
     <!-- -->
     <resultMap id="MetaMethodUuid" type="String">
         <id property="methodUuid" column="method_uuid"/>

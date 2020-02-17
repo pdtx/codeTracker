@@ -247,6 +247,24 @@ public interface StatisticsMapper {
 
 
     /**
+     * get valid line info by class
+     */
+    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by method
+     */
+    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by field
+     */
+    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by statement
+     */
+    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
      * get committer line info by commit
      */
     List<CommitterLineInfo> getCommitterLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("commitDate") String commitDate);
