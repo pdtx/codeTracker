@@ -60,6 +60,20 @@ public class RepoAnalyzerController {
 
 
     /**
+     * 获取repo的扫描状态，参数：repoId,branch
+     */
+    @GetMapping(value = {"/project/scan/status"})
+    public ResponseBean getScanStatus(@RequestParam("repoId") String repoId, @RequestParam("branch") String branch) {
+        try {
+            String data = scanService.getScanStatus(repoId, branch);
+            return new ResponseBean(200, "" , data);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    /**
      * @param requestParam 包含：repoId、branch
      */
     @PostMapping(value = {"/project/auto/update"})
