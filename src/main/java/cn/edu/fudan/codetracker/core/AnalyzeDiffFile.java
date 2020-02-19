@@ -304,6 +304,10 @@ public class AnalyzeDiffFile {
         if (methodInfo.isMapped()) {
             return null;
         }
+        if (preMethodInfo == null) {
+            log.error("preMethodInfo is null:can not get mapping node");
+            return null;
+        }
         preMethodInfo.setMapped(true);
         curMethodInfo.setMapped(true);
         TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)preMethodInfo.getParent()).getFilePath(), ((ClassInfo)preMethodInfo.getParent()).getClassName(), preMethodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
@@ -403,7 +407,10 @@ public class AnalyzeDiffFile {
         BaseInfo preClassInfo = null,curClassInfo = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
             methodInfo = handleMethod(curMethodInfoList, range, RelationShip.ADD.name());
-            Assert.notNull(methodInfo, "OPT_INSERT: method info is null");
+            if (methodInfo == null) {
+                log.error("OPT_INSERT: method info is null");
+            }
+//            Assert.notNull(methodInfo, "OPT_INSERT: method info is null");
             curClassInfo = methodInfo.getParent();
 
             // 后续修改 正确性有待考究
@@ -720,7 +727,11 @@ public class AnalyzeDiffFile {
 
     private List<FieldInfo> getFieldInfoListByFileInfo(List<ClassInfo> classInfoList) {
         List<FieldInfo> fieldInfos = new ArrayList<>();
-        Assert.notNull(classInfoList, "ERROR! analyzeModifiedField: ClassInfoList is null");
+        if (classInfoList == null) {
+            log.error("ERROR! analyzeModifiedField: ClassInfoList is null");
+            return null;
+        }
+//        Assert.notNull(classInfoList, "ERROR! analyzeModifiedField: ClassInfoList is null");
         for (ClassInfo classInfo : classInfoList) {
             fieldInfos.addAll(classInfo.getFieldInfos());
         }
@@ -870,6 +881,10 @@ public class AnalyzeDiffFile {
 
     private List<StatementInfo> getStatementInfoListByFileInfo(List<MethodInfo> methodInfoList) {
         List<StatementInfo> statementInfoList = new ArrayList<>();
+        if (methodInfoList == null) {
+            log.error("methodInfoList is null");
+            return null;
+        }
         for (MethodInfo methodInfo : methodInfoList) {
             List<StatementInfo> s = castBaseInfo(methodInfo.getChildren());
             if (s == null || s.size() == 0) {
@@ -937,7 +952,11 @@ public class AnalyzeDiffFile {
 
     private List<MethodInfo> getMethodInfoListByFileInfo(List<ClassInfo> classInfoList) {
         List<MethodInfo> methodInfoList = new ArrayList<>();
-        Assert.notNull(classInfoList, "ERROR! analyzeModifiedMethod: ClassInfoList is null");
+        if (classInfoList == null) {
+            log.error("ERROR! analyzeModifiedMethod: ClassInfoList is null");
+            return null;
+        }
+//        Assert.notNull(classInfoList, "ERROR! analyzeModifiedMethod: ClassInfoList is null");
         for (ClassInfo classInfo : classInfoList) {
             methodInfoList.addAll(classInfo.getMethodInfos());
         }

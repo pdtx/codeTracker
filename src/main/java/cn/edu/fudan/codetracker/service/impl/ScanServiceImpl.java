@@ -183,8 +183,12 @@ public class ScanServiceImpl implements ScanService {
                     lineInfo.setAddCount(0);
                     lineInfo.setDeleteCount(0);
                 } else {
-                    int preImportCount = lineInfoMap.get(preCommitId).getImportCount();
-                    lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
+                    if (lineInfoMap.get(preCommitId) == null) {
+                        lineInfo.setImportCount(repoInfo.getImportCount());
+                    } else {
+                        int preImportCount = lineInfoMap.get(preCommitId).getImportCount();
+                        lineInfo.setImportCount(preImportCount + analysis.getChangeImportCount());
+                    }
 
                     int addCount = 0;
                     int deleteCount = 0;
