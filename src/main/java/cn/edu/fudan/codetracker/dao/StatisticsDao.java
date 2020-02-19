@@ -418,4 +418,25 @@ public class StatisticsDao {
         return statisticsMapper.getStatementHistory(methodUuid, body);
     }
 
+    /**
+     * 删除操作
+     */
+    public void delete(String repoUuid, String branch) {
+        statisticsMapper.deleteFromMetaPackage(repoUuid, branch);
+        statisticsMapper.deleteFromMetaFile(repoUuid, branch);
+        statisticsMapper.deleteFromMetaClass(repoUuid, branch);
+        statisticsMapper.deleteFromMetaMethod(repoUuid, branch);
+        statisticsMapper.deleteFromMetaField(repoUuid, branch);
+        statisticsMapper.deleteFromMetaStatement(repoUuid, branch);
+        statisticsMapper.deleteFromRawPackage(repoUuid, branch);
+        statisticsMapper.deleteFromRawFile(repoUuid, branch);
+        statisticsMapper.deleteFromRawClass(repoUuid, branch);
+        statisticsMapper.deleteFromRawMethod(repoUuid, branch);
+        statisticsMapper.deleteFromRawField(repoUuid, branch);
+        statisticsMapper.deleteFromRawStatement(repoUuid, branch);
+        statisticsMapper.deleteFromRelationStatement(repoUuid, branch);
+        statisticsMapper.deleteFromLineCount(repoUuid, branch);
+        statisticsMapper.deleteFromTrackerRepo(repoUuid, branch);
+    }
+
 }

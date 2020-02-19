@@ -274,6 +274,11 @@ public class StatisticsServiceImpl implements StatisticsService {
         return statementHistoryMap;
     }
 
+    @Override
+    public void delete(String repoUuid, String branch) {
+        statisticsDao.delete(repoUuid, branch);
+    }
+
 
 
 

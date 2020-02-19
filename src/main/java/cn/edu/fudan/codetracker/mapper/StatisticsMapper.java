@@ -300,4 +300,22 @@ public interface StatisticsMapper {
      */
     List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body);
 
+    /**
+     * 删除项目相关追溯数据
+     */
+    void deleteFromMetaPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRelationStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromLineCount(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromTrackerRepo(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

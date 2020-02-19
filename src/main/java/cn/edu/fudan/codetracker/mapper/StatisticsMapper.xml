@@ -490,4 +490,65 @@
         select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from issueTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from issueTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
     </select>
 
+    <!--删除操作-->
+    <delete id="deleteFromMetaPackage" parameterType="String">
+        delete from issueTracker.meta_package where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaFile" parameterType="String">
+        delete from issueTracker.meta_file where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaClass" parameterType="String">
+        delete from issueTracker.meta_class where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaMethod" parameterType="String">
+        delete from issueTracker.meta_method where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaField" parameterType="String">
+        delete from issueTracker.meta_field where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaStatement" parameterType="String">
+        delete from issueTracker.meta_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawPackage" parameterType="String">
+        delete from issueTracker.raw_package where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawFile" parameterType="String">
+        delete from issueTracker.raw_file where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawClass" parameterType="String">
+        delete from issueTracker.raw_class where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawMethod" parameterType="String">
+        delete from issueTracker.raw_method where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawField" parameterType="String">
+        delete from issueTracker.raw_field where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawStatement" parameterType="String">
+        delete from issueTracker.raw_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRelationStatement" parameterType="String">
+        delete from issueTracker.relation_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromLineCount" parameterType="String">
+        delete from issueTracker.line_count where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromTrackerRepo" parameterType="String">
+        delete from issueTracker.tracker_repo where repo_id=#{repoUuid} and branch=#{branch};
+    </delete>
+
 </mapper>

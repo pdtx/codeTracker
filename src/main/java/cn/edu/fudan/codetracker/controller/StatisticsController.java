@@ -349,6 +349,19 @@ public class StatisticsController {
         }
     }
 
+    /**
+     * 删除操作
+     */
+    @GetMapping(value = {"/delete"})
+    public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
+        try{
+            statisticsService.delete(repoUuid, branch);
+            return new ResponseBean(200, "delete success", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;
