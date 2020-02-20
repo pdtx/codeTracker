@@ -9,7 +9,7 @@
     </resultMap>
 
     <insert id="insertMethodInfoList" parameterType="List">
-        insert into meta_method
+        insert into codeTracker.meta_method
         (
         uuid,
         fullname,
@@ -56,7 +56,7 @@
     </insert>
 
     <insert id="insertRawMethodInfoList" parameterType="List">
-        insert into raw_method
+        insert into codeTracker.raw_method
         (
         uuid,
         fullname,
@@ -103,9 +103,9 @@
     </insert>
 <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from meta_method where uuid =
-        (select method_uuid from raw_method where signature = #{signature} and method_uuid in
-        (select uuid from meta_method
+        select version,uuid from codeTracker.meta_method where uuid =
+        (select method_uuid from codeTracker.raw_method where signature = #{signature} and method_uuid in
+        (select uuid from codeTracker.meta_method
         where file_path = #{filePath} and class_name = #{className}
           and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) limit 1)
         order by version desc limit 1
@@ -114,7 +114,7 @@
 
 
     <update id="updateChangeInfo" parameterType="List">
-        update meta_method
+        update codeTracker.meta_method
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="fullname = case" suffix="end,">
                 <foreach collection="list" item="item">

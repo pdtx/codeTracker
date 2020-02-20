@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.LineInfoMapper">
     <insert id="insertLineInfo" parameterType="cn.edu.fudan.codetracker.domain.LineInfo">
-        insert into line_count
+        insert into codeTracker.line_count
         (
         commitid,
         total_count,

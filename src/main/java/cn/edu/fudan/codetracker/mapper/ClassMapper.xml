@@ -9,7 +9,7 @@
     </resultMap>
 
     <insert id="insertClassInfoList" parameterType="List">
-        insert into meta_class
+        insert into codeTracker.meta_class
         (
         uuid,
         fullname,
@@ -52,7 +52,7 @@
     </insert>
 
     <insert id="insertRawClassInfoList" parameterType="List">
-        insert into raw_class
+        insert into codeTracker.raw_class
         (
         uuid,
         fullname,
@@ -91,11 +91,11 @@
     </insert>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from meta_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from codeTracker.meta_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <update id="updateChangeInfo" parameterType="List">
-        update meta_class
+        update codeTracker.meta_class
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="list" item="item">

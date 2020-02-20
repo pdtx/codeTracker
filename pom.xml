@@ -162,7 +162,7 @@
                     <artifactId>android-json</artifactId>
                 </exclusion>
             </exclusions>
-            <systemPath>${project.basedir}/jar/CLDIFFCmd.jar</systemPath>
+            <systemPath>${project.basedir}/jar/CLDiffCmd.jar</systemPath>
         </dependency>
 
         <dependency>

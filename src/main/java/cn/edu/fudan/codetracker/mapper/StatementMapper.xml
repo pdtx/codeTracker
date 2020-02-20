@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.StatementMapper">
 
     <insert id="insertStatementInfoList" parameterType="List">
-        insert into meta_statement
+        insert into codeTracker.meta_statement
         (
         uuid,
         method_uuid,
@@ -41,7 +41,7 @@
     </insert>
 
     <insert id="insertRawStatementInfoList" parameterType="List">
-        insert into raw_statement
+        insert into codeTracker.raw_statement
         (
         uuid,
         statement_uuid,
@@ -82,7 +82,7 @@
     </insert>
 
     <insert id="insertStatementRelationList" parameterType="List">
-        insert into relation_statement
+        insert into codeTracker.relation_statement
         (
         uuid,
         ancestor_uuid,
@@ -107,7 +107,7 @@
     </insert>
 
     <update id="updateDeleteInfo" parameterType="List">
-        update relation_statement
+        update codeTracker.relation_statement
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="valid_end = case" suffix="end,">
                 <foreach collection="list" item="item">
@@ -123,7 +123,7 @@
     </update>
 
     <update id="updateChangeInfo" parameterType="List">
-        update meta_statement
+        update codeTracker.meta_statement
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="list" item="item">
@@ -169,10 +169,10 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1;
+        select version,statement_uuid from codeTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body} order by version desc limit 1;
     </select>
 
     <select id="getTrackerInfoWithBodyUsingSplice" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from raw_statement where method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
+        select version,statement_uuid from codeTracker.raw_statement where method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
     </select>
 </mapper>
