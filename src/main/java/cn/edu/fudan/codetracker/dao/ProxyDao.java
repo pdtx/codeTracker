@@ -53,19 +53,19 @@ public class ProxyDao {
                 return fieldDao.getTrackerInfo(args[0], args[1], args[2], args[3], args[4]);
             case STATEMENT:
                 TrackerInfo trackerInfo = statementDao.getTrackerInfo(args[0], args[1]);
-                if (trackerInfo == null) {
-                    try{
-                       log.warn("method: {}", args[0]);
-                       log.warn("==========================================================");
-                        System.out.println(args[1]);
-                       log.warn("==========================================================");
-//                        String body = "'" + args[1] + "'";
-//                       trackerInfo = statementDao.getTrackerInfoWithBodyUsingSplice(args[0], body);
-                    }catch (Exception e) {
-                        log.error(e.getMessage());
-                        return null;
-                    }
-                }
+//                if (trackerInfo == null) {
+//                    try{
+//                       log.warn("method: {}", args[0]);
+//                       log.warn("==========================================================");
+//                        System.out.println(args[1]);
+//                       log.warn("==========================================================");
+////                        String body = "'" + args[1] + "'";
+////                       trackerInfo = statementDao.getTrackerInfoWithBodyUsingSplice(args[0], body);
+//                    }catch (Exception e) {
+//                        log.error(e.getMessage());
+//                        return null;
+//                    }
+//                }
                 return trackerInfo;
             default:
                 return null;

@@ -24,7 +24,7 @@
         <fastjsonVersion>1.2.47</fastjsonVersion>
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
-        <project.basedir>E:\Lab\project\codeTracker</project.basedir>
+        <project.basedir>/home/fdse/repo/codeTracker</project.basedir>
     </properties>
 
     <repositories>
@@ -162,7 +162,7 @@
                     <artifactId>android-json</artifactId>
                 </exclusion>
             </exclusions>
-            <systemPath>${project.basedir}\jar\CLDIFFCmd.jar</systemPath>
+            <systemPath>${project.basedir}/jar/CLDIFFCmd.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -170,7 +170,7 @@
             <artifactId>org.eclipse.cdt.core.cdt</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}\jar\org.eclipse.cdt.core.cdt-6.7.0.jar</systemPath>
+            <systemPath>${project.basedir}/jar/org.eclipse.cdt.core.cdt-6.7.0.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -178,7 +178,7 @@
             <artifactId>org.eclipse.jdt.core</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}\jar\org.eclipse.jdt.core-3.12.3.jar</systemPath>
+            <systemPath>${project.basedir}/jar/org.eclipse.jdt.core-3.12.3.jar</systemPath>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.javancss/javancss -->
