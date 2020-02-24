@@ -280,6 +280,11 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
 
+    @Override
+    public List<Map<String,String>> getStatementValid(String methodUuid, String commitDate, String body) {
+        return statisticsDao.getValidStatement(methodUuid, commitDate, body);
+    }
+
 
 
     /**

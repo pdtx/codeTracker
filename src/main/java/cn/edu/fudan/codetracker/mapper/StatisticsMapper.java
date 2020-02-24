@@ -296,6 +296,12 @@ public interface StatisticsMapper {
 
 
     /**
+     * 获取语句是否有效
+     */
+    String getStatementBody(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitDate") String commitDate);
+
+
+    /**
      * 获取语句历史切片
      */
     List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body);

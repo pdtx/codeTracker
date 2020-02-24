@@ -353,6 +353,22 @@ public class StatisticsDao {
         return statisticsMapper.getMethodHistory(methodUuid);
     }
 
+    /**
+     * 获取可选语句
+     */
+    public List<Map<String,String>> getValidStatement(String methodUuid, String commitDate, String body) {
+        List<Map<String,String>> list = new ArrayList<>();
+        String[] strs = body.split("\\n");
+        for (String s : strs) {
+            String tmp = s.trim();
+            String fullBody = statisticsMapper.getStatementBody(methodUuid, tmp, commitDate);
+            Map<String,String> map = new HashMap<>();
+            map.put(s,fullBody);
+            list.add(map);
+        }
+        return list;
+    }
+
 
     /**
      * 统计存活周期

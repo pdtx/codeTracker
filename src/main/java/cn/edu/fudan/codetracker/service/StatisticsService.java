@@ -65,4 +65,9 @@ public interface StatisticsService {
      * 删除操作
      */
     void delete(String repoUuid, String branch);
+
+    /**
+     * 获取可选语句
+     */
+    List<Map<String,String>> getStatementValid(String methodUuid, String commitDate, String body);
 }

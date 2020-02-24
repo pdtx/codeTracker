@@ -108,20 +108,24 @@ public class ScanServiceImpl implements ScanService {
         RepoInfoBuilder repoInfo;
         Map<String,LineInfo> lineInfoMap = new HashMap<>();
         int num = 0;
-        for (String commit : commitList) {
-            ++num;
-            log.info("start commit：" + num  + "  " + commit);
-            if (isInit) {
-                scan(repoUuid , commit, branch, jGitHelper, repoPath, lineInfoMap);
-            } else {
-                jGitHelper.checkout(commit);
-                repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
-                repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
-                saveData(repoInfo);
-                isInit = true;
-                lineCountFirstScan(repoInfo, repoPath, lineInfoMap);
+        try {
+            for (String commit : commitList) {
+                ++num;
+                log.info("start commit：" + num  + "  " + commit);
+                if (isInit) {
+                    scan(repoUuid , commit, branch, jGitHelper, repoPath, lineInfoMap);
+                } else {
+                    jGitHelper.checkout(commit);
+                    repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
+                    repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
+                    saveData(repoInfo);
+                    isInit = true;
+                    lineCountFirstScan(repoInfo, repoPath, lineInfoMap);
+                }
+                repoDao.updateLatestCommit(repoUuid, branch, commit);
             }
-            repoDao.updateLatestCommit(repoUuid, branch, commit);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 

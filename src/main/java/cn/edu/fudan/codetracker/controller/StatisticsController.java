@@ -362,6 +362,19 @@ public class StatisticsController {
         }
     }
 
+    /**
+     * 获取可选语句
+     */
+    @PostMapping(value = {"/valid/statement"})
+    public ResponseBean getValidStatement(@RequestBody JSONObject requestParam) {
+        try {
+            List<Map<String,String>> data = statisticsService.getStatementValid(requestParam.getString("methodUuid"), requestParam.getString("commitDate"), requestParam.getString("body"));
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;
