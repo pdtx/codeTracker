@@ -24,7 +24,7 @@
         <fastjsonVersion>1.2.47</fastjsonVersion>
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
-        <project.basedir>/home/fdse/repo/codeTracker</project.basedir>
+        <project.basedir>${pwd}</project.basedir>
     </properties>
 
     <repositories>
