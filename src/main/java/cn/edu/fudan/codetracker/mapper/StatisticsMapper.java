@@ -294,11 +294,10 @@ public interface StatisticsMapper {
      */
     List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
-
     /**
-     * 获取语句是否有效
+     * 尝试一次查询出所有有效语句
      */
-    String getStatementBody(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitDate") String commitDate);
+    List<StatementInfoByMethod> getAllValidStatement(@Param("methodUuid") String methodUuid, @Param("commitDate") String commitDate);
 
 
     /**

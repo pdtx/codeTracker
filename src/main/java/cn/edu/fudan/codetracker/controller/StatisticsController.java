@@ -363,17 +363,18 @@ public class StatisticsController {
     }
 
     /**
-     * 获取可选语句
+     * 获取全部可选语句
      */
     @PostMapping(value = {"/valid/statement"})
-    public ResponseBean getValidStatement(@RequestBody JSONObject requestParam) {
+    public ResponseBean getAllValidStatement(@RequestBody JSONObject requestParam) {
         try {
-            List<Map<String,String>> data = statisticsService.getStatementValid(requestParam.getString("methodUuid"), requestParam.getString("commitDate"), requestParam.getString("body"));
+            List<Map<String,String>> data = statisticsService.getAllValidStatement(requestParam.getString("methodUuid"), requestParam.getString("commitDate"), requestParam.getString("body"));
             return new ResponseBean(200, "", data);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
 
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {

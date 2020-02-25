@@ -354,19 +354,43 @@ public class StatisticsDao {
     }
 
     /**
-     * 获取可选语句
+     * 一次性获取全部可选语句
      */
-    public List<Map<String,String>> getValidStatement(String methodUuid, String commitDate, String body) {
-        List<Map<String,String>> list = new ArrayList<>();
+    public List<Map<String,String>> getAllValidStatement(String methodUuid, String commitDate, String body) {
         String[] strs = body.split("\\n");
-        for (String s : strs) {
-            String tmp = s.trim();
-            String fullBody = statisticsMapper.getStatementBody(methodUuid, tmp, commitDate);
-            Map<String,String> map = new HashMap<>();
-            map.put(s,fullBody);
-            list.add(map);
+        List<Map<String,String>> mapList = new ArrayList<>();
+        List<String> list = new ArrayList<>();
+
+        List<StatementInfoByMethod> statementInfoByMethodList = statisticsMapper.getAllValidStatement(methodUuid, commitDate);
+        String lastStatementUuid = "";
+        for (StatementInfoByMethod statementInfoByMethod : statementInfoByMethodList) {
+            if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid) && !"DELETE".equals(statementInfoByMethod.getChangeRelation())) {
+                list.add(statementInfoByMethod.getBody());
+                lastStatementUuid = statementInfoByMethod.getStatementUuid();
+            }
         }
-        return list;
+
+        for (String str : strs) {
+            boolean find = false;
+            String tmp = str.trim();
+            Map<String,String> map = new HashMap<>();
+            if ("".equals(tmp)) {
+                map.put(str, null);
+            } else {
+                for (String s : list) {
+                    if (s.startsWith(tmp) || tmp.startsWith(s)) {
+                        map.put(str, s);
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find) {
+                    map.put(str, null);
+                }
+            }
+            mapList.add(map);
+        }
+        return mapList;
     }
 
 

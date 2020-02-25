@@ -490,13 +490,15 @@
         select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
     </select>
 
-    <!--获取语句完整body-->
-    <resultMap id="statementMetaInfo" type="String">
-        <id property="body" column="body"/>
+    <!--一次性获取有效语句-->
+    <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="body" column="body"/>
     </resultMap>
 
-    <select id="getStatementBody" parameterType="String" resultMap="statementMetaInfo">
-        select body from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} and commit_date &lt;= #{commitDate} order by commit_date desc limit 1;
+    <select id="getAllValidStatement" parameterType="String" resultMap="AllValidStatement">
+        select statement_uuid, change_relation, body from codeTracker.raw_statement where method_uuid = #{methodUuid} and commit_date &lt;= #{commitDate} order by statement_begin,statement_uuid,commit_date desc;
     </select>
 
     <!--删除操作-->
