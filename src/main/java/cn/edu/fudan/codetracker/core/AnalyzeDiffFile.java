@@ -248,6 +248,10 @@ public class AnalyzeDiffFile {
 
     private void analyzeMethodModifiedByStat(DiffInfo.OneDiff oneDiff, List<MethodInfo> curMethodInfoList, List<MethodInfo> preMethodInfoList) {
         String range = oneDiff.getRange();
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
+            return;
+        }
         String changeRelation = oneDiff.getChangeRelation();
         MethodInfo curMethodInfo = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
@@ -342,6 +346,10 @@ public class AnalyzeDiffFile {
         }
 
         String range = oneDiff.getRange();
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
+            return;
+        }
         String filePath = curFileInfo.getFilePath();
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
             handleClass(castBaseInfo(curFileInfo.getChildren()), range, RelationShip.ADD.name());
@@ -428,6 +436,10 @@ public class AnalyzeDiffFile {
         }
         if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation)) {
             //before change
+            if (range.split("-")[0] == null || range.split("-")[0].length() == 0) {
+                log.error("range is incorrect");
+                return;
+            }
             int begin = rangeAnalyzeBegin(range.split("-")[0]);
             int end = rangeAnalyzeEnd(range.split("-")[0]);
             MethodInfo preMethodInfo = findMethodInfoByRange(preMethodInfoList, begin, end);
@@ -439,6 +451,10 @@ public class AnalyzeDiffFile {
                 // 必须得到root uuid 以及 version 否则无法关联起来
                 TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD, ((ClassInfo)preMethodInfo.getParent()).getFilePath(), ((ClassInfo)preMethodInfo.getParent()).getClassName(), preMethodInfo.getSignature(), curRepoInfo.getRepoUuid(), curRepoInfo.getBranch());
                 //after change
+                if (range.split("-")[1] == null || range.split("-")[1].length() == 0) {
+                    log.error("range is incorrect");
+                    return;
+                }
                 begin = rangeAnalyzeBegin(range.split("-")[1]);
                 end = rangeAnalyzeEnd(range.split("-")[1]);
                 MethodInfo curMethodInfo = findMethodInfoByRange(curMethodInfoList, begin, end);
@@ -500,6 +516,10 @@ public class AnalyzeDiffFile {
     private MethodInfo handleMethod(List<MethodInfo> methodInfoList, String range, String relation) {
         if (methodInfoList == null || methodInfoList.size() == 0) {
             log.error("methodInfoList is null");
+            return null;
+        }
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
             return null;
         }
         int begin = rangeAnalyzeBegin(range);
@@ -580,6 +600,10 @@ public class AnalyzeDiffFile {
      * */
     private void handleClass(List<ClassInfo> classInfoList , String range, String relation) {
         //根据range当前版本的method
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
+            return;
+        }
         int begin = rangeAnalyzeBegin(range);
         int end = rangeAnalyzeEnd(range);
         ClassInfo classInfo = findClassInfoByRange(classInfoList, begin, end);
@@ -657,6 +681,10 @@ public class AnalyzeDiffFile {
             changeRelation = ChangeEntityDesc.StageIIOpt.OPT_CHANGE;
         }
         String range = oneDiff.getRange();
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
+            return;
+        }
         FieldInfo preFieldInfo, curFieldInfo ;
         BaseInfo preClassInfo = null,curClassInfo = null;
         if (ChangeEntityDesc.StageIIOpt.OPT_INSERT.equals(changeRelation)) {
@@ -752,6 +780,10 @@ public class AnalyzeDiffFile {
         String parentRange = oneDiff.getParentRange();
         final int level = -1;
         String range = oneDiff.getRange();
+        if (range == null || range.length() == 0) {
+            log.error("range is incorrect");
+            return;
+        }
         // statement
         StatementInfo preStat, curStat;
         StatementInfo preParentStatement = null;
@@ -850,6 +882,17 @@ public class AnalyzeDiffFile {
         }
         String[] parentRanges = parentRange.split("-");
         if (parentRanges.length == 2 && parentRanges[1].length() > 4) {
+            if (isCur) {
+                if (parentRanges[1] == null || parentRanges[1].length() == 0) {
+                    log.error("range is incorrect");
+                    return null;
+                }
+            } else {
+                if (parentRanges[0] == null || parentRanges[0].length() == 0) {
+                    log.error("range is incorrect");
+                    return null;
+                }
+            }
             int begin = isCur ? rangeAnalyzeBegin(parentRanges[1]) : rangeAnalyzeBegin(parentRanges[0]);
             int end = isCur ? rangeAnalyzeEnd(parentRanges[1]) : rangeAnalyzeBegin(parentRanges[0]);
             return findStatementInfoByRange(statementInfoList, begin, end, stat.getLevel() - 1);
