@@ -471,7 +471,29 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select statement_uuid, committer, commit_date, change_relation from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and (change_relation = "ADD" OR change_relation = "DELETE" OR change_relation = "SELF_CHANGE") and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
+        select statement_uuid, committer, commit_date, change_relation from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
+    </select>
+
+    <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="statementUuid" column="method_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
+        select method_uuid, committer, commit_date, change_relation from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by method_uuid, commit_date;
+    </select>
+
+    <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="statementUuid" column="field_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
+        select field_uuid, committer, commit_date, change_relation from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by field_uuid, commit_date;
     </select>
 
 

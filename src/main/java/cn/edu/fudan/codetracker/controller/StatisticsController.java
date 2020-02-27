@@ -313,7 +313,7 @@ public class StatisticsController {
         try{
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 00:00:00";
-            Map<String,Map<String,Long>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
+            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
             } else {

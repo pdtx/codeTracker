@@ -54,7 +54,7 @@ public interface StatisticsService {
     /**
      * 统计存活周期
      */
-    Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
+    Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
 
     /**
      * 获取语句历史

@@ -398,12 +398,25 @@ public class StatisticsDao {
      * 统计存活周期
      */
     public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        List<SurviveStatementInfo> surviveStatementInfos = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
+        endDate = endDate.replace("00:00:00", "24:00:00");
+        List<SurviveStatementInfo> surviveStatementInfos = new ArrayList<>();
+        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch);
+        if (listStatement != null && listStatement.size() != 0) {
+            surviveStatementInfos.addAll(listStatement);
+        }
+        if (listMethod != null && listMethod.size() != 0) {
+            surviveStatementInfos.addAll(listMethod);
+        }
+        if (listField != null && listField.size() != 0) {
+            surviveStatementInfos.addAll(listField);
+        }
         committerMap = new HashMap<>();
         SurviveStatementInfo lastSurviveStatement = null;
         for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
             if (lastSurviveStatement != null) {
-                if (surviveStatementInfo.getStatementUuid() != lastSurviveStatement.getStatementUuid()) {
+                if (!lastSurviveStatement.getStatementUuid().equals(surviveStatementInfo.getStatementUuid())) {
                     if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
                         long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
                         if (days > 0) {
@@ -422,6 +435,12 @@ public class StatisticsDao {
                 }
             }
             lastSurviveStatement = surviveStatementInfo;
+        }
+        if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
+            if (days > 0) {
+                saveInMap(lastSurviveStatement.getCommitter(), days);
+            }
         }
         return committerMap;
     }
@@ -443,8 +462,9 @@ public class StatisticsDao {
         try {
             Date begin = FORMATTER.parse(beginStr);
             Date end = FORMATTER.parse(endStr);
-            long between = (end.getTime() - begin.getTime()) / (1000L*3600L*24L);
-            return between;
+            Double between = (end.getTime() - begin.getTime()) / (1000.0*3600.0*24.0);
+            long betweenLong = (Math.round(between));
+            return betweenLong;
         } catch (ParseException e) {
             e.printStackTrace();
             return 0;

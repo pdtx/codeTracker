@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -236,27 +237,27 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public Map<String,Map<String,Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        Map<String,Map<String,Long>> map = new HashMap<>();
+    public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
+        Map<String,Map<String,Double>> map = new HashMap<>();
         Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
         for (String key : temp.keySet()) {
             List<Long> list = temp.get(key);
             list.sort(Comparator.comparingLong(Long::longValue));
-            Map<String,Long> newMap = new HashMap<>();
-            newMap.put("min",list.get(0));
-            newMap.put("max",list.get(list.size()-1));
+            Map<String,Double> newMap = new HashMap<>();
+            newMap.put("min",(double)list.get(0));
+            newMap.put("max",(double)list.get(list.size()-1));
             if (list.size()%2 == 0) {
-                long median = (list.get(list.size()/2) + list.get((list.size()/2)-1)) / 2;
-                newMap.put("median",median);
+                Double median = (list.get(list.size()/2) + list.get((list.size()/2)-1)) / 2.0;
+                newMap.put("median", new BigDecimal(median).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             } else {
-                newMap.put("median",list.get((list.size()-1)/2));
+                newMap.put("median",(double)list.get((list.size()-1)/2));
             }
             Long sum = 0L;
             for (Long l : list) {
                 sum += l;
             }
-            Long average = sum / list.size();
-            newMap.put("average",average);
+            Double average = sum / (list.size() * 1.0);
+            newMap.put("average",new BigDecimal(average).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             map.put(key,newMap);
         }
         return map;
