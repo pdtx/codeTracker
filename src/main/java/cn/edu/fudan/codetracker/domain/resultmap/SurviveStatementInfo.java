@@ -13,7 +13,7 @@ public class SurviveStatementInfo {
     private int begin;
     private int end;
 
-    SurviveStatementInfo() {
+    public SurviveStatementInfo() {
 
     }
 

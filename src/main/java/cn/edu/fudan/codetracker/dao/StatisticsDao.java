@@ -436,7 +436,7 @@ public class StatisticsDao {
             }
             lastSurviveStatement = surviveStatementInfo;
         }
-        if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+        if (lastSurviveStatement != null && !lastSurviveStatement.getChangeRelation().equals("DELETE")) {
             long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
             if (days > 0) {
                 saveInMap(lastSurviveStatement.getCommitter(), days);
@@ -475,7 +475,71 @@ public class StatisticsDao {
      * 获取语句历史切片
      */
     public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body) {
-        return statisticsMapper.getStatementHistory(methodUuid, body);
+        List<SurviveStatementInfo> statementInfoList = statisticsMapper.getStatementHistory(methodUuid, body);
+        List<SurviveStatementInfo> addList = new ArrayList<>();
+        List<MethodHistory> methodHistoryList = statisticsMapper.getMethodHistory(methodUuid);
+        Map<String,SurviveStatementInfo> map = new HashMap<>();
+        Map<String,MethodHistory> mapMethod = new HashMap<>();
+        for (SurviveStatementInfo surviveStatementInfo : statementInfoList) {
+            map.put(surviveStatementInfo.getCommit(),surviveStatementInfo);
+        }
+        for (MethodHistory methodHistory : methodHistoryList) {
+            mapMethod.put(methodHistory.getCommit(),methodHistory);
+        }
+
+        SurviveStatementInfo lastSurviveStatement = null;
+        for (MethodHistory methodHistory : methodHistoryList) {
+            if (!map.keySet().contains(methodHistory.getCommit())) {
+                if (lastSurviveStatement != null) {
+                    if (mapMethod.keySet().contains(lastSurviveStatement.getCommit())) {
+                        MethodHistory lastMethodHistory = mapMethod.get(lastSurviveStatement.getCommit());
+                        int begin = -1;
+                        int end = -1;
+                        int cha = -1;
+                        int methodLines = 0;
+                        int beginInMethod = lastSurviveStatement.getBegin() - lastMethodHistory.getMethodBegin();
+                        String bodyStr = lastSurviveStatement.getBody();
+                        int lines = bodyStr.split("\\n").length - 1;
+                        String contentStr = methodHistory.getContent();
+                        while (contentStr.indexOf(bodyStr) != -1) {
+                            int loc = contentStr.indexOf(bodyStr);
+                            String tmp = contentStr.substring(0,loc);
+                            if (cha == -1) {
+                                methodLines = tmp.split("\\n").length;
+                                begin = methodLines;
+                                end = begin + lines;
+                                cha = begin-beginInMethod > 0 ? begin-beginInMethod : beginInMethod-begin;
+                            } else {
+                                methodLines = methodLines + lines + tmp.split("\\n").length;
+                                int bTmp = methodLines + 1;
+                                int cTmp = bTmp-beginInMethod > 0 ? bTmp-beginInMethod : beginInMethod-bTmp;
+                                if (cTmp < cha) {
+                                    begin = bTmp;
+                                    end = begin + lines;
+                                    cha = cTmp;
+                                }
+                            }
+                            contentStr = contentStr.substring(loc+bodyStr.length());
+                        }
+                        if (begin != -1 && end != -1) {
+                            SurviveStatementInfo statementInfo = new SurviveStatementInfo();
+                            statementInfo.setBegin(begin);
+                            statementInfo.setEnd(end);
+                            statementInfo.setCommit(methodHistory.getCommit());
+                            addList.add(statementInfo);
+                        }
+                    }
+                }
+            } else {
+                lastSurviveStatement = map.get(methodHistory.getCommit());
+            }
+        }
+
+        if (addList.size() != 0) {
+            statementInfoList.addAll(addList);
+        }
+
+        return statementInfoList;
     }
 
     /**
