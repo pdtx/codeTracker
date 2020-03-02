@@ -5,6 +5,7 @@ public class ValidLineInfo {
     private String committer;
     private String metaUuid;
     private String changeRelation;
+    private String commitDate;
 
     public ValidLineInfo() {
 
@@ -40,5 +41,13 @@ public class ValidLineInfo {
 
     public void setChangeRelation(String changeRelation) {
         this.changeRelation = changeRelation;
+    }
+
+    public String getCommitDate() {
+        return commitDate;
+    }
+
+    public void setCommitDate(String commitDate) {
+        this.commitDate = commitDate;
     }
 }

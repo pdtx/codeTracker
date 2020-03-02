@@ -343,10 +343,11 @@
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="class_uuid"/>
         <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
     </resultMap>
 
     <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
-        select uuid,committer,class_uuid,change_relation from codeTracker.raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by class_uuid,commit_date desc;
+        select uuid,committer,class_uuid,change_relation,commit_date from codeTracker.raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by class_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -354,10 +355,11 @@
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="method_uuid"/>
         <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
     </resultMap>
 
     <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
-        select uuid,committer,method_uuid,change_relation from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by method_uuid,commit_date desc;
+        select uuid,committer,method_uuid,change_relation,commit_date from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by method_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -365,10 +367,11 @@
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="field_uuid"/>
         <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
     </resultMap>
 
     <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
-        select uuid,committer,field_uuid,change_relation from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by field_uuid,commit_date desc;
+        select uuid,committer,field_uuid,change_relation,commit_date from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by field_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -376,10 +379,11 @@
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="statement_uuid"/>
         <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
     </resultMap>
 
     <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
-        select uuid,committer,statement_uuid,change_relation from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by statement_uuid,commit_date desc;
+        select uuid,committer,statement_uuid,change_relation,commit_date from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by statement_uuid,commit_date desc;
     </select>
 
     <!-- -->
