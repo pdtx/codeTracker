@@ -59,7 +59,7 @@ public interface StatisticsService {
     /**
      * 获取语句历史
      */
-    Map<String,List<SurviveStatementInfo>> getStatementHistory(String methodUuid, List<String> statementBodyList);
+    List<Map<String,Map<String,List<SurviveStatementInfo>>>> getStatementHistory(String methodUuid, List<String> statementBodyList);
 
     /**
      * 删除操作

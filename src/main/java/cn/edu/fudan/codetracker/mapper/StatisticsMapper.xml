@@ -513,7 +513,11 @@
     </resultMap>
 
     <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body} order by version desc limit 1) as s) order by commit_date desc;
+        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in
+        (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body}
+         and commit_date &lt;= (select commit_date from codeTracker.raw_statement where commitid = #{commitId} limit 1)
+         and change_relation != "DELETE" order by commit_date desc limit 1) as s)
+        order by commit_date desc;
     </select>
 
     <!--一次性获取有效语句-->

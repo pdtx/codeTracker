@@ -474,13 +474,18 @@ public class StatisticsDao {
     /**
      * 获取语句历史切片
      */
-    public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body) {
-        List<SurviveStatementInfo> statementInfoList = statisticsMapper.getStatementHistory(methodUuid, body);
+    public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body, String commitId) {
+        List<SurviveStatementInfo> statementInfoList = statisticsMapper.getStatementHistory(methodUuid, body, commitId);
         List<SurviveStatementInfo> addList = new ArrayList<>();
         List<MethodHistory> methodHistoryList = statisticsMapper.getMethodHistory(methodUuid);
         Map<String,SurviveStatementInfo> map = new HashMap<>();
         Map<String,MethodHistory> mapMethod = new HashMap<>();
         for (SurviveStatementInfo surviveStatementInfo : statementInfoList) {
+            if (surviveStatementInfo.getChangeRelation().equals("DELETE")) {
+                surviveStatementInfo.setBody(null);
+                surviveStatementInfo.setBegin(-1);
+                surviveStatementInfo.setEnd(-1);
+            }
             map.put(surviveStatementInfo.getCommit(),surviveStatementInfo);
         }
         for (MethodHistory methodHistory : methodHistoryList) {

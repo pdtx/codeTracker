@@ -305,7 +305,7 @@ public interface StatisticsMapper {
     /**
      * 获取语句历史切片
      */
-    List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body);
+    List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitId") String commitId);
 
     /**
      * 删除项目相关追溯数据

@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -337,11 +338,11 @@ public class StatisticsController {
     public ResponseBean getStatementHistory(@RequestBody JSONObject requestParam) {
         try {
             String methodUuid = requestParam.getString("methodUuid");
-            List<String> bodyList = new ArrayList<>();
-            for (Object obj : requestParam.getJSONArray("statementList")) {
-                bodyList.add(obj.toString());
+            List<String> statementList = new ArrayList<>();
+            for (Object object : requestParam.getJSONArray("statementList")) {
+                statementList.add((String)object);
             }
-            Map<String,List<SurviveStatementInfo>> data = statisticsService.getStatementHistory(methodUuid, bodyList);
+            List<Map<String,Map<String,List<SurviveStatementInfo>>>> data = statisticsService.getStatementHistory(methodUuid, statementList);
             return new ResponseBean(200, "", data);
         } catch (Exception e) {
             e.printStackTrace();

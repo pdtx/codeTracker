@@ -62,8 +62,12 @@ public class ScanServiceImpl implements ScanService {
         List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
         log.info("commit size : " +  commitList.size());
         boolean isInit = false;
-        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
-        repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
+        if (isAbort) {
+            repoDao.updateScanStatus(repoUuid, branch, "aborted");
+        } else {
+            repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        }
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
@@ -81,8 +85,12 @@ public class ScanServiceImpl implements ScanService {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
-        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
-        repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
+        if (isAbort) {
+            repoDao.updateScanStatus(repoUuid, branch, "aborted");
+        } else {
+            repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        }
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
@@ -99,12 +107,16 @@ public class ScanServiceImpl implements ScanService {
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
-        scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, true);
-        repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, true);
+        if (isAbort) {
+            repoDao.updateScanStatus(repoUuid, branch, "aborted");
+        } else {
+            repoDao.updateScanStatus(repoUuid, branch, "scanned");
+        }
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
-    private void scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
+    private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
         RepoInfoBuilder repoInfo;
         Map<String,LineInfo> lineInfoMap = new HashMap<>();
         int num = 0;
@@ -124,8 +136,10 @@ public class ScanServiceImpl implements ScanService {
                 }
                 repoDao.updateLatestCommit(repoUuid, branch, commit);
             }
+            return false;
         } catch (Exception e) {
             log.error(e.getMessage());
+            return true;
         }
     }
 
