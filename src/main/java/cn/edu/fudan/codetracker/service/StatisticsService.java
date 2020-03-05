@@ -7,6 +7,25 @@ import java.util.Map;
 
 public interface StatisticsService {
 
+    /**
+     * 优化有效行数查询
+     */
+    Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate);
+
+    /**
+     * 统计存活周期
+     */
+    Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
+
+    /**
+     * 删除操作
+     */
+    void delete(String repoUuid, String branch);
+
+
+
+
+    //未用到
     List<VersionStatistics> getStatistics(String repoUuid, String branch, String type);
 
     List<MostModifiedInfo> getMostModifiedInfo(String repoUuid, String branch, String type);
@@ -14,7 +33,7 @@ public interface StatisticsService {
     List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type);
 
     /**
-    resultMap数据结构待议
+     resultMap数据结构待议
      */
     List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type, String beginDate, String endDate);
 
@@ -36,38 +55,5 @@ public interface StatisticsService {
 
     Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch);
 
-    /**
-     * 优化有效行数查询
-     */
-    Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate);
 
-
-    /**
-     临时演示接口
-     */
-    List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch);
-    /**
-     method历史接口
-     */
-    List<MethodHistory> getMethodHistory(String methodUuid);
-
-    /**
-     * 统计存活周期
-     */
-    Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
-
-    /**
-     * 获取语句历史
-     */
-    List<Map<String,Map<String,List<SurviveStatementInfo>>>> getStatementHistory(String methodUuid, List<String> statementBodyList);
-
-    /**
-     * 删除操作
-     */
-    void delete(String repoUuid, String branch);
-
-    /**
-     * 获取所有可选语句
-     */
-    List<Map<String,String>> getAllValidStatement(String methodUuid, String commitDate, String body);
 }

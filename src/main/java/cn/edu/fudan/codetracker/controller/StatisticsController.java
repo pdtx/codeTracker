@@ -30,6 +30,75 @@ public class StatisticsController {
     private RestInterfaceManager restInterface;
 
     /**
+     * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
+     */
+    @GetMapping(value = {"/statistics/committer/line/valid"})
+    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
+        try{
+            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, beginDate, endDate);
+            if (developer == null) {
+                return new ResponseBean(200, "", data);
+            } else {
+                return new ResponseBean(200, "", data.get(developer));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 统计存活周期
+     */
+    @GetMapping(value = {"/statistics/lifecycle"})
+    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @Param("developer") String developer){
+        try{
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 00:00:00";
+            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
+            if (developer == null) {
+                return new ResponseBean(200, "", data);
+            } else {
+                return new ResponseBean(200, "" , data.get(developer));
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 删除操作
+     */
+    @GetMapping(value = {"/delete"})
+    public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
+        try{
+            statisticsService.delete(repoUuid, branch);
+            return new ResponseBean(200, "delete success", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    @Autowired
+    public void setStatisticsService(StatisticsService statisticsService) {
+        this.statisticsService = statisticsService;
+    }
+
+    @Autowired
+    public void setRestInterface(RestInterfaceManager restInterface) {
+        this.restInterface = restInterface;
+    }
+
+
+
+
+
+    //未用到
+    /**
      * 获取版本的统计信息
      * @param type package file class method
      */
@@ -216,24 +285,7 @@ public class StatisticsController {
         }
     }
 
-    /**
-     * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
-     */
-    @GetMapping(value = {"/statistics/committer/line/valid"})
-    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
-        try{
-            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, beginDate, endDate);
-            if (developer == null) {
-                return new ResponseBean(200, "", data);
-            } else {
-                return new ResponseBean(200, "", data.get(developer));
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            // 需要修改code
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
+
 
 //    /**
 //     * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
@@ -275,115 +327,7 @@ public class StatisticsController {
     }
 
 
-    /**
-     * 临时接口
-     */
-    @GetMapping(value = {"/statistics/committer/temp/focus"})
-    public ResponseBean getFocus(@RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch){
-        try{
-            List<TempMostInfo> data = statisticsService.getFocus(committer, beginDate, endDate, repoUuid, branch);
-            return new ResponseBean(200, "", data);
-        }catch (Exception e){
-            e.printStackTrace();
-            // 需要修改code
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-    /**
-     * method历史接口
-     */
-    @GetMapping(value = {"/statistics/temp/method/history"})
-    public ResponseBean getMethodHistory(@RequestParam("methodUuid") String methodUuid){
-        try{
-            List<MethodHistory> data = statisticsService.getMethodHistory(methodUuid);
-            return new ResponseBean(200, "", data);
-        }catch (Exception e){
-            e.printStackTrace();
-            // 需要修改code
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
 
 
-    /**
-     * 统计存活周期
-     */
-    @GetMapping(value = {"/statistics/lifecycle"})
-    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @Param("developer") String developer){
-        try{
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 00:00:00";
-            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
-            if (developer == null) {
-                return new ResponseBean(200, "", data);
-            } else {
-                return new ResponseBean(200, "" , data.get(developer));
-            }
 
-        }catch (Exception e){
-            e.printStackTrace();
-            // 需要修改code
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-
-    /**
-     * 获取语句历史
-     * @param requestParam 包括methodUuid,以及语句body的数组
-     * @return
-     */
-    @PostMapping(value = {"/statistics/statement/history"})
-    public ResponseBean getStatementHistory(@RequestBody JSONObject requestParam) {
-        try {
-            String methodUuid = requestParam.getString("methodUuid");
-            List<String> statementList = new ArrayList<>();
-            for (Object object : requestParam.getJSONArray("statementList")) {
-                statementList.add((String)object);
-            }
-            List<Map<String,Map<String,List<SurviveStatementInfo>>>> data = statisticsService.getStatementHistory(methodUuid, statementList);
-            return new ResponseBean(200, "", data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-    /**
-     * 删除操作
-     */
-    @GetMapping(value = {"/delete"})
-    public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
-        try{
-            statisticsService.delete(repoUuid, branch);
-            return new ResponseBean(200, "delete success", null);
-        } catch (Exception e) {
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-    /**
-     * 获取全部可选语句
-     */
-    @PostMapping(value = {"/valid/statement"})
-    public ResponseBean getAllValidStatement(@RequestBody JSONObject requestParam) {
-        try {
-            List<Map<String,String>> data = statisticsService.getAllValidStatement(requestParam.getString("methodUuid"), requestParam.getString("commitDate"), requestParam.getString("body"));
-            return new ResponseBean(200, "", data);
-        } catch (Exception e) {
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-
-    @Autowired
-    public void setStatisticsService(StatisticsService statisticsService) {
-        this.statisticsService = statisticsService;
-    }
-
-    @Autowired
-    public void setRestInterface(RestInterfaceManager restInterface) {
-        this.restInterface = restInterface;
-    }
 }

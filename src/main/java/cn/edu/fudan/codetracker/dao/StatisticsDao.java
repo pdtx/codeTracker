@@ -25,6 +25,129 @@ public class StatisticsDao {
         this.statisticsMapper = statisticsMapper;
     }
 
+    /**
+     * get valid line info
+     */
+    public List<ValidLineInfo> getValidLineInfo(String type, String repoUuid, String branch, String beginDate, String endDate) {
+        switch (type) {
+            case "class":
+                return statisticsMapper.getValidLineInfoByClass(repoUuid, branch, beginDate, endDate);
+            case "method":
+                return statisticsMapper.getValidLineInfoByMethod(repoUuid, branch, beginDate, endDate);
+            case "field":
+                return statisticsMapper.getValidLineInfoByField(repoUuid, branch, beginDate, endDate);
+            case "statement":
+                return statisticsMapper.getValidLineInfoByStatement(repoUuid, branch, beginDate, endDate);
+            default:
+                return null;
+        }
+    }
+
+
+    /**
+     * 统计存活周期
+     */
+    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
+        endDate = endDate.replace("00:00:00", "24:00:00");
+        List<SurviveStatementInfo> surviveStatementInfos = new ArrayList<>();
+        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch);
+        if (listStatement != null && listStatement.size() != 0) {
+            surviveStatementInfos.addAll(listStatement);
+        }
+        if (listMethod != null && listMethod.size() != 0) {
+            surviveStatementInfos.addAll(listMethod);
+        }
+        if (listField != null && listField.size() != 0) {
+            surviveStatementInfos.addAll(listField);
+        }
+        committerMap = new HashMap<>();
+        SurviveStatementInfo lastSurviveStatement = null;
+        for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
+            if (lastSurviveStatement != null) {
+                if (!lastSurviveStatement.getStatementUuid().equals(surviveStatementInfo.getStatementUuid())) {
+                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+                        long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
+                        if (days > 0) {
+                            saveInMap(lastSurviveStatement.getCommitter(), days);
+                        }
+                    }
+                } else {
+                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
+                        if (surviveStatementInfo.getChangeRelation().equals("SELF_CHANGE") || surviveStatementInfo.getChangeRelation().equals("DELETE")) {
+                            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), surviveStatementInfo.getCommitDate());
+                            if (days > 0) {
+                                saveInMap(lastSurviveStatement.getCommitter(), days);
+                            }
+                        }
+                    }
+                }
+            }
+            lastSurviveStatement = surviveStatementInfo;
+        }
+        if (lastSurviveStatement != null && !lastSurviveStatement.getChangeRelation().equals("DELETE")) {
+            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
+            if (days > 0) {
+                saveInMap(lastSurviveStatement.getCommitter(), days);
+            }
+        }
+        return committerMap;
+    }
+
+    private void saveInMap(String name, long days) {
+        List<Long> list = new ArrayList<>();
+        if (committerMap.keySet().contains(name)) {
+            list = committerMap.get(name);
+            list.add(days);
+            committerMap.replace(name, list);
+        } else {
+            list.add(days);
+            committerMap.put(name, list);
+        }
+    }
+
+    private long calBetweenDays(String beginStr, String endStr) {
+        final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date begin = FORMATTER.parse(beginStr);
+            Date end = FORMATTER.parse(endStr);
+            Double between = (end.getTime() - begin.getTime()) / (1000.0*3600.0*24.0);
+            long betweenLong = (Math.round(between));
+            return betweenLong;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+
+    /**
+     * 删除操作
+     */
+    public void delete(String repoUuid, String branch) {
+        statisticsMapper.deleteFromMetaPackage(repoUuid, branch);
+        statisticsMapper.deleteFromMetaFile(repoUuid, branch);
+        statisticsMapper.deleteFromMetaClass(repoUuid, branch);
+        statisticsMapper.deleteFromMetaMethod(repoUuid, branch);
+        statisticsMapper.deleteFromMetaField(repoUuid, branch);
+        statisticsMapper.deleteFromMetaStatement(repoUuid, branch);
+        statisticsMapper.deleteFromRawPackage(repoUuid, branch);
+        statisticsMapper.deleteFromRawFile(repoUuid, branch);
+        statisticsMapper.deleteFromRawClass(repoUuid, branch);
+        statisticsMapper.deleteFromRawMethod(repoUuid, branch);
+        statisticsMapper.deleteFromRawField(repoUuid, branch);
+        statisticsMapper.deleteFromRawStatement(repoUuid, branch);
+        statisticsMapper.deleteFromRelationStatement(repoUuid, branch);
+        statisticsMapper.deleteFromLineCount(repoUuid, branch);
+        statisticsMapper.deleteFromTrackerRepo(repoUuid, branch);
+    }
+
+
+
+
+
+    //未用到
     public List<VersionStatistics> getStatisticsByType(String repoUuid, String branch, String type) {
         type = type.toUpperCase();
         if (ProjectInfoLevel.METHOD.name().equals(type)) {
@@ -273,24 +396,6 @@ public class StatisticsDao {
     }
 
     /**
-     * get valid line info
-     */
-    public List<ValidLineInfo> getValidLineInfo(String type, String repoUuid, String branch, String beginDate, String endDate) {
-        switch (type) {
-            case "class":
-                return statisticsMapper.getValidLineInfoByClass(repoUuid, branch, beginDate, endDate);
-            case "method":
-                return statisticsMapper.getValidLineInfoByMethod(repoUuid, branch, beginDate, endDate);
-            case "field":
-                return statisticsMapper.getValidLineInfoByField(repoUuid, branch, beginDate, endDate);
-            case "statement":
-                return statisticsMapper.getValidLineInfoByStatement(repoUuid, branch, beginDate, endDate);
-            default:
-                return null;
-        }
-    }
-
-    /**
      * get committer line info by commit
      */
     public List<CommitterLineInfo> getCommitterLineInfo(String repoUuid, String branch, String commitDate) {
@@ -305,269 +410,6 @@ public class StatisticsDao {
             return statisticsMapper.getMetaMethodUuidByMethodDate(filePath, repoUuid, branch, className, signature, commitDate, beginDate);
         }
 
-    }
-
-
-    /**
-     * 临时接口
-     */
-    public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
-        List<MostModifiedInfo> packageInfos = statisticsMapper.getPackageInfoMost(committer, beginDate, endDate, repoUuid, branch);
-        List<TempMostInfo> packageList = new ArrayList<>();
-        for (MostModifiedInfo mostModifiedInfo: packageInfos) {
-            TempMostInfo packageInfo = new TempMostInfo();
-            packageInfo.setName(mostModifiedInfo.getPackageName());
-            packageInfo.setQuantity(mostModifiedInfo.getVersion());
-            packageInfo.setUuid(mostModifiedInfo.getUuid());
-            List<MostModifiedInfo> classInfos = statisticsMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
-            List<TempMostInfo> classList = new ArrayList<>();
-            for (MostModifiedInfo modifiedInfo : classInfos) {
-                TempMostInfo classInfo = new TempMostInfo();
-                classInfo.setName(modifiedInfo.getClassName());
-                classInfo.setQuantity(modifiedInfo.getVersion());
-                classInfo.setUuid(modifiedInfo.getUuid());
-                List<MostModifiedInfo> methodInfos = statisticsMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName(),beginDate,endDate,repoUuid,branch);
-                List<TempMostInfo> methodList = new ArrayList<>();
-                for (MostModifiedInfo methodInfo : methodInfos) {
-                    TempMostInfo method = new TempMostInfo();
-                    method.setName(methodInfo.getMethodName());
-                    method.setQuantity(methodInfo.getVersion());
-                    method.setChildInfos(null);
-                    method.setUuid(methodInfo.getUuid());
-                    methodList.add(method);
-                }
-                classInfo.setChildInfos(methodList);
-                classList.add(classInfo);
-            }
-            packageInfo.setChildInfos(classList);
-            packageList.add(packageInfo);
-        }
-        return packageList;
-    }
-
-
-    /**
-     * 临时接口
-     */
-    public List<MethodHistory> getMethodHistory(String methodUuid) {
-        return statisticsMapper.getMethodHistory(methodUuid);
-    }
-
-    /**
-     * 一次性获取全部可选语句
-     */
-    public List<Map<String,String>> getAllValidStatement(String methodUuid, String commitDate, String body) {
-        String[] strs = body.split("\\n");
-        List<Map<String,String>> mapList = new ArrayList<>();
-        List<String> list = new ArrayList<>();
-
-        List<StatementInfoByMethod> statementInfoByMethodList = statisticsMapper.getAllValidStatement(methodUuid, commitDate);
-        String lastStatementUuid = "";
-        for (StatementInfoByMethod statementInfoByMethod : statementInfoByMethodList) {
-            if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid)) {
-                if(!"DELETE".equals(statementInfoByMethod.getChangeRelation())) {
-                    list.add(statementInfoByMethod.getBody());
-                }
-                lastStatementUuid = statementInfoByMethod.getStatementUuid();
-            }
-        }
-
-        for (String str : strs) {
-            boolean find = false;
-            String tmp = str.trim();
-            Map<String,String> map = new HashMap<>();
-            if ("".equals(tmp)) {
-                map.put(str, null);
-            } else {
-                for (String s : list) {
-                    if (s.startsWith(tmp) || tmp.startsWith(s)) {
-                        map.put(str, s);
-                        find = true;
-                        break;
-                    }
-                }
-                if (!find) {
-                    map.put(str, null);
-                }
-            }
-            mapList.add(map);
-        }
-        return mapList;
-    }
-
-
-    /**
-     * 统计存活周期
-     */
-    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        endDate = endDate.replace("00:00:00", "24:00:00");
-        List<SurviveStatementInfo> surviveStatementInfos = new ArrayList<>();
-        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
-        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch);
-        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch);
-        if (listStatement != null && listStatement.size() != 0) {
-            surviveStatementInfos.addAll(listStatement);
-        }
-        if (listMethod != null && listMethod.size() != 0) {
-            surviveStatementInfos.addAll(listMethod);
-        }
-        if (listField != null && listField.size() != 0) {
-            surviveStatementInfos.addAll(listField);
-        }
-        committerMap = new HashMap<>();
-        SurviveStatementInfo lastSurviveStatement = null;
-        for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
-            if (lastSurviveStatement != null) {
-                if (!lastSurviveStatement.getStatementUuid().equals(surviveStatementInfo.getStatementUuid())) {
-                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
-                        long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
-                        if (days > 0) {
-                            saveInMap(lastSurviveStatement.getCommitter(), days);
-                        }
-                    }
-                } else {
-                    if (lastSurviveStatement.getChangeRelation().equals("ADD") || lastSurviveStatement.getChangeRelation().equals("SELF_CHANGE")) {
-                        if (surviveStatementInfo.getChangeRelation().equals("SELF_CHANGE") || surviveStatementInfo.getChangeRelation().equals("DELETE")) {
-                            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), surviveStatementInfo.getCommitDate());
-                            if (days > 0) {
-                                saveInMap(lastSurviveStatement.getCommitter(), days);
-                            }
-                        }
-                    }
-                }
-            }
-            lastSurviveStatement = surviveStatementInfo;
-        }
-        if (lastSurviveStatement != null && !lastSurviveStatement.getChangeRelation().equals("DELETE")) {
-            long days = calBetweenDays(lastSurviveStatement.getCommitDate(), endDate);
-            if (days > 0) {
-                saveInMap(lastSurviveStatement.getCommitter(), days);
-            }
-        }
-        return committerMap;
-    }
-
-    private void saveInMap(String name, long days) {
-        List<Long> list = new ArrayList<>();
-        if (committerMap.keySet().contains(name)) {
-            list = committerMap.get(name);
-            list.add(days);
-            committerMap.replace(name, list);
-        } else {
-            list.add(days);
-            committerMap.put(name, list);
-        }
-    }
-
-    private long calBetweenDays(String beginStr, String endStr) {
-        final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            Date begin = FORMATTER.parse(beginStr);
-            Date end = FORMATTER.parse(endStr);
-            Double between = (end.getTime() - begin.getTime()) / (1000.0*3600.0*24.0);
-            long betweenLong = (Math.round(between));
-            return betweenLong;
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    /**
-     * 获取语句历史切片
-     */
-    public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body, String commitId) {
-        List<SurviveStatementInfo> statementInfoList = statisticsMapper.getStatementHistory(methodUuid, body, commitId);
-        List<SurviveStatementInfo> addList = new ArrayList<>();
-        List<MethodHistory> methodHistoryList = statisticsMapper.getMethodHistory(methodUuid);
-        Map<String,SurviveStatementInfo> map = new HashMap<>();
-        Map<String,MethodHistory> mapMethod = new HashMap<>();
-        for (SurviveStatementInfo surviveStatementInfo : statementInfoList) {
-            if (surviveStatementInfo.getChangeRelation().equals("DELETE")) {
-                surviveStatementInfo.setBody(null);
-                surviveStatementInfo.setBegin(-1);
-                surviveStatementInfo.setEnd(-1);
-            }
-            map.put(surviveStatementInfo.getCommit(),surviveStatementInfo);
-        }
-        for (MethodHistory methodHistory : methodHistoryList) {
-            mapMethod.put(methodHistory.getCommit(),methodHistory);
-        }
-
-        SurviveStatementInfo lastSurviveStatement = null;
-        for (MethodHistory methodHistory : methodHistoryList) {
-            if (!map.keySet().contains(methodHistory.getCommit())) {
-                if (lastSurviveStatement != null) {
-                    if (mapMethod.keySet().contains(lastSurviveStatement.getCommit())) {
-                        MethodHistory lastMethodHistory = mapMethod.get(lastSurviveStatement.getCommit());
-                        int begin = -1;
-                        int end = -1;
-                        int cha = -1;
-                        int methodLines = 0;
-                        int beginInMethod = lastSurviveStatement.getBegin() - lastMethodHistory.getMethodBegin();
-                        String bodyStr = lastSurviveStatement.getBody();
-                        int lines = bodyStr.split("\\n").length - 1;
-                        String contentStr = methodHistory.getContent();
-                        while (contentStr.indexOf(bodyStr) != -1) {
-                            int loc = contentStr.indexOf(bodyStr);
-                            String tmp = contentStr.substring(0,loc);
-                            if (cha == -1) {
-                                methodLines = tmp.split("\\n").length;
-                                begin = methodLines;
-                                end = begin + lines;
-                                cha = begin-beginInMethod > 0 ? begin-beginInMethod : beginInMethod-begin;
-                            } else {
-                                methodLines = methodLines + lines + tmp.split("\\n").length;
-                                int bTmp = methodLines + 1;
-                                int cTmp = bTmp-beginInMethod > 0 ? bTmp-beginInMethod : beginInMethod-bTmp;
-                                if (cTmp < cha) {
-                                    begin = bTmp;
-                                    end = begin + lines;
-                                    cha = cTmp;
-                                }
-                            }
-                            contentStr = contentStr.substring(loc+bodyStr.length());
-                        }
-                        if (begin != -1 && end != -1) {
-                            SurviveStatementInfo statementInfo = new SurviveStatementInfo();
-                            statementInfo.setBegin(begin);
-                            statementInfo.setEnd(end);
-                            statementInfo.setCommit(methodHistory.getCommit());
-                            addList.add(statementInfo);
-                        }
-                    }
-                }
-            } else {
-                lastSurviveStatement = map.get(methodHistory.getCommit());
-            }
-        }
-
-        if (addList.size() != 0) {
-            statementInfoList.addAll(addList);
-        }
-
-        return statementInfoList;
-    }
-
-    /**
-     * 删除操作
-     */
-    public void delete(String repoUuid, String branch) {
-        statisticsMapper.deleteFromMetaPackage(repoUuid, branch);
-        statisticsMapper.deleteFromMetaFile(repoUuid, branch);
-        statisticsMapper.deleteFromMetaClass(repoUuid, branch);
-        statisticsMapper.deleteFromMetaMethod(repoUuid, branch);
-        statisticsMapper.deleteFromMetaField(repoUuid, branch);
-        statisticsMapper.deleteFromMetaStatement(repoUuid, branch);
-        statisticsMapper.deleteFromRawPackage(repoUuid, branch);
-        statisticsMapper.deleteFromRawFile(repoUuid, branch);
-        statisticsMapper.deleteFromRawClass(repoUuid, branch);
-        statisticsMapper.deleteFromRawMethod(repoUuid, branch);
-        statisticsMapper.deleteFromRawField(repoUuid, branch);
-        statisticsMapper.deleteFromRawStatement(repoUuid, branch);
-        statisticsMapper.deleteFromRelationStatement(repoUuid, branch);
-        statisticsMapper.deleteFromLineCount(repoUuid, branch);
-        statisticsMapper.deleteFromTrackerRepo(repoUuid, branch);
     }
 
 }

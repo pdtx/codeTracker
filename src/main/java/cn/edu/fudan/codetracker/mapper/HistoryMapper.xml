@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.codetracker.mapper.HistoryMapper">
+
+    <!--获取语句所有切片-->
+    <resultMap id="StatementHistory" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="commit" column="commitid"/>
+        <result property="committer" column="committer"/>
+        <result property="body" column="body"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="statementUuid" column="statement_uuid"/>
+        <result property="begin" column="statement_begin"/>
+        <result property="end" column="statement_end"/>
+    </resultMap>
+
+    <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
+        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in
+        (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body}
+         and commit_date &lt;= (select commit_date from codeTracker.raw_method where commitid = #{commitId} limit 1)
+         and change_relation != "DELETE" order by commit_date desc limit 1) as s)
+        order by commit_date desc;
+    </select>
+
+
+    <!--一次性获取有效语句-->
+    <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="body" column="body"/>
+    </resultMap>
+
+    <select id="getAllValidStatement" parameterType="String" resultMap="AllValidStatement">
+        select statement_uuid, change_relation, body from codeTracker.raw_statement where method_uuid = #{methodUuid} and commit_date &lt;= #{commitDate} order by statement_begin,statement_uuid,commit_date desc;
+    </select>
+
+
+    <!--获取method历史-->
+    <resultMap id="MethodHistory" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
+        <id property="commit" column="commitid"/>
+        <result property="parentCommit" column="parent_commit"/>
+        <result property="committer" column="committer"/>
+        <result property="commitMessage" column="commit_message"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="content" column="content"/>
+        <result property="diff" column="diff" jdbcType="OTHER" typeHandler="cn.edu.fudan.codetracker.handler.JsonTypeHandler"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="methodBegin" column="method_begin"/>
+        <result property="methodEnd" column="method_end"/>
+    </resultMap>
+
+    <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
+        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from codeTracker.raw_method where method_uuid=#{methodUuid} order by commit_date;
+    </select>
+
+
+    <!--演示用临时 -->
+    <resultMap id="PackageInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="root_uuid"/>
+        <result property="moduleName" column="module_name"/>
+        <result property="packageName" column="package_name"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
+        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from codeTracker.raw_package as r,codeTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and r.change_relation != "ADD" group by r.root_uuid order by quantity desc limit 5;
+    </select>
+
+    <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="class_uuid"/>
+        <result property="className" column="class_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
+        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from codeTracker.raw_class as r,codeTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation != "ADD" group by r.class_uuid order by quantity desc limit 5;
+    </select>
+
+    <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="method_uuid"/>
+        <result property="methodName" column="signature"/>
+        <result property="version" column="quantity"/>
+    </resultMap>
+
+    <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
+        select r.method_uuid, r.signature, count(*) as quantity from codeTracker.raw_method as r,codeTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation != "ADD" group by r.method_uuid order by quantity desc limit 5;
+    </select>
+
+</mapper>

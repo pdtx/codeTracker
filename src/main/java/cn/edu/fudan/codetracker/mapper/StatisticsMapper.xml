@@ -3,6 +3,158 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.StatisticsMapper">
 
+    <!--valid line 相关-->
+    <resultMap id="ValidLineInfoClass" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="class_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
+        select uuid,committer,class_uuid,change_relation,commit_date from codeTracker.raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by class_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="method_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
+        select uuid,committer,method_uuid,change_relation,commit_date from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by method_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="field_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
+        select uuid,committer,field_uuid,change_relation,commit_date from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by field_uuid,commit_date desc;
+    </select>
+
+    <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="metaUuid" column="statement_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="commitDate" column="commit_date"/>
+    </resultMap>
+
+    <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
+        select uuid,committer,statement_uuid,change_relation,commit_date from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by statement_uuid,commit_date desc;
+    </select>
+
+    <!--获取时间段内代码存活情况-->
+    <resultMap id="SurviveStatement" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="statementUuid" column="statement_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
+        select statement_uuid, committer, commit_date, change_relation from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
+    </select>
+
+    <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="statementUuid" column="method_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
+        select method_uuid, committer, commit_date, change_relation from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by method_uuid, commit_date;
+    </select>
+
+    <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
+        <id property="statementUuid" column="field_uuid"/>
+        <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
+        select field_uuid, committer, commit_date, change_relation from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by field_uuid, commit_date;
+    </select>
+
+
+    <!--删除操作-->
+    <delete id="deleteFromMetaPackage" parameterType="String">
+        delete from codeTracker.meta_package where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaFile" parameterType="String">
+        delete from codeTracker.meta_file where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaClass" parameterType="String">
+        delete from codeTracker.meta_class where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaMethod" parameterType="String">
+        delete from codeTracker.meta_method where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaField" parameterType="String">
+        delete from codeTracker.meta_field where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromMetaStatement" parameterType="String">
+        delete from codeTracker.meta_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawPackage" parameterType="String">
+        delete from codeTracker.raw_package where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawFile" parameterType="String">
+        delete from codeTracker.raw_file where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawClass" parameterType="String">
+        delete from codeTracker.raw_class where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawMethod" parameterType="String">
+        delete from codeTracker.raw_method where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawField" parameterType="String">
+        delete from codeTracker.raw_field where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRawStatement" parameterType="String">
+        delete from codeTracker.raw_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromRelationStatement" parameterType="String">
+        delete from codeTracker.relation_statement where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromLineCount" parameterType="String">
+        delete from codeTracker.line_count where repo_uuid=#{repoUuid} and branch=#{branch};
+    </delete>
+
+    <delete id="deleteFromTrackerRepo" parameterType="String">
+        delete from codeTracker.tracker_repo where repo_id=#{repoUuid} and branch=#{branch};
+    </delete>
+
+
+
+
+
+
+
+    <!--    暂时未用到-->
     <!-- -->
     <resultMap id="versionStatistics" type="cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics">
         <id property="version" column="version"/>
@@ -78,7 +230,6 @@
     <select id="getMostModifiedPackage" parameterType="String" resultMap="modifiedPackage">
         select uuid,package_name,module_name,version from codeTracker.meta_package  where version >1 and meta_package.repo_uuid = #{repoUuid} and meta_package.branch = #{branch} order by version desc limit 20;
     </select>
-
 
 
     <!-- -->
@@ -337,55 +488,6 @@
         select committer from codeTracker.raw_statement where statement_uuid in (select distinct statement_uuid from codeTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body}) and commit_date &lt;= #{commitDate} and commit_date &gt;= #{beginDate} and (change_relation = "SELF_CHANGE" or change_relation = "ADD") order by commit_date desc limit 1;
     </select>
 
-    <!--valid line 相关-->
-    <resultMap id="ValidLineInfoClass" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
-        <id property="uuid" column="uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="metaUuid" column="class_uuid"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="commitDate" column="commit_date"/>
-    </resultMap>
-
-    <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
-        select uuid,committer,class_uuid,change_relation,commit_date from codeTracker.raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by class_uuid,commit_date desc;
-    </select>
-
-    <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
-        <id property="uuid" column="uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="metaUuid" column="method_uuid"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="commitDate" column="commit_date"/>
-    </resultMap>
-
-    <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
-        select uuid,committer,method_uuid,change_relation,commit_date from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by method_uuid,commit_date desc;
-    </select>
-
-    <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
-        <id property="uuid" column="uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="metaUuid" column="field_uuid"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="commitDate" column="commit_date"/>
-    </resultMap>
-
-    <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
-        select uuid,committer,field_uuid,change_relation,commit_date from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by field_uuid,commit_date desc;
-    </select>
-
-    <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
-        <id property="uuid" column="uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="metaUuid" column="statement_uuid"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="commitDate" column="commit_date"/>
-    </resultMap>
-
-    <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
-        select uuid,committer,statement_uuid,change_relation,commit_date from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from codeTracker.raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by statement_uuid,commit_date desc;
-    </select>
-
     <!-- -->
     <resultMap id="MetaMethodUuid" type="String">
         <id property="methodUuid" column="method_uuid"/>
@@ -400,7 +502,6 @@
         select method_uuid from codeTracker.raw_method as r, codeTracker.meta_method as m where r.method_uuid = m.uuid and m.file_path = #{filePath} and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and m.class_name = #{className} and r.signature = #{signature} and r.commit_date &lt;= #{commitDate} and r.commit_date &gt;= #{beginDate} and (r.change_relation = "SELF_CHANGE" or r.change_relation = "ADD") order by r.commit_date desc limit 1;
     </select>
 
-
     <!-- -->
     <resultMap id="CommitterLineInfo" type="cn.edu.fudan.codetracker.domain.resultmap.CommitterLineInfo">
         <id property="commitId" column="commitid"/>
@@ -412,184 +513,5 @@
     <select id="getCommitterLineInfo" parameterType="String" resultMap="CommitterLineInfo">
         select commitid, committer, add_count, delete_count from codeTracker.line_count where repo_uuid = #{repoUuid} and branch = #{branch} and commit_date &lt;= #{commitDate};
     </select>
-
-
-    <!--演示用临时 -->
-    <resultMap id="PackageInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="root_uuid"/>
-        <result property="moduleName" column="module_name"/>
-        <result property="packageName" column="package_name"/>
-        <result property="version" column="quantity"/>
-    </resultMap>
-
-    <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.root_uuid, m.package_name, m.module_name, count(*) as quantity from codeTracker.raw_package as r,codeTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and r.change_relation != "ADD" group by r.root_uuid order by quantity desc limit 5;
-    </select>
-
-    <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="class_uuid"/>
-        <result property="className" column="class_name"/>
-        <result property="filePath" column="file_path"/>
-        <result property="version" column="quantity"/>
-    </resultMap>
-
-    <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.class_uuid, m.class_name, m.file_path, count(*) as quantity from codeTracker.raw_class as r,codeTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation != "ADD" group by r.class_uuid order by quantity desc limit 5;
-    </select>
-
-    <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="method_uuid"/>
-        <result property="methodName" column="signature"/>
-        <result property="version" column="quantity"/>
-    </resultMap>
-
-    <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
-        select r.method_uuid, r.signature, count(*) as quantity from codeTracker.raw_method as r,codeTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt; #{beginDate} and r.commit_date &lt; #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation != "ADD" group by r.method_uuid order by quantity desc limit 5;
-    </select>
-
-    <!--获取method历史-->
-    <resultMap id="MethodHistory" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
-        <id property="commit" column="commitid"/>
-        <result property="parentCommit" column="parent_commit"/>
-        <result property="committer" column="committer"/>
-        <result property="commitMessage" column="commit_message"/>
-        <result property="commitDate" column="commit_date"/>
-        <result property="content" column="content"/>
-        <result property="diff" column="diff" jdbcType="OTHER" typeHandler="cn.edu.fudan.codetracker.handler.JsonTypeHandler"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="methodBegin" column="method_begin"/>
-        <result property="methodEnd" column="method_end"/>
-    </resultMap>
-
-    <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
-        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from codeTracker.raw_method where method_uuid=#{methodUuid} order by commit_date;
-    </select>
-
-
-    <!--获取时间段内代码存活情况-->
-    <resultMap id="SurviveStatement" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
-        <id property="statementUuid" column="statement_uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="commitDate" column="commit_date"/>
-        <result property="changeRelation" column="change_relation"/>
-    </resultMap>
-
-    <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select statement_uuid, committer, commit_date, change_relation from codeTracker.raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by statement_uuid, commit_date;
-    </select>
-
-    <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
-        <id property="statementUuid" column="method_uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="commitDate" column="commit_date"/>
-        <result property="changeRelation" column="change_relation"/>
-    </resultMap>
-
-    <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
-        select method_uuid, committer, commit_date, change_relation from codeTracker.raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by method_uuid, commit_date;
-    </select>
-
-    <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
-        <id property="statementUuid" column="field_uuid"/>
-        <result property="committer" column="committer"/>
-        <result property="commitDate" column="commit_date"/>
-        <result property="changeRelation" column="change_relation"/>
-    </resultMap>
-
-    <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
-        select field_uuid, committer, commit_date, change_relation from codeTracker.raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by field_uuid, commit_date;
-    </select>
-
-
-    <!--获取语句所有切片-->
-    <resultMap id="StatementHistory" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
-        <id property="commit" column="commitid"/>
-        <result property="committer" column="committer"/>
-        <result property="body" column="body"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="statementUuid" column="statement_uuid"/>
-        <result property="begin" column="statement_begin"/>
-        <result property="end" column="statement_end"/>
-    </resultMap>
-
-    <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in
-        (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body}
-         and commit_date &lt;= (select commit_date from codeTracker.raw_method where commitid = #{commitId} limit 1)
-         and change_relation != "DELETE" order by commit_date desc limit 1) as s)
-        order by commit_date desc;
-    </select>
-
-    <!--一次性获取有效语句-->
-    <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
-        <id property="statementUuid" column="statement_uuid"/>
-        <result property="changeRelation" column="change_relation"/>
-        <result property="body" column="body"/>
-    </resultMap>
-
-    <select id="getAllValidStatement" parameterType="String" resultMap="AllValidStatement">
-        select statement_uuid, change_relation, body from codeTracker.raw_statement where method_uuid = #{methodUuid} and commit_date &lt;= #{commitDate} order by statement_begin,statement_uuid,commit_date desc;
-    </select>
-
-    <!--删除操作-->
-    <delete id="deleteFromMetaPackage" parameterType="String">
-        delete from codeTracker.meta_package where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromMetaFile" parameterType="String">
-        delete from codeTracker.meta_file where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromMetaClass" parameterType="String">
-        delete from codeTracker.meta_class where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromMetaMethod" parameterType="String">
-        delete from codeTracker.meta_method where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromMetaField" parameterType="String">
-        delete from codeTracker.meta_field where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromMetaStatement" parameterType="String">
-        delete from codeTracker.meta_statement where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawPackage" parameterType="String">
-        delete from codeTracker.raw_package where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawFile" parameterType="String">
-        delete from codeTracker.raw_file where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawClass" parameterType="String">
-        delete from codeTracker.raw_class where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawMethod" parameterType="String">
-        delete from codeTracker.raw_method where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawField" parameterType="String">
-        delete from codeTracker.raw_field where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRawStatement" parameterType="String">
-        delete from codeTracker.raw_statement where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromRelationStatement" parameterType="String">
-        delete from codeTracker.relation_statement where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromLineCount" parameterType="String">
-        delete from codeTracker.line_count where repo_uuid=#{repoUuid} and branch=#{branch};
-    </delete>
-
-    <delete id="deleteFromTrackerRepo" parameterType="String">
-        delete from codeTracker.tracker_repo where repo_id=#{repoUuid} and branch=#{branch};
-    </delete>
 
 </mapper>

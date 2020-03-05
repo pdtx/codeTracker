@@ -13,6 +13,54 @@ import java.util.List;
 @Repository
 public interface StatisticsMapper {
     /**
+     * get valid line info by class
+     */
+    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by method
+     */
+    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by field
+     */
+    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    /**
+     * get valid line info by statement
+     */
+    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+
+
+    /**
+     * 获取时间段内存活代码情况
+     */
+    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    List<SurviveStatementInfo> getSurviveMethod(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    List<SurviveStatementInfo> getSurviveField(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+
+
+    /**
+     * 删除项目相关追溯数据
+     */
+    void deleteFromMetaPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromMetaStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRawStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromRelationStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromLineCount(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    void deleteFromTrackerRepo(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
+
+
+    //暂时未用到
+
+    /**
      * distribution of method modification times
      * @param repoUuid repo uuid
      * @param branch branch
@@ -201,7 +249,6 @@ public interface StatisticsMapper {
      */
     List<StatementInfoByMethod> getStatementInfoByMethod(@Param("committer") String committer, @Param("methodUuid") String methodUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
-
     /**
      * get change committer by class
      */
@@ -245,84 +292,9 @@ public interface StatisticsMapper {
      */
     String getMetaMethodUuidByMethodDate(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("className") String className, @Param("signature") String signature, @Param("commitDate") String commitDate, @Param("beginDate") String beginDate);
 
-
-    /**
-     * get valid line info by class
-     */
-    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
-    /**
-     * get valid line info by method
-     */
-    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
-    /**
-     * get valid line info by field
-     */
-    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
-    /**
-     * get valid line info by statement
-     */
-    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
-
-
     /**
      * get committer line info by commit
      */
     List<CommitterLineInfo> getCommitterLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("commitDate") String commitDate);
 
-    /**
-     * 演示临时接口
-     */
-    List<MostModifiedInfo> getPackageInfoMost(@Param("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    /**
-     * 演示临时接口
-     */
-    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    /**
-     * 演示临时接口
-     */
-    List<MostModifiedInfo> getMethodInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("className") String className, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-
-
-    /**
-     * 获取method历史，默认近两个月
-     */
-    List<MethodHistory> getMethodHistory(@Param("methodUuid") String methodUuid);
-
-
-    /**
-     * 获取时间段内存活代码情况
-     */
-    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    List<SurviveStatementInfo> getSurviveMethod(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    List<SurviveStatementInfo> getSurviveField(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-
-    /**
-     * 尝试一次查询出所有有效语句
-     */
-    List<StatementInfoByMethod> getAllValidStatement(@Param("methodUuid") String methodUuid, @Param("commitDate") String commitDate);
-
-
-    /**
-     * 获取语句历史切片
-     */
-    List<SurviveStatementInfo> getStatementHistory(@Param("methodUuid") String methodUuid, @Param("body") String body, @Param("commitId") String commitId);
-
-    /**
-     * 删除项目相关追溯数据
-     */
-    void deleteFromMetaPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromMetaFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromMetaClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromMetaMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromMetaField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromMetaStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawPackage(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawFile(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawClass(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawMethod(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRawStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromRelationStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromLineCount(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromTrackerRepo(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 }

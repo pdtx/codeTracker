@@ -29,6 +29,82 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final int addOne = 1;
     private final int addTwo = 2;
 
+
+    @Override
+    public Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate) {
+        Map<String,Integer> map = new TreeMap<>();
+        List<ValidLineInfo> list = new ArrayList<>();
+        list.addAll(statisticsDao.getValidLineInfo("class", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("method", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("field", repoUuid, branch, beginDate, endDate));
+        list.addAll(statisticsDao.getValidLineInfo("statement", repoUuid, branch, beginDate, endDate));
+        String lastMetaUuid = "";
+        for (ValidLineInfo validInfo: list) {
+            if (validInfo.getMetaUuid().equals(lastMetaUuid)) {
+                continue;
+            }
+            if (validInfo.getChangeRelation().equals("DELETE")) {
+                lastMetaUuid = validInfo.getMetaUuid();
+                continue;
+            }
+            lastMetaUuid = validInfo.getMetaUuid();
+            if (map.keySet().contains(validInfo.getCommitter())) {
+                map.replace(validInfo.getCommitter(), map.get(validInfo.getCommitter())+1);
+            } else {
+                map.put(validInfo.getCommitter(), 1);
+            }
+        }
+        return map;
+    }
+
+
+
+    @Override
+    public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
+        Map<String,Map<String,Double>> map = new HashMap<>();
+        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
+        for (String key : temp.keySet()) {
+            List<Long> list = temp.get(key);
+            list.sort(Comparator.comparingLong(Long::longValue));
+            Map<String,Double> newMap = new HashMap<>();
+            newMap.put("min",(double)list.get(0));
+            newMap.put("max",(double)list.get(list.size()-1));
+            if (list.size()%2 == 0) {
+                Double median = (list.get(list.size()/2) + list.get((list.size()/2)-1)) / 2.0;
+                newMap.put("median", new BigDecimal(median).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
+            } else {
+                newMap.put("median",(double)list.get((list.size()-1)/2));
+            }
+            Long sum = 0L;
+            for (Long l : list) {
+                sum += l;
+            }
+            Double average = sum / (list.size() * 1.0);
+            newMap.put("average",new BigDecimal(average).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
+            map.put(key,newMap);
+        }
+        return map;
+    }
+
+
+    @Override
+    public void delete(String repoUuid, String branch) {
+        statisticsDao.delete(repoUuid, branch);
+    }
+
+    /**
+     * getter and setter
+     * */
+    @Autowired
+    public void setStatisticsDao(StatisticsDao statisticsDao) {
+        this.statisticsDao = statisticsDao;
+    }
+
+
+
+
+
+    //未用到
     @Override
     public List<VersionStatistics> getStatistics(String repoUuid, String branch, String type) {
         return statisticsDao.getStatisticsByType(repoUuid, branch, type);
@@ -79,32 +155,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         return statisticsDao.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
     }
 
-    @Override
-    public Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate) {
-        Map<String,Integer> map = new TreeMap<>();
-        List<ValidLineInfo> list = new ArrayList<>();
-        list.addAll(statisticsDao.getValidLineInfo("class", repoUuid, branch, beginDate, endDate));
-        list.addAll(statisticsDao.getValidLineInfo("method", repoUuid, branch, beginDate, endDate));
-        list.addAll(statisticsDao.getValidLineInfo("field", repoUuid, branch, beginDate, endDate));
-        list.addAll(statisticsDao.getValidLineInfo("statement", repoUuid, branch, beginDate, endDate));
-        String lastMetaUuid = "";
-        for (ValidLineInfo validInfo: list) {
-            if (validInfo.getMetaUuid().equals(lastMetaUuid)) {
-                continue;
-            }
-            if (validInfo.getChangeRelation().equals("DELETE")) {
-                lastMetaUuid = validInfo.getMetaUuid();
-                continue;
-            }
-            lastMetaUuid = validInfo.getMetaUuid();
-            if (map.keySet().contains(validInfo.getCommitter())) {
-                map.replace(validInfo.getCommitter(), map.get(validInfo.getCommitter())+1);
-            } else {
-                map.put(validInfo.getCommitter(), 1);
-            }
-        }
-        return map;
-    }
 
     @Override
     public Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch) {
@@ -226,79 +276,4 @@ public class StatisticsServiceImpl implements StatisticsService {
         return committerLineInfoMap;
     }
 
-    @Override
-    public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
-        return statisticsDao.getFocus(committer,beginDate,endDate,repoUuid,branch);
-    }
-
-    @Override
-    public List<MethodHistory> getMethodHistory(String methodUuid) {
-        return statisticsDao.getMethodHistory(methodUuid);
-    }
-
-    @Override
-    public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        Map<String,Map<String,Double>> map = new HashMap<>();
-        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
-        for (String key : temp.keySet()) {
-            List<Long> list = temp.get(key);
-            list.sort(Comparator.comparingLong(Long::longValue));
-            Map<String,Double> newMap = new HashMap<>();
-            newMap.put("min",(double)list.get(0));
-            newMap.put("max",(double)list.get(list.size()-1));
-            if (list.size()%2 == 0) {
-                Double median = (list.get(list.size()/2) + list.get((list.size()/2)-1)) / 2.0;
-                newMap.put("median", new BigDecimal(median).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            } else {
-                newMap.put("median",(double)list.get((list.size()-1)/2));
-            }
-            Long sum = 0L;
-            for (Long l : list) {
-                sum += l;
-            }
-            Double average = sum / (list.size() * 1.0);
-            newMap.put("average",new BigDecimal(average).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            map.put(key,newMap);
-        }
-        return map;
-    }
-
-
-    @Override
-    public List<Map<String,Map<String,List<SurviveStatementInfo>>>> getStatementHistory(String methodUuid, List<String> statementBodyList) {
-        List<Map<String,Map<String,List<SurviveStatementInfo>>>> mapList = new ArrayList<>();
-        for (int i = 0; i < statementBodyList.size(); i++) {
-            String commitId = statementBodyList.get(i).substring(0,40);
-            String body = statementBodyList.get(i).substring(40);
-            String queryBody = body + "%";
-            List<SurviveStatementInfo> statementInfoList = statisticsDao.getStatementHistory(methodUuid, queryBody, commitId);
-            Map<String,Map<String,List<SurviveStatementInfo>>> map = new HashMap<>();
-            Map<String,List<SurviveStatementInfo>> m = new HashMap<>();
-            m.put(commitId, statementInfoList);
-            map.put(body, m);
-            mapList.add(map);
-        }
-        return mapList;
-    }
-
-    @Override
-    public void delete(String repoUuid, String branch) {
-        statisticsDao.delete(repoUuid, branch);
-    }
-
-
-    @Override
-    public List<Map<String,String>> getAllValidStatement(String methodUuid, String commitDate, String body) {
-        return statisticsDao.getAllValidStatement(methodUuid, commitDate, body);
-    }
-
-
-
-    /**
-     * getter and setter
-     * */
-    @Autowired
-    public void setStatisticsDao(StatisticsDao statisticsDao) {
-        this.statisticsDao = statisticsDao;
-    }
 }
