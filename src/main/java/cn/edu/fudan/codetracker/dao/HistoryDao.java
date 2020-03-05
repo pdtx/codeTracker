@@ -52,6 +52,9 @@ public class HistoryDao {
                         int methodLines = 0;
                         int beginInMethod = lastSurviveStatement.getBegin() - lastMethodHistory.getMethodBegin();
                         String bodyStr = lastSurviveStatement.getBody();
+                        if (bodyStr == null) {
+                            continue;
+                        }
                         int lines = bodyStr.split("\\n").length - 1;
                         String contentStr = methodHistory.getContent();
                         while (contentStr.indexOf(bodyStr) != -1) {
