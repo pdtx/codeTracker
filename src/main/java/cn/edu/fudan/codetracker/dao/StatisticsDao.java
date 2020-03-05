@@ -364,8 +364,10 @@ public class StatisticsDao {
         List<StatementInfoByMethod> statementInfoByMethodList = statisticsMapper.getAllValidStatement(methodUuid, commitDate);
         String lastStatementUuid = "";
         for (StatementInfoByMethod statementInfoByMethod : statementInfoByMethodList) {
-            if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid) && !"DELETE".equals(statementInfoByMethod.getChangeRelation())) {
-                list.add(statementInfoByMethod.getBody());
+            if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid)) {
+                if(!"DELETE".equals(statementInfoByMethod.getChangeRelation())) {
+                    list.add(statementInfoByMethod.getBody());
+                }
                 lastStatementUuid = statementInfoByMethod.getStatementUuid();
             }
         }
