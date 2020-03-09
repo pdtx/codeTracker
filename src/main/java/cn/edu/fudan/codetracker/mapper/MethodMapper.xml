@@ -107,8 +107,7 @@
         (select method_uuid from codeTracker.raw_method where signature = #{signature} and method_uuid in
         (select uuid from codeTracker.meta_method
         where file_path = #{filePath} and class_name = #{className}
-          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) limit 1)
-        order by version desc limit 1
+          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)
     </select>
 
 

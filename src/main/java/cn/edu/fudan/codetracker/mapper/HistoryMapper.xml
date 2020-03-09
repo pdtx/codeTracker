@@ -19,7 +19,7 @@
         (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body}
          and commit_date &lt;= (select commit_date from codeTracker.raw_method where commitid = #{commitId} limit 1)
          and change_relation != "DELETE" order by commit_date desc limit 1) as s)
-        order by commit_date desc;
+        group by commitid order by commit_date desc;
     </select>
 
 
