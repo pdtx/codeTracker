@@ -164,32 +164,46 @@ public class HistoryDao {
     public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
         List<MostModifiedInfo> packageInfos = historyMapper.getPackageInfoMost(committer, beginDate, endDate, repoUuid, branch);
         List<TempMostInfo> packageList = new ArrayList<>();
+        //包
         for (MostModifiedInfo mostModifiedInfo: packageInfos) {
             TempMostInfo packageInfo = new TempMostInfo();
             packageInfo.setName(mostModifiedInfo.getPackageName());
             packageInfo.setQuantity(mostModifiedInfo.getVersion());
             packageInfo.setUuid(mostModifiedInfo.getUuid());
-            List<MostModifiedInfo> classInfos = historyMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
-            List<TempMostInfo> classList = new ArrayList<>();
-            for (MostModifiedInfo modifiedInfo : classInfos) {
-                TempMostInfo classInfo = new TempMostInfo();
-                classInfo.setName(modifiedInfo.getClassName());
-                classInfo.setQuantity(modifiedInfo.getVersion());
-                classInfo.setUuid(modifiedInfo.getUuid());
-                List<MostModifiedInfo> methodInfos = historyMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName(),beginDate,endDate,repoUuid,branch);
-                List<TempMostInfo> methodList = new ArrayList<>();
-                for (MostModifiedInfo methodInfo : methodInfos) {
-                    TempMostInfo method = new TempMostInfo();
-                    method.setName(methodInfo.getMethodName());
-                    method.setQuantity(methodInfo.getVersion());
-                    method.setChildInfos(null);
-                    method.setUuid(methodInfo.getUuid());
-                    methodList.add(method);
+            List<TempMostInfo> fileList = new ArrayList<>();
+            List<MostModifiedInfo> fileInfos = historyMapper.getFileInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
+            //文件
+            for (MostModifiedInfo fileMostInfo : fileInfos) {
+                TempMostInfo fileInfo = new TempMostInfo();
+                fileInfo.setName(fileMostInfo.getFileName());
+                fileInfo.setQuantity(fileMostInfo.getVersion());
+                fileInfo.setUuid(fileMostInfo.getUuid());
+                List<MostModifiedInfo> classInfos = historyMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),fileMostInfo.getFileName(),beginDate,endDate,repoUuid,branch);
+                List<TempMostInfo> classList = new ArrayList<>();
+                //类
+                for (MostModifiedInfo modifiedInfo : classInfos) {
+                    TempMostInfo classInfo = new TempMostInfo();
+                    classInfo.setName(modifiedInfo.getClassName());
+                    classInfo.setQuantity(modifiedInfo.getVersion());
+                    classInfo.setUuid(modifiedInfo.getUuid());
+                    List<MostModifiedInfo> methodInfos = historyMapper.getMethodInfoMost(committer,modifiedInfo.getFilePath(),modifiedInfo.getClassName(),beginDate,endDate,repoUuid,branch);
+                    List<TempMostInfo> methodList = new ArrayList<>();
+                    //方法
+                    for (MostModifiedInfo methodInfo : methodInfos) {
+                        TempMostInfo method = new TempMostInfo();
+                        method.setName(methodInfo.getMethodName());
+                        method.setQuantity(methodInfo.getVersion());
+                        method.setChildInfos(null);
+                        method.setUuid(methodInfo.getUuid());
+                        methodList.add(method);
+                    }
+                    classInfo.setChildInfos(methodList);
+                    classList.add(classInfo);
                 }
-                classInfo.setChildInfos(methodList);
-                classList.add(classInfo);
+                fileInfo.setChildInfos(classList);
+                fileList.add(fileInfo);
             }
-            packageInfo.setChildInfos(classList);
+            packageInfo.setChildInfos(fileList);
             packageList.add(packageInfo);
         }
         return packageList;
