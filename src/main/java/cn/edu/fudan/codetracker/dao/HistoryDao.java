@@ -146,7 +146,16 @@ public class HistoryDao {
      * 临时接口
      */
     public List<MethodHistory> getMethodHistory(String methodUuid) {
-        return historyMapper.getMethodHistory(methodUuid);
+        List<MethodHistory> methodHistoryList = historyMapper.getMethodHistory(methodUuid);
+        for (MethodHistory method: methodHistoryList) {
+            if (method.getChangeRelation().equals("DELETE")) {
+                method.setContent(null);
+                method.setDiff(null);
+                method.setMethodBegin(-1);
+                method.setMethodEnd(-1);
+            }
+        }
+        return methodHistoryList;
     }
 
     /**
