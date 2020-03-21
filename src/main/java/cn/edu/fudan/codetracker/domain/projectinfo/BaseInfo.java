@@ -1,8 +1,3 @@
-/**
- * @description: super class of all project info class
- * @author: fancying
- * @create: 2019-11-11 20:18
- **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
@@ -10,6 +5,11 @@ import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * description: 在一个版本结构树中 所有节点所共有的属性
+ * @author fancying
+ * create: 2019-11-11 20:18
+ **/
 public class BaseInfo {
 
     private String startCommit;

@@ -20,6 +20,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -29,7 +30,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @Slf4j
-public class JGitHelper {
+public class JGitHelper implements Closeable {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static final int MERGE_WITH_CONFLICT = -1;
@@ -117,6 +118,7 @@ public class JGitHelper {
     }
 
 
+    @Override
     public void close() {
         if (repository != null) {
             repository.close();
