@@ -23,7 +23,6 @@ public class PackageNode extends BaseNode {
 
     public PackageNode(String moduleName, String packageName) {
         super.setProjectInfoLevel(ProjectInfoLevel.PACKAGE);
-        super.setUuid(UUID.randomUUID().toString());
         this.moduleName = moduleName;
         this.packageName = packageName;
     }
