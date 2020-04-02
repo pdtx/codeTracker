@@ -28,7 +28,7 @@
             #{item.filePath},
             #{item.parent.packageName},
             #{item.parent.moduleName},
-            #{item.parent.uuid},
+            #{item.parent.rootUuid},
             #{commonInfo.startCommit},
             #{commonInfo.startCommitDate},
             #{commonInfo.endCommit},

@@ -15,10 +15,7 @@ public class StatementNode extends BaseNode{
     private String body;
     private int begin;
     private int end;
-    /**
-     * 用于存储meta methodUuid?
-     */
-    private String methodUuid;
+
     private int level;
     private StatementType type;
     private int sequence;

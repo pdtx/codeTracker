@@ -58,4 +58,14 @@ public class CommonInfo {
 
     }
 
+    public CommonInfo(String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit) {
+        this.repoUuid = repoUuid;
+        this.branch = branch;
+        this.commit = commit;
+        this.commitDate = commitDate;
+        this.committer = committer;
+        this.commitMessage = commitMessage;
+        this.parentCommit = parentCommit;
+    }
+
 }

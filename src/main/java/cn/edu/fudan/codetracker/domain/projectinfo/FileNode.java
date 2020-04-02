@@ -9,7 +9,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 public class FileNode extends BaseNode{
 

@@ -67,7 +67,8 @@ public class ClassNode extends BaseNode{
 
         if(o instanceof ClassNode){
             ClassNode classNode = (ClassNode) o;
-            return this.getUuid().equals(classNode.getUuid());
+            return this.getFilePath().equals(classNode.getFilePath()) &&
+                    this.className.equals(classNode.getClassName());
         }
         return false;
     }

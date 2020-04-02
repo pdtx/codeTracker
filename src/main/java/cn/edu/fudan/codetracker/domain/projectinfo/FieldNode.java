@@ -27,13 +27,11 @@ public class FieldNode extends BaseNode{
         this.modifier = modifier;
         this.simpleType = simpleType;
         this.initValue = initValue;
-        ClassNode parent = (ClassNode)super.getParent();
-        this.filePath = parent.getFilePath();
     }
 
     @Override
     public int hashCode() {
-        return getUuid().hashCode();
+        return (this.simpleName + this.modifier + this.simpleType + this.filePath).hashCode();
     }
 
     @Override
@@ -50,7 +48,8 @@ public class FieldNode extends BaseNode{
             FieldNode fieldNode = (FieldNode) obj;
             return this.simpleName.equals(fieldNode.getSimpleName()) &&
                     this.modifier.equals(fieldNode.getModifier()) &&
-                    this.simpleType.equals(fieldNode.getSimpleType());
+                    this.simpleType.equals(fieldNode.getSimpleType()) &&
+                    this.filePath.equals(fieldNode.getFilePath());
         }
         return false;
     }

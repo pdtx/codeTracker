@@ -30,16 +30,16 @@ public class RepoInfoBuilder {
      */
     private String parentCommit;
     private JGitHelper jGitHelper;
-    private BaseInfo baseInfo;
-    private int importCount = 0;
+    private CommonInfo commonInfo;
+//    private int importCount = 0;
 
-    private Map<String, List<PackageInfo>> moduleInfos;
-    private List<PackageInfo> packageInfos;
-    private List<FileInfo> fileInfos;
-    private List<ClassInfo> classInfos;
-    private List<FieldInfo> fieldInfos;
-    private List<MethodInfo> methodInfos;
-    private List<StatementInfo> statementInfos;
+    private Map<String, List<PackageNode>> moduleInfos;
+    private List<PackageNode> packageInfos;
+    private List<FileNode> fileInfos;
+    private List<ClassNode> classInfos;
+    private List<FieldNode> fieldInfos;
+    private List<MethodNode> methodInfos;
+    private List<StatementNode> statementInfos;
 
     public RepoInfoBuilder(String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath) {
        constructor(repoUuid, commit, fileList, jGitHelper, branch, parentCommit, relativePath);
@@ -72,7 +72,7 @@ public class RepoInfoBuilder {
             committer = jGitHelper.getAuthorName(commit);
             commitMessage = jGitHelper.getMess(commit);
             // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
-            baseInfo = new BaseInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, this.parentCommit);
+            commonInfo = new CommonInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, this.parentCommit);
         }catch (ParseException e) {
             e.printStackTrace();
         }
@@ -100,84 +100,83 @@ public class RepoInfoBuilder {
             if (FileFilter.filenameFilter(str)) {
                 continue;
             }
-            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(baseInfo, path, relativePath.get(i), repoUuid);
+            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, relativePath.get(i), repoUuid);
             String packageName = fileInfoExtractor.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {
                 continue;
             }
             String moduleName = fileInfoExtractor.getModuleName();
-            //BaseInfo baseInfo, List<FileInfo> children, String moduleName, String packageName
-            PackageInfo packageInfo = new PackageInfo(baseInfo, moduleName, packageName);
+            //String moduleName, String packageName
+            PackageNode packageNode = new PackageNode(moduleName, packageName);
             if (moduleInfos.containsKey(moduleName)) {
-                if (moduleInfos.get(moduleName).contains(packageInfo)) {
-                    packageInfo = findPackageInfoByPackageName(packageInfo, moduleInfos.get(moduleName));
+                if (moduleInfos.get(moduleName).contains(packageNode)) {
+                    packageNode = findPackageInfoByPackageName(packageNode, moduleInfos.get(moduleName));
                 } else {
-                    moduleInfos.get(moduleName).add(packageInfo);
+                    moduleInfos.get(moduleName).add(packageNode);
                 }
             } else {
-                List<PackageInfo> packageInfos = new ArrayList<>();
-                packageInfos.add(packageInfo);
+                List<PackageNode> packageInfos = new ArrayList<>();
+                packageInfos.add(packageNode);
                 moduleInfos.put(moduleName, packageInfos);
             }
 
-            fileInfoExtractor.getFileInfo().setPackageUuid(packageInfo.getUuid());
             // 设置父节点
-            fileInfoExtractor.getFileInfo().setParent(packageInfo);
+            fileInfoExtractor.getFileNode().setParent(packageNode);
             fileInfoExtractor.parseClassInterface();
-            packageInfo.getFileInfos().add(fileInfoExtractor.getFileInfo());
+            packageNode.getFileNodes().add(fileInfoExtractor.getFileNode());
             // 设置子节点
-            packageInfo.setChildren(packageInfo.getFileInfos());
-            importCount += fileInfoExtractor.getImportNames().size();
+            packageNode.setChildren(packageNode.getFileNodes());
+//            importCount += fileInfoExtractor.getImportNames().size();
         }
         travelRepoInfo();
     }
+
     private void travelRepoInfo() {
-        for (List<PackageInfo> packageInfos : moduleInfos.values()) {
+        for (List<PackageNode> packageInfos : moduleInfos.values()) {
             this.packageInfos.addAll(packageInfos);
             travel(packageInfos);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void travel(List<? extends  BaseInfo> baseInfos) {
-        if (baseInfos == null || baseInfos.size() == 0) {
+    private void travel(List<? extends  BaseNode> baseNodes) {
+        if (baseNodes == null || baseNodes.size() == 0) {
             return;
         }
-        switch (baseInfos.get(0).getProjectInfoLevel()) {
+        switch (baseNodes.get(0).getProjectInfoLevel()) {
             case FILE:
-                fileInfos.addAll((List<FileInfo>)baseInfos);
+                fileInfos.addAll((List<FileNode>)baseNodes);
                 break;
             case CLASS:
-                classInfos.addAll((List<ClassInfo>)baseInfos);
-                for (BaseInfo baseInfo : baseInfos) {
-                    ClassInfo c = (ClassInfo) baseInfo;
-                    travel(c.getMethodInfos());
-                    travel(c.getFieldInfos());
+                classInfos.addAll((List<ClassNode>)baseNodes);
+                for (BaseNode baseNode : baseNodes) {
+                    ClassNode c = (ClassNode) baseNode;
+                    travel(c.getFieldNodes());
                 }
-                return;
+                break;
             case METHOD:
-                methodInfos.addAll((List<MethodInfo>)baseInfos);
+                methodInfos.addAll((List<MethodNode>)baseNodes);
                 break;
             case FIELD:
-                fieldInfos.addAll((List<FieldInfo>)baseInfos);
+                fieldInfos.addAll((List<FieldNode>)baseNodes);
                 break;
             case STATEMENT:
-                statementInfos.addAll((List<StatementInfo>)baseInfos);
+                statementInfos.addAll((List<StatementNode>)baseNodes);
                 break;
             default:
-                    break;
+                break;
         }
-        for (BaseInfo baseInfo : baseInfos) {
-            travel(baseInfo.getChildren());
+        for (BaseNode baseNode : baseNodes) {
+            travel(baseNode.getChildren());
         }
     }
 
 
-    private PackageInfo findPackageInfoByPackageName(PackageInfo p1, List<PackageInfo> packageInfos) {
-        for (PackageInfo packageInfo : packageInfos) {
-            if (p1.getPackageName().equals(packageInfo.getPackageName())) {
-                return packageInfo;
+    private PackageNode findPackageInfoByPackageName(PackageNode p1, List<PackageNode> packageInfos) {
+        for (PackageNode packageNode : packageInfos) {
+            if (p1.getPackageName().equals(packageNode.getPackageName())) {
+                return packageNode;
             }
         }
         log.error("could not find package! package name:{},module name:{}", p1.getPackageName(), p1.getModuleName());
@@ -210,26 +209,6 @@ public class RepoInfoBuilder {
         this.committer = committer;
     }
 
-    public List<FileInfo> getFileInfos() {
-        return fileInfos;
-    }
-
-    public List<PackageInfo> getPackageInfos() {
-        return packageInfos;
-    }
-
-    public List<ClassInfo> getClassInfos() {
-        return classInfos;
-    }
-
-    public List<MethodInfo> getMethodInfos() {
-        return methodInfos;
-    }
-
-    public List<FieldInfo> getFieldInfos() {
-        return fieldInfos;
-    }
-
     public JGitHelper getJGitHelper() {
         return jGitHelper;
     }
@@ -238,9 +217,9 @@ public class RepoInfoBuilder {
         return branch;
     }
 
-    public int getImportCount() { return importCount; }
+//    public int getImportCount() { return importCount; }
 
-    public void setImportCount(int importCount) { this.importCount = importCount; }
+//    public void setImportCount(int importCount) { this.importCount = importCount; }
 
     @org.jetbrains.annotations.Contract(pure = true)
     private String getParentCommit() {
@@ -255,17 +234,63 @@ public class RepoInfoBuilder {
         return commitDate;
     }
 
-    public static void main(String[] args) {
-        String repoPath = "E:\\Lab\\iec-wepm-develop";
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        String branch = "master";
-        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "e7fecbe0fd950e420f46f3aefaa1e315242503b8",  repoPath, jGitHelper,  branch, "null", null);
-        System.out.println("done");
+    public List<PackageNode> getPackageInfos() {
+        return packageInfos;
     }
 
-    public List<StatementInfo> getStatementInfos() {
+    public void setPackageInfos(List<PackageNode> packageInfos) {
+        this.packageInfos = packageInfos;
+    }
+
+    public List<FileNode> getFileInfos() {
+        return fileInfos;
+    }
+
+    public void setFileInfos(List<FileNode> fileInfos) {
+        this.fileInfos = fileInfos;
+    }
+
+    public List<ClassNode> getClassInfos() {
+        return classInfos;
+    }
+
+    public void setClassInfos(List<ClassNode> classInfos) {
+        this.classInfos = classInfos;
+    }
+
+    public List<FieldNode> getFieldInfos() {
+        return fieldInfos;
+    }
+
+    public void setFieldInfos(List<FieldNode> fieldInfos) {
+        this.fieldInfos = fieldInfos;
+    }
+
+    public List<MethodNode> getMethodInfos() {
+        return methodInfos;
+    }
+
+    public void setMethodInfos(List<MethodNode> methodInfos) {
+        this.methodInfos = methodInfos;
+    }
+
+    public List<StatementNode> getStatementInfos() {
         return statementInfos;
     }
 
-    public BaseInfo getBaseInfo() { return baseInfo; }
+    public void setStatementInfos(List<StatementNode> statementInfos) {
+        this.statementInfos = statementInfos;
+    }
+
+    public CommonInfo getCommonInfo() {
+        return commonInfo;
+    }
+
+    public static void main(String[] args) {
+        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        JGitHelper jGitHelper = new JGitHelper(repoPath);
+        String branch = "zhonghui20191012";
+        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "ebf4488c79c5b4bfb02ee90fb2f8c235c84f8859",  repoPath, jGitHelper,  branch, "null", null);
+        System.out.println("done");
+    }
 }

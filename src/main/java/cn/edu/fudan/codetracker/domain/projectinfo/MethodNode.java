@@ -10,7 +10,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class MethodNode extends BaseNode{
 
     private String fullName;
@@ -24,21 +23,20 @@ public class MethodNode extends BaseNode{
     private String packageName;
     private String filePath;
 
-    public MethodNode(String signature, String modifier) {
+    public MethodNode() {
         super.setProjectInfoLevel(ProjectInfoLevel.METHOD);
-        this.signature = signature;
-        this.modifier = modifier;
         this.diff = new JSONObject();
         this.diff.put("data",new JSONArray());
-        ClassNode classNode = (ClassNode)super.getParent();
-        this.packageName = classNode.getPackageName();
-        this.filePath = classNode.getFilePath();
+    }
+
+    public String getClassName() {
+        ClassNode classNode = (ClassNode) super.getParent();
+        return classNode.getClassName();
     }
 
     @Override
     public int hashCode() {
-        ClassNode classNode = (ClassNode) super.getParent();
-        return (classNode.getFilePath() + classNode.getClassName() + signature).hashCode();
+        return (filePath + getClassName() + signature).hashCode();
     }
 
     @Override
@@ -53,7 +51,9 @@ public class MethodNode extends BaseNode{
 
         if(o instanceof MethodNode){
             MethodNode methodNode = (MethodNode) o;
-            return this.getUuid().equals(methodNode.getUuid());
+            return this.filePath.equals(methodNode.getFilePath()) &&
+                    this.getClassName().equals(methodNode.getClassName()) &&
+                    this.signature.equals(methodNode.signature);
         }
         return false;
     }
