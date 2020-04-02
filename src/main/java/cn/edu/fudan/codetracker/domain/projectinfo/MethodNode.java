@@ -10,7 +10,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 public class MethodNode extends BaseNode{
 
@@ -22,6 +21,8 @@ public class MethodNode extends BaseNode{
     private int begin;
     private int end;
     private JSONObject diff;
+    private String packageName;
+    private String filePath;
 
     public MethodNode(String signature, String modifier) {
         super.setProjectInfoLevel(ProjectInfoLevel.METHOD);
@@ -29,6 +30,9 @@ public class MethodNode extends BaseNode{
         this.modifier = modifier;
         this.diff = new JSONObject();
         this.diff.put("data",new JSONArray());
+        ClassNode classNode = (ClassNode)super.getParent();
+        this.packageName = classNode.getPackageName();
+        this.filePath = classNode.getFilePath();
     }
 
     @Override

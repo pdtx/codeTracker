@@ -13,7 +13,6 @@ import java.util.Map;
  **/
 @Getter
 @Setter
-@Builder
 public class CommonInfo {
 
     private String startCommit;
@@ -55,5 +54,8 @@ public class CommonInfo {
      */
     private List<String> filterFile;
 
+    public CommonInfo() {
+
+    }
 
 }

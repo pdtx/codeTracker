@@ -5,7 +5,9 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.mapper.MethodMapper;
@@ -22,48 +24,46 @@ public class MethodDao {
 
     private MethodMapper methodMapper;
 
-    public void insertMethodInfoList(List<MethodInfo> methodInfos) {
-        methodMapper.insertMethodInfoList(methodInfos);
-    }
-
-    public void insertRawMethodInfoList(List<MethodInfo> methodInfos) {
-        methodMapper.insertRawMethodInfoList(methodInfos);
-    }
-
     @Autowired
     public void setMethodMapper(MethodMapper methodMapper) {
         this.methodMapper = methodMapper;
     }
 
+    public void insertMethodInfoList(List<MethodNode> methodNodes, CommonInfo commonInfo) {
+        methodMapper.insertMethodInfoList(methodNodes, commonInfo);
+    }
+
+    public void insertRawMethodInfoList(List<MethodNode> methodNodes, CommonInfo commonInfo) {
+        methodMapper.insertRawMethodInfoList(methodNodes, commonInfo);
+    }
+
+    public void setAddInfo(Set<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.isEmpty()) {
+            return;
+        }
+        List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
+        insertMethodInfoList(methodInfoArrayList, commonInfo);
+        insertRawMethodInfoList(methodInfoArrayList, commonInfo);
+    }
+
+    public void setDeleteInfo(Set<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.isEmpty()) {
+            return;
+        }
+        List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
+        insertRawMethodInfoList(methodInfoArrayList, commonInfo);
+    }
+
+    public void setChangeInfo(Set<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.isEmpty()) {
+            return;
+        }
+        List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
+        methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
+        insertRawMethodInfoList(methodInfoArrayList, commonInfo);
+    }
+
     public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String repoUuid, String branch) {
         return methodMapper.getTrackerInfo( filePath, className, signature, repoUuid, branch);
     }
-
-    public void setAddInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty()) {
-            return;
-        }
-        List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
-        insertMethodInfoList(methodInfoArrayList);
-        insertRawMethodInfoList(methodInfoArrayList);
-    }
-
-    public void setDeleteInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty()) {
-            return;
-        }
-        List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
-        //methodMapper.setDeleteInfo(methodInfoArrayList);
-        insertRawMethodInfoList(methodInfoArrayList);
-    }
-
-    public void setChangeInfo(Set<MethodInfo> methodInfos) {
-        if (methodInfos.isEmpty()) {
-            return;
-        }
-        List<MethodInfo> methodInfoArrayList = new ArrayList<>(methodInfos);
-        methodMapper.updateChangeInfo(methodInfoArrayList);
-        insertRawMethodInfoList(methodInfoArrayList);
-    }
-
 }

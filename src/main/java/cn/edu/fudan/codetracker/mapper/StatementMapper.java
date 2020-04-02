@@ -1,25 +1,26 @@
 package cn.edu.fudan.codetracker.mapper;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
+
 import java.util.List;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementRelationInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StatementMapper {
 
-    void insertStatementInfoList(List<StatementInfo> statementInfos);
+    void insertStatementInfoList(@Param("statementNodes") List<StatementNode> statementNodes, @Param("commonInfo") CommonInfo commonInfo);
 
-    void insertRawStatementInfoList(List<StatementInfo> statementInfos);
+    void insertRawStatementInfoList(@Param("statementNodes") List<StatementNode> statementNodes, @Param("commonInfo") CommonInfo commonInfo);
 
     void insertStatementRelationList(List<StatementRelationInfo> statementRelationInfos);
 
-    void updateDeleteInfo(List<StatementInfo> statementInfos);
+    void updateChangeInfo(@Param("statementNodes") List<StatementNode> statementNodes, @Param("commonInfo") CommonInfo commonInfo);
 
-    void updateChangeInfo(List<StatementInfo> statementInfos);
+    void updateDeleteInfo(@Param("statementNodes") List<StatementNode> statementNodes, @Param("commonInfo") CommonInfo commonInfo);
+
+
 
     TrackerInfo getTrackerInfo(@Param("methodUuid") String methodUuid, @Param("body") String body);
 

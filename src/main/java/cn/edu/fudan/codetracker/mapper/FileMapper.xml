@@ -3,12 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.FileMapper">
 
-    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
-        <id property="version" column="version"/>
-        <id property="rootUUID" column="uuid"/>
-    </resultMap>
-
-    <insert id="insertFileInfoList" parameterType="List">
+    <insert id="insertFileInfoList">
         insert into codeTracker.meta_file
         (
         uuid,
@@ -26,26 +21,26 @@
         version
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="fileNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
             #{item.fileName},
             #{item.filePath},
-            #{item.packageName},
-            #{item.moduleName},
-            #{item.packageUuid},
-            #{item.startCommit},
-            #{item.startCommitDate},
-            #{item.endCommit},
-            #{item.endCommitDate},
-            #{item.repoUuid},
-            #{item.branch},
-            #{item.trackerInfo.version}
+            #{item.parent.packageName},
+            #{item.parent.moduleName},
+            #{item.parent.uuid},
+            #{commonInfo.startCommit},
+            #{commonInfo.startCommitDate},
+            #{commonInfo.endCommit},
+            #{commonInfo.endCommitDate},
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch},
+            #{item.version}
             )
         </foreach>
     </insert>
 
-    <insert id="insertRawFileInfoList" parameterType="List">
+    <insert id="insertRawFileInfoList">
         insert into codeTracker.raw_file
         (
         uuid,
@@ -62,52 +57,59 @@
         branch
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="fileNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
             #{item.filePath},
-            #{item.trackerInfo.rootUUID},
-            #{item.trackerInfo.version},
-            #{item.trackerInfo.changeRelation},
-            #{item.commit},
-            #{item.committer},
-            #{item.commitDate},
-            #{item.commitMessage},
-            #{item.parentCommit},
-            #{item.repoUuid},
-            #{item.branch}
+            #{item.rootUuid},
+            #{item.version},
+            #{item.changeStatus},
+            #{commonInfo.commit},
+            #{commonInfo.committer},
+            #{commonInfo.commitDate},
+            #{commonInfo.commitMessage},
+            #{commonInfo.parentCommit},
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch}
             )
         </foreach>
     </insert>
 
-    <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from codeTracker.meta_file where file_path = #{path} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
-    </select>
-
-    <update id="updateChangeInfo" parameterType="List">
+    <update id="updateChangeInfo">
         update codeTracker.meta_file
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommit}
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.version}
                 </foreach>
             </trim>
         </trim>
         where uuid in
-        <foreach collection="list" index="index" item="item"
+        <foreach collection="fileNodes" index="index" item="item"
                  separator="," open="(" close=")">
-            #{item.trackerInfo.rootUUID}
+            #{item.rootUuid}
         </foreach>
     </update>
+
+
+
+    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
+        <id property="version" column="version"/>
+        <id property="rootUUID" column="uuid"/>
+    </resultMap>
+
+    <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
+        select version,uuid from codeTracker.meta_file where file_path = #{path} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+    </select>
 
 </mapper>

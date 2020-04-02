@@ -1,6 +1,8 @@
 package cn.edu.fudan.codetracker.mapper;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import org.apache.ibatis.annotations.Param;
@@ -12,12 +14,14 @@ import java.util.Map;
 @Repository
 public interface MethodMapper {
 
-    void insertMethodInfoList(List<MethodInfo> methodInfos);
+    void insertMethodInfoList(@Param("methodNodes") List<MethodNode> methodNodes, @Param("commonInfo")CommonInfo commonInfo);
 
-    void insertRawMethodInfoList(List<MethodInfo> methodInfos);
+    void insertRawMethodInfoList(@Param("methodNodes") List<MethodNode> methodNodes, @Param("commonInfo")CommonInfo commonInfo);
+
+    void updateChangeInfo(@Param("methodNodes") List<MethodNode> methodNodes, @Param("commonInfo")CommonInfo commonInfo);
+
+
 
     TrackerInfo getTrackerInfo(@Param("filePath") String filePath, @Param("className") String className, @Param("signature") String signature, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-
-    void updateChangeInfo(List<MethodInfo> methodInfoArrayList);
 
 }

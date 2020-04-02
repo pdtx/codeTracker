@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.StatementMapper">
 
-    <insert id="insertStatementInfoList" parameterType="List">
+    <insert id="insertStatementInfoList">
         insert into codeTracker.meta_statement
         (
         uuid,
@@ -21,18 +21,18 @@
         statement_type
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="statementNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
             #{item.methodUuid},
-            #{item.startCommit},
-            #{item.startCommitDate},
-            #{item.endCommit},
-            #{item.endCommitDate},
-            #{item.repoUuid},
-            #{item.branch},
+            #{commonInfo.startCommit},
+            #{commonInfo.startCommitDate},
+            #{commonInfo.endCommit},
+            #{commonInfo.endCommitDate},
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch},
             #{item.body},
-            #{item.trackerInfo.version},
+            #{item.version},
             #{item.begin},
             #{item.end},
             #{item.type}
@@ -40,7 +40,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertRawStatementInfoList" parameterType="List">
+    <insert id="insertRawStatementInfoList">
         insert into codeTracker.raw_statement
         (
         uuid,
@@ -60,23 +60,23 @@
         version
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="statementNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.trackerInfo.rootUUID},
+            #{item.rootUuid},
             #{item.methodUuid},
-            #{item.commit},
-            #{item.committer},
-            #{item.commitDate},
-            #{item.commitMessage},
-            #{item.parentCommit},
-            #{item.trackerInfo.changeRelation},
+            #{commonInfo.commit},
+            #{commonInfo.committer},
+            #{commonInfo.commitDate},
+            #{commonInfo.commitMessage},
+            #{commonInfo.parentCommit},
+            #{item.changeStatus},
             #{item.begin},
             #{item.end},
-            #{item.repoUuid},
-            #{item.branch},
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch},
             #{item.body},
-            #{item.trackerInfo.version}
+            #{item.version}
             )
         </foreach>
     </insert>
@@ -106,62 +106,65 @@
         </foreach>
     </insert>
 
-    <update id="updateDeleteInfo" parameterType="List">
-        update codeTracker.relation_statement
-        <trim prefix="set" suffixOverrides=",">
-            <trim prefix="valid_end = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when descendant_uuid=#{item.trackerInfo.rootUUID} then #{item.commitDate}
-                </foreach>
-            </trim>
-        </trim>
-        where descendant_uuid in
-        <foreach collection="list" index="index" item="item"
-                 separator="," open="(" close=")">
-            #{item.trackerInfo.rootUUID}
-        </foreach>
-    </update>
-
-    <update id="updateChangeInfo" parameterType="List">
+    <update id="updateChangeInfo">
         update codeTracker.meta_statement
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommit}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
                 </foreach>
             </trim>
             <trim prefix="body = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.body}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.body}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.version}
                 </foreach>
             </trim>
             <trim prefix="statement_begin = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.begin}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.begin}
                 </foreach>
             </trim>
             <trim prefix="statement_end = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.end}
+                <foreach collection="statementNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.end}
                 </foreach>
             </trim>
         </trim>
         where uuid in
-        <foreach collection="list" index="index" item="item"
+        <foreach collection="statementNodes" index="index" item="item"
                  separator="," open="(" close=")">
-            #{item.trackerInfo.rootUUID}
+            #{item.rootUuid}
         </foreach>
     </update>
+
+    <update id="updateDeleteInfo">
+        update codeTracker.relation_statement
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="valid_end = case" suffix="end,">
+                <foreach collection="statementNodes" item="item">
+                    when descendant_uuid=#{item.rootUuid} then #{commonInfo.commitDate}
+                </foreach>
+            </trim>
+        </trim>
+        where descendant_uuid in
+        <foreach collection="statementNodes" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.rootUuid}
+        </foreach>
+    </update>
+
+
+
 
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>

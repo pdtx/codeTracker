@@ -3,24 +3,16 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.MethodMapper">
 
-    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
-        <id property="version" column="version"/>
-        <id property="rootUUID" column="uuid"/>
-    </resultMap>
-
-    <insert id="insertMethodInfoList" parameterType="List">
+    <insert id="insertMethodInfoList">
         insert into codeTracker.meta_method
         (
         uuid,
         fullname,
         signature,
         class_name,
-        file_name,
         file_path,
         package_name,
-        module_name,
         class_uuid,
-        package_uuid,
         start_commit,
         start_commit_date,
         end_commit,
@@ -31,31 +23,28 @@
         version
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="methodNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.fullname},
+            #{item.fullName},
             #{item.signature},
             #{item.parent.className},
-            #{item.parent.fileName},
-            #{item.parent.filePath},
-            #{item.parent.packageName},
-            #{item.parent.moduleName},
+            #{item.filePath},
+            #{item.packageName},
             #{item.parent.uuid},
-            #{item.parent.packageUuid},
-            #{item.startCommit},
-            #{item.startCommitDate},
-            #{item.endCommit},
-            #{item.endCommitDate},
-            #{item.repoUuid},
-            #{item.branch},
+            #{commonInfo.startCommit},
+            #{commonInfo.startCommitDate},
+            #{commonInfo.endCommit},
+            #{commonInfo.endCommitDate},
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch},
             #{item.content},
-            #{item.trackerInfo.version}
+            #{item.version}
             )
         </foreach>
     </insert>
 
-    <insert id="insertRawMethodInfoList" parameterType="List">
+    <insert id="insertRawMethodInfoList">
         insert into codeTracker.raw_method
         (
         uuid,
@@ -78,30 +67,79 @@
         branch
         )
         VALUES
-        <foreach collection="list" item="item" index="index" separator=",">
+        <foreach collection="methodNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.fullname},
+            #{item.fullName},
             #{item.signature},
             #{item.parent.uuid},
-            #{item.trackerInfo.rootUUID},
-            #{item.trackerInfo.version},
-            #{item.trackerInfo.changeRelation},
-            #{item.commit},
-            #{item.committer},
-            #{item.commitDate},
-            #{item.commitMessage},
-            #{item.parentCommit},
+            #{item.rootUuid},
+            #{item.version},
+            #{item.changeStatus},
+            #{commonInfo.commit},
+            #{commonInfo.committer},
+            #{commonInfo.commitDate},
+            #{commonInfo.commitMessage},
+            #{commonInfo.parentCommit},
             #{item.content},
             #{item.begin},
             #{item.end},
             #{item.diff,jdbcType=OTHER,typeHandler=cn.edu.fudan.codetracker.handler.JsonTypeHandler},
-            #{item.repoUuid},
-            #{item.branch}
+            #{commonInfo.repoUuid},
+            #{commonInfo.branch}
             )
         </foreach>
     </insert>
-<!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
+
+    <update id="updateChangeInfo">
+        update codeTracker.meta_method
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="fullname = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.fullName}
+                </foreach>
+            </trim>
+            <trim prefix="signature = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.signature}
+                </foreach>
+            </trim>
+            <trim prefix="end_commit = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
+                </foreach>
+            </trim>
+            <trim prefix="end_commit_date = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
+                </foreach>
+            </trim>
+            <trim prefix="content = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.content}
+                </foreach>
+            </trim>
+            <trim prefix="version = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.version}
+                </foreach>
+            </trim>
+        </trim>
+        where uuid in
+        <foreach collection="methodNodes" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.rootUuid}
+        </foreach>
+    </update>
+
+
+
+    <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
+        <id property="version" column="version"/>
+        <id property="rootUUID" column="uuid"/>
+    </resultMap>
+
+    <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
         select version,uuid from codeTracker.meta_method where uuid =
         (select method_uuid from codeTracker.raw_method where signature = #{signature} and method_uuid in
@@ -109,53 +147,5 @@
         where file_path = #{filePath} and class_name = #{className}
           and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)
     </select>
-
-
-
-    <update id="updateChangeInfo" parameterType="List">
-        update codeTracker.meta_method
-        <trim prefix="set" suffixOverrides=",">
-            <trim prefix="fullname = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.fullname}
-                </foreach>
-            </trim>
-            <trim prefix="signature = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.signature}
-                </foreach>
-            </trim>
-            <trim prefix="end_commit = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommit}
-                </foreach>
-            </trim>
-            <trim prefix="end_commit_date = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.endCommitDate}
-                </foreach>
-            </trim>
-            <trim prefix="content = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.content}
-                </foreach>
-            </trim>
-            <trim prefix="version = case" suffix="end,">
-                <foreach collection="list" item="item">
-                    when uuid=#{item.trackerInfo.rootUUID} then #{item.trackerInfo.version}
-                </foreach>
-            </trim>
-        </trim>
-        where uuid in
-        <foreach collection="list" index="index" item="item"
-                 separator="," open="(" close=")">
-            #{item.trackerInfo.rootUUID}
-        </foreach>
-    </update>
-
-<!--    <select id="getMethodHistory" parameterType="String" resultType="List">
-        select * from raw_method where repo_uuid = #{repoId} and module_name = #{moduleName}
-            and package_name = #{packageName} and  class_name = #{className} and signature = #{signature} order by version
-    </select>-->
 
 </mapper>

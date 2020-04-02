@@ -5,9 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementRelationInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.mapper.StatementMapper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,34 +26,34 @@ public class StatementDao {
         this.statementMapper = statementMapper;
     }
 
-    public void insertStatementInfoList(List<StatementInfo> statementInfos) {
-        statementMapper.insertStatementInfoList(statementInfos);
+    public void insertStatementInfoList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        statementMapper.insertStatementInfoList(statementNodes, commonInfo);
     }
 
-    public void insertRawStatementInfoList(List<StatementInfo> statementInfos) {
-        statementMapper.insertRawStatementInfoList(statementInfos);
+    public void insertRawStatementInfoList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        statementMapper.insertRawStatementInfoList(statementNodes, commonInfo);
     }
 
-    public void insertStatementRelationList(List<StatementInfo> statementInfos) {
+    public void insertStatementRelationList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
         List<StatementRelationInfo> statementRelationInfoList = new ArrayList<>();
-        for (StatementInfo statementInfo:statementInfos) {
+        for (StatementNode statementInfo:statementNodes) {
             if (statementInfo.getLevel() == 6){
                 continue;
             }
-            StatementInfo temp = statementInfo;
+            StatementNode temp = statementInfo;
             String descendantUuid = temp.getUuid();
             int level = temp.getLevel();
             while(temp.getLevel() > 6){
-                StatementInfo parent = (StatementInfo)temp.getParent();
+                StatementNode parent = (StatementNode)temp.getParent();
                 int parentLevel = parent.getLevel();
                 StatementRelationInfo statementRelationInfo = new StatementRelationInfo();
                 statementRelationInfo.setUuid(UUID.randomUUID().toString());
                 statementRelationInfo.setAncestorUuid(parent.getUuid());
                 statementRelationInfo.setDescendantUuid(descendantUuid);
                 statementRelationInfo.setDistance(level-parentLevel);
-                statementRelationInfo.setValidBegin(temp.getCommitDate());
-                statementRelationInfo.setRepoUuid(temp.getRepoUuid());
-                statementRelationInfo.setBranch(temp.getBranch());
+                statementRelationInfo.setValidBegin(commonInfo.getCommitDate());
+                statementRelationInfo.setRepoUuid(commonInfo.getRepoUuid());
+                statementRelationInfo.setBranch(commonInfo.getBranch());
                 statementRelationInfoList.add(statementRelationInfo);
                 temp = parent;
             }
@@ -65,46 +63,45 @@ public class StatementDao {
         }
     }
 
-    public void updateDeleteInfo(List<StatementInfo> statementInfos) {
-        statementMapper.updateDeleteInfo(statementInfos);
+    public void updateDeleteInfo(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        statementMapper.updateDeleteInfo(statementNodes, commonInfo);
     }
 
-    public void updateChangeInfo(List<StatementInfo> statementInfos) {
-        statementMapper.updateChangeInfo(statementInfos);
+    public void updateChangeInfo(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        statementMapper.updateChangeInfo(statementNodes, commonInfo);
+    }
+
+    public void setAddInfo(@NotNull Set<StatementNode> statementNodes, CommonInfo commonInfo) {
+        if(statementNodes.size()==0){
+            return;
+        }
+        List<StatementNode> statementInfoList = new ArrayList<>(statementNodes);
+        insertStatementInfoList(statementInfoList, commonInfo);
+        insertRawStatementInfoList(statementInfoList, commonInfo);
+        insertStatementRelationList(statementInfoList, commonInfo);
+    }
+
+    public void setDeleteInfo(@NotNull Set<StatementNode> statementNodes, CommonInfo commonInfo){
+        if(statementNodes.size()==0){
+            return;
+        }
+        List<StatementNode> statementInfoList = new ArrayList<>(statementNodes);
+        updateDeleteInfo(statementInfoList, commonInfo);
+        insertRawStatementInfoList(statementInfoList, commonInfo);
+    }
+
+    public void setChangeInfo(@NotNull Set<StatementNode> statementNodes, CommonInfo commonInfo){
+        if(statementNodes.size()==0){
+            return;
+        }
+        List<StatementNode> statementInfoList = new ArrayList<>(statementNodes);
+        updateChangeInfo(statementInfoList, commonInfo);
+        insertRawStatementInfoList(statementInfoList, commonInfo);
     }
 
     public TrackerInfo getTrackerInfo(String methodUuid, String body) {
         return statementMapper.getTrackerInfo(methodUuid, body);
     }
-
-    public void setAddInfo(@NotNull Set<StatementInfo> statementInfos) {
-        if(statementInfos.size()==0){
-            return;
-        }
-        List<StatementInfo> statementInfoList = new ArrayList<>(statementInfos);
-        insertStatementInfoList(statementInfoList);
-        insertRawStatementInfoList(statementInfoList);
-        insertStatementRelationList(statementInfoList);
-    }
-
-    public void setDeleteInfo(@NotNull Set<StatementInfo> statementInfos){
-        if(statementInfos.size()==0){
-            return;
-        }
-        List<StatementInfo> statementInfoList = new ArrayList<>(statementInfos);
-        updateDeleteInfo(statementInfoList);
-        insertRawStatementInfoList(statementInfoList);
-    }
-
-    public void setChangeInfo(@NotNull Set<StatementInfo> statementInfos){
-        if(statementInfos.size()==0){
-            return;
-        }
-        List<StatementInfo> statementInfoList = new ArrayList<>(statementInfos);
-        updateChangeInfo(statementInfoList);
-        insertRawStatementInfoList(statementInfoList);
-    }
-
 
     public TrackerInfo getTrackerInfoWithBodyUsingSplice(String methodUuid, String body) {
         return statementMapper.getTrackerInfoWithBodyUsingSplice(methodUuid, body);

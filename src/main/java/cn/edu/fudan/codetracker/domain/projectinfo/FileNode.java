@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import cn.edu.fudan.codetracker.dao.PackageDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,11 @@ public class FileNode extends BaseNode{
         super.setProjectInfoLevel(ProjectInfoLevel.FILE);
         this.fileName = fileName;
         this.filePath = filePath;
+    }
+
+    public String getPackageName() {
+        PackageNode packageNode = (PackageNode)super.getParent();
+        return packageNode.getPackageName();
     }
 
     /**

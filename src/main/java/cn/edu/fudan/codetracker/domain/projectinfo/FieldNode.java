@@ -8,7 +8,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 public class FieldNode extends BaseNode{
 
@@ -17,6 +16,7 @@ public class FieldNode extends BaseNode{
     private String modifier;
     private String simpleType;
     private String initValue;
+    private String filePath;
 
     private int begin;
     private int end;
@@ -27,6 +27,8 @@ public class FieldNode extends BaseNode{
         this.modifier = modifier;
         this.simpleType = simpleType;
         this.initValue = initValue;
+        ClassNode parent = (ClassNode)super.getParent();
+        this.filePath = parent.getFilePath();
     }
 
     @Override

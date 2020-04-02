@@ -10,7 +10,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 public class ClassNode extends BaseNode{
 
@@ -39,6 +38,11 @@ public class ClassNode extends BaseNode{
         this.modifier = modifier;
         this.begin = begin;
         this.end = end;
+    }
+
+    public String getPackageName() {
+        FileNode fileNode = (FileNode)super.getParent();
+        return fileNode.getPackageName();
     }
 
     public String getFilePath() {
