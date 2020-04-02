@@ -7,7 +7,7 @@
         insert into codeTracker.meta_statement
         (
         uuid,
-        method_uuid,
+        meta_method_uuid,
         start_commit,
         start_commit_date,
         end_commit,
@@ -44,20 +44,21 @@
         insert into codeTracker.raw_statement
         (
         uuid,
-        statement_uuid,
-        method_uuid,
+        meta_statement_uuid,
+        meta_method_uuid,
         commitid,
         committer,
         commit_date,
         commit_message,
-        parent_commit,
+        last_change_commit,
         change_relation,
         statement_begin,
         statement_end,
         repo_uuid,
         branch,
         body,
-        version
+        version,
+        isLogic
         )
         VALUES
         <foreach collection="statementNodes" item="item" index="index" separator=",">
@@ -76,7 +77,8 @@
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.body},
-            #{item.version}
+            #{item.version},
+            #{item.isLogic}
             )
         </foreach>
     </insert>
@@ -172,10 +174,10 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from codeTracker.raw_statement where method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
+        select version,statement_uuid from codeTracker.raw_statement where meta_method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
     </select>
 
     <select id="getTrackerInfoWithBodyUsingSplice" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from codeTracker.raw_statement where method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
+        select version,statement_uuid from codeTracker.raw_statement where meta_method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
     </select>
 </mapper>

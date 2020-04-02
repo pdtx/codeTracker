@@ -11,7 +11,7 @@
         modifier,
         simple_type,
         init_value,
-        class_uuid,
+        meta_class_uuid,
         class_name,
         file_path,
         start_commit,
@@ -49,42 +49,42 @@
         (
         uuid,
         simple_name,
+        full_name,
         simple_type,
         modifier,
         init_value,
-        class_uuid,
-        field_uuid,
+        meta_field_uuid,
+        mata_class_uuid,
         version,
-        change_relation,
         commitid,
         committer,
         commit_date,
         commit_message,
-        parent_commit,
-        full_name,
-        repo_uuid,
-        branch
+        last_change_commit,
+        change_relation,
+        branch,
+        repo_uuid
         )
         VALUES
         <foreach collection="fieldNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
             #{item.simpleName},
-            #{item.modifier},
+            #{item.fullName},
             #{item.simpleType},
+            #{item.modifier},
             #{item.initValue},
-            #{item.parent.uuid},
             #{item.rootUuid},
+            #{item.parent.uuid},
             #{item.version},
-            #{item.changeStatus},
             #{commonInfo.commit},
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
             #{commonInfo.parentCommit},
-            #{item.fullName},
-            #{commonInfo.repoUuid},
-            #{commonInfo.branch}
+            #{item.changeStatus},
+            #{commonInfo.branch},
+            #{commonInfo.repoUuid}
             )
         </foreach>
     </insert>

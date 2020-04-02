@@ -11,7 +11,7 @@
         file_path,
         package_name,
         module_name,
-        package_uuid,
+        meta_package_uuid,
         start_commit,
         start_commit_date,
         end_commit,
@@ -45,16 +45,16 @@
         (
         uuid,
         file_name,
-        file_uuid,
+        meta_file_uuid,
         version,
-        change_relation,
         commitid,
         committer,
         commit_date,
         commit_message,
-        parent_commit,
-        repo_uuid,
-        branch
+        last_change_commit,
+        change_relation,
+        branch,
+        repo_uuid
         )
         VALUES
         <foreach collection="fileNodes" item="item" index="index" separator=",">
@@ -63,14 +63,14 @@
             #{item.filePath},
             #{item.rootUuid},
             #{item.version},
-            #{item.changeStatus},
             #{commonInfo.commit},
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
             #{commonInfo.parentCommit},
-            #{commonInfo.repoUuid},
-            #{commonInfo.branch}
+            #{item.changeStatus},
+            #{commonInfo.branch},
+            #{commonInfo.repoUuid}
             )
         </foreach>
     </insert>

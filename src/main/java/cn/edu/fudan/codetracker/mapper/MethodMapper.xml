@@ -12,7 +12,7 @@
         class_name,
         file_path,
         package_name,
-        class_uuid,
+        meta_class_uuid,
         start_commit,
         start_commit_date,
         end_commit,
@@ -50,21 +50,21 @@
         uuid,
         fullname,
         signature,
-        class_uuid,
-        method_uuid,
+        meta_method_uuid,
+        meta_class_uuid,
         version,
-        change_relation,
         commitid,
         committer,
         commit_date,
         commit_message,
-        parent_commit,
+        last_change_commit,
+        change_relation,
         content,
         method_begin,
         method_end,
         diff,
-        repo_uuid,
-        branch
+        branch,
+        repo_uuid
         )
         VALUES
         <foreach collection="methodNodes" item="item" index="index" separator=",">
@@ -72,21 +72,21 @@
             #{item.uuid},
             #{item.fullName},
             #{item.signature},
-            #{item.parent.uuid},
             #{item.rootUuid},
+            #{item.parent.uuid},
             #{item.version},
-            #{item.changeStatus},
             #{commonInfo.commit},
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
             #{commonInfo.parentCommit},
+            #{item.changeStatus},
             #{item.content},
             #{item.begin},
             #{item.end},
             #{item.diff,jdbcType=OTHER,typeHandler=cn.edu.fudan.codetracker.handler.JsonTypeHandler},
-            #{commonInfo.repoUuid},
-            #{commonInfo.branch}
+            #{commonInfo.branch},
+            #{commonInfo.repoUuid}
             )
         </foreach>
     </insert>
@@ -142,7 +142,7 @@
     <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
         select version,uuid from codeTracker.meta_method where uuid =
-        (select method_uuid from codeTracker.raw_method where signature = #{signature} and method_uuid in
+        (select meta_method_uuid from codeTracker.raw_method where signature = #{signature} and meta_method_uuid in
         (select uuid from codeTracker.meta_method
         where file_path = #{filePath} and class_name = #{className}
           and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)

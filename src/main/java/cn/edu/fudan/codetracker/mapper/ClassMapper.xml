@@ -10,7 +10,7 @@
         fullname,
         class_name,
         file_path,
-        file_uuid,
+        meta_file_uuid,
         start_commit,
         start_commit_date,
         end_commit,
@@ -46,17 +46,17 @@
         uuid,
         fullname,
         class_name,
-        file_uuid,
-        class_uuid,
+        meta_file_uuid,
+        meta_class_uuid,
         version,
-        change_relation,
         commitid,
         committer,
         commit_date,
         commit_message,
-        parent_commit,
-        repo_uuid,
-        branch
+        last_change_commit,
+        change_relation,
+        branch,
+        repo_uuid
         )
         VALUES
         <foreach collection="classNodes" item="item" index="index" separator=",">
@@ -67,14 +67,14 @@
             #{item.parent.uuid},
             #{item.rootUuid},
             #{item.version},
-            #{item.changeStatus},
             #{commonInfo.commit},
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
             #{commonInfo.parentCommit},
-            #{commonInfo.repoUuid},
-            #{commonInfo.branch}
+            #{item.changeStatus},
+            #{commonInfo.branch},
+            #{commonInfo.repoUuid}
             )
         </foreach>
     </insert>

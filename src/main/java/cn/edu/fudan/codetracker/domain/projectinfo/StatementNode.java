@@ -22,6 +22,10 @@ public class StatementNode extends BaseNode{
     private int level;
     private StatementType type;
     private int sequence;
+    /**
+     * 是否为逻辑修改
+     */
+    private int isLogic;
 
     public StatementNode (String body, int begin, int end) {
         super.setProjectInfoLevel(ProjectInfoLevel.STATEMENT);
