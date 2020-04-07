@@ -1,8 +1,3 @@
-/**
- * @description: extractor fundamental information of project structure base on a single file
- * @author: fancying
- * @create: 2019-05-25 12:02
- **/
 package cn.edu.fudan.codetracker.util;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
@@ -15,36 +10,41 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
-public class FileInfoExtractor {
-
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-    private final String prefix = IS_WINDOWS ? "E:\\Lab\\" : "/Users/tangyuan/Desktop/demo/";
+@Getter
+@Setter
+public class JavaBaseRepoInfoParser implements BaseRepoInfoParser {
 
     private String projectName;
     private String moduleName;
     private String packageName;
-    private Set<String> importNames;
     private String fileName;
     private String filePath;
-
     private FileNode fileNode;
-
+    private Set<String> importNames;
     private CompilationUnit compilationUnit;
+    private ClassOrInterfaceDeclaration classOrInterfaceDeclaration;
+    private BlockStmt blockStmt;
+    private Statement parentStmt;
 
-    FileInfoExtractor(String path, String relativePath, String projectName) {
+    JavaBaseRepoInfoParser(String path, String relativePath, String projectName){
         this.projectName = projectName;
         importNames = new HashSet<>();
         try {
             // 根据操作系统修改
             compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
-            parsePackageName(compilationUnit);
+            parsePackageName();
             String[] singleDir = relativePath.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
             // module name is null
@@ -64,14 +64,8 @@ public class FileInfoExtractor {
         }
     }
 
-    private String deletePrefix(String path) {
-        return  path.replace(prefix, "");
-    }
-
-    /**
-     * need to be improved
-     */
-    private String parseModuleName(String[] singleDir) {
+    @Override
+    public String parseModuleName(String[] singleDir) {
         for (int i = 1; i < singleDir.length; i++) {
             if ("src".equals(singleDir[i]) || "main".equals(singleDir[i]) ||  "java".equals(singleDir[i])) {
                 return singleDir[i - 1];
@@ -85,16 +79,20 @@ public class FileInfoExtractor {
         return projectName;
     }
 
-    private void parsePackageName(CompilationUnit cu) {
-        if (cu.getPackageDeclaration().isPresent()) {
-            packageName = cu.getPackageDeclaration().get().getName().asString();
+    @Override
+    public String parsePackageName() {
+        if (compilationUnit.getPackageDeclaration().isPresent()) {
+            packageName = compilationUnit.getPackageDeclaration().get().getName().asString();
         }
+        return packageName;
     }
 
-    void parseClassInterface() {
+    @Override
+    public void parseClassOrInterface(){
         List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
         List<ClassNode> classInfos = new ArrayList<>(1);
         for (ClassOrInterfaceDeclaration classOrInterfaceDeclaration : classOrInterfaceDeclarationList) {
+            this.classOrInterfaceDeclaration = classOrInterfaceDeclaration;
             List<String> extendNames = new ArrayList<>();
             List<String> implementedNames = new ArrayList<>();
             // 名字
@@ -122,19 +120,20 @@ public class FileInfoExtractor {
             classNode.setExtendedList(extendNames);
             classNode.setImplementedList(implementedNames);
 
-            classNode.setFieldNodes(parseField(classOrInterfaceDeclaration.findAll(FieldDeclaration.class), classNode));
+            classNode.setFieldNodes(parseField(classNode));
             // 构造函数也属于函数
-            List<MethodNode> methodInfos = parseConstructors(classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class), classNode);
-            methodInfos.addAll(parseMethod(classOrInterfaceDeclaration.findAll(MethodDeclaration.class), classNode));
+            List<MethodNode> methodInfos = parseConstructors(classNode);
+            methodInfos.addAll(parseMethod(classNode));
             classNode.setChildren(methodInfos);
             classInfos.add(classNode);
         }
         fileNode.setChildren(classInfos);
     }
 
-    private List<FieldNode> parseField(List<FieldDeclaration> fieldDeclarations, ClassNode classNode) {
+    @Override
+    public List<FieldNode> parseField(ClassNode classNode){
         List<FieldNode> fieldInfos = new ArrayList<>();
-
+        List<FieldDeclaration> fieldDeclarations = classOrInterfaceDeclaration.findAll(FieldDeclaration.class);
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
             //modifier
             StringBuilder modifiers = new StringBuilder();
@@ -175,8 +174,10 @@ public class FileInfoExtractor {
         return fieldInfos;
     }
 
-    private List<MethodNode> parseConstructors(List<ConstructorDeclaration> constructorDeclarations, ClassNode classNode) {
+    @Override
+    public List<MethodNode> parseConstructors(ClassNode classNode){
         List<MethodNode> methodInfos = new ArrayList<>(2);
+        List<ConstructorDeclaration> constructorDeclarations = classOrInterfaceDeclaration.findAll(ConstructorDeclaration.class);
         for (ConstructorDeclaration constructorDeclaration : constructorDeclarations) {
             StringBuilder modifiers  = new StringBuilder();
             MethodNode conMethodNode = new MethodNode();
@@ -202,16 +203,18 @@ public class FileInfoExtractor {
             conMethodNode.setParent(classNode);
             conMethodNode.setFilePath(classNode.getFilePath());
             conMethodNode.setPackageName(classNode.getPackageName());
-            conMethodNode.setChildren(parseLevelOneStmt(constructorDeclaration.getBody(), conMethodNode));
+            blockStmt = constructorDeclaration.getBody();
+            conMethodNode.setChildren(parseLevelOneStmt(conMethodNode));
             methodInfos.add(conMethodNode);
         }
 
         return methodInfos;
     }
 
-    private List<MethodNode> parseMethod(List<MethodDeclaration> methodDeclarations, ClassNode classNode) {
+    @Override
+    public List<MethodNode> parseMethod(ClassNode classNode){
         List<MethodNode> methodInfos = new ArrayList<>();
-
+        List<MethodDeclaration> methodDeclarations = classOrInterfaceDeclaration.findAll(MethodDeclaration.class);
         for (MethodDeclaration methodDeclaration : methodDeclarations) {
             // BaseInfo baseInfo, ClassInfo parent, String className, String classUuid
             MethodNode methodNode = new MethodNode();
@@ -241,18 +244,16 @@ public class FileInfoExtractor {
             }
             //statementInfo
             if (methodDeclaration.getBody().isPresent()) {
-                methodNode.setChildren(parseLevelOneStmt(methodDeclaration.getBody().get(), methodNode));
+                blockStmt = methodDeclaration.getBody().get();
+                methodNode.setChildren(parseLevelOneStmt(methodNode));
             }
             methodInfos.add(methodNode);
         }
         return methodInfos;
     }
 
-    /**
-     *  statement
-     * */
-
-    private List<StatementNode> parseLevelOneStmt(BlockStmt blockStmt, MethodNode methodNode) {
+    @Override
+    public List<StatementNode> parseLevelOneStmt(MethodNode methodNode){
         List<StatementNode> statementInfos = new ArrayList<>();
         // blockStatement expressionStatement
         List<Statement>  statementList = blockStmt.getStatements();
@@ -266,15 +267,18 @@ public class FileInfoExtractor {
                 statementNode.setParent(methodNode);
                 //先设methodUuid为raw_method_uuid，在mapping时改为meta_method_uuid
                 statementNode.setMethodUuid(methodNode.getUuid());
-                statementNode.setChildren(parseLevelTwoStmt(statement, methodNode, statementNode));
+                parentStmt = statement;
+                statementNode.setChildren(parseLevelTwoStmt(methodNode, statementNode));
                 statementInfos.add(statementNode);
             }
         }
         return statementInfos;
     }
 
-    private List<StatementNode> parseLevelTwoStmt(Statement parentStmt, MethodNode methodNode, StatementNode parent) {
+    @Override
+    public List<StatementNode> parseLevelTwoStmt(MethodNode methodNode, StatementNode parent){
         List<StatementNode> statementInfos = new ArrayList<>();
+        Statement parentStmt = this.parentStmt;
         int sequence = 0;
         for (Node node : parentStmt.getChildNodes()) {
             if (node.findFirst(Statement.class).isPresent()) {
@@ -285,39 +289,13 @@ public class FileInfoExtractor {
                     statementNode.setParent(parent);
                     //先设methodUuid为raw_method_uuid，在mapping时改为meta_method_uuid
                     statementNode.setMethodUuid(methodNode.getUuid());
-                    statementNode.setChildren(parseLevelTwoStmt(statement, methodNode, statementNode));
+                    this.parentStmt = statement;
+                    statementNode.setChildren(parseLevelTwoStmt(methodNode, statementNode));
                     statementInfos.add(statementNode);
                 }
             }
         }
         return statementInfos;
-    }
-
-    /**
-     * getter and setter
-     * */
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public Set<String> getImportNames() {
-        return importNames;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
-    }
-
-    public FileNode getFileNode() {
-        return fileNode;
     }
 
 }

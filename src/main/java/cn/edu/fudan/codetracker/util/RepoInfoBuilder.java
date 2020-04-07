@@ -100,13 +100,16 @@ public class RepoInfoBuilder {
             if (FileFilter.filenameFilter(str)) {
                 continue;
             }
-            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, relativePath.get(i), repoUuid);
-            String packageName = fileInfoExtractor.getPackageName();
+            JavaBaseRepoInfoParser javaBaseRepoInfoParser = new JavaBaseRepoInfoParser(path, relativePath.get(i), repoUuid);
+//            FileInfoExtractor fileInfoExtractor = new FileInfoExtractor(path, relativePath.get(i), repoUuid);
+//            String packageName = fileInfoExtractor.getPackageName();
+            String packageName = javaBaseRepoInfoParser.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {
                 continue;
             }
-            String moduleName = fileInfoExtractor.getModuleName();
+//            String moduleName = fileInfoExtractor.getModuleName();
+            String moduleName = javaBaseRepoInfoParser.getModuleName();
             //String moduleName, String packageName
             PackageNode packageNode = new PackageNode(moduleName, packageName);
             if (moduleInfos.containsKey(moduleName)) {
@@ -122,9 +125,9 @@ public class RepoInfoBuilder {
             }
 
             // 设置父节点
-            fileInfoExtractor.getFileNode().setParent(packageNode);
-            fileInfoExtractor.parseClassInterface();
-            packageNode.getFileNodes().add(fileInfoExtractor.getFileNode());
+            javaBaseRepoInfoParser.getFileNode().setParent(packageNode);
+            javaBaseRepoInfoParser.parseClassOrInterface();
+            packageNode.getFileNodes().add(javaBaseRepoInfoParser.getFileNode());
             // 设置子节点
             packageNode.setChildren(packageNode.getFileNodes());
 //            importCount += fileInfoExtractor.getImportNames().size();

@@ -24,7 +24,7 @@
         <foreach collection="statementNodes" item="item" index="index" separator=",">
             (
             #{item.uuid},
-            #{item.parent.rootUuid},
+            #{item.methodUuid},
             #{commonInfo.startCommit},
             #{commonInfo.startCommitDate},
             #{commonInfo.endCommit},
@@ -65,7 +65,7 @@
             (
             #{item.uuid},
             #{item.rootUuid},
-            #{item.parent.rootUuid},
+            #{item.methodUuid},
             #{commonInfo.commit},
             #{commonInfo.committer},
             #{commonInfo.commitDate},

@@ -19,6 +19,7 @@ public class StatementNode extends BaseNode{
     private int level;
     private StatementType type;
     private int sequence;
+    private String methodUuid;
     /**
      * 是否为逻辑修改
      */
