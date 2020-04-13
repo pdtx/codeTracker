@@ -5,6 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.jgit;
 
+import com.sun.org.apache.bcel.internal.generic.ANEWARRAY;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
@@ -250,6 +251,36 @@ public class JGitHelper implements Closeable {
         return null;
     }
 
+    public Map<String, Map<String,List<String>>> getFileList(String commit) {
+        Map<String, Map<String,List<String>>> map = new HashMap<>();
+        Map<String, List<DiffEntry>> res = getMappedFileList(commit);
+        for (String preCommit: res.keySet()) {
+            Map<String,List<String>> tmp = new HashMap<>();
+            tmp.put("ADD",new ArrayList<>());
+            tmp.put("DELETE",new ArrayList<>());
+            tmp.put("CHANGE", new ArrayList<>());
+            List<DiffEntry> entryList = res.get(preCommit);
+            for (DiffEntry diff: entryList) {
+                switch (diff.getChangeType()){
+                    case MODIFY:
+                        tmp.get("CHANGE").add(diff.getNewPath());
+                        break;
+                    case ADD:
+                        tmp.get("ADD").add(diff.getNewPath());
+                        break;
+                    case DELETE:
+                        tmp.get("DELETE").add(diff.getOldPath());
+                        break;
+                    default:
+                        break;
+                }
+            }
+            map.put(preCommit,tmp);
+        }
+
+        return map;
+    }
+
     public int mergeJudgment(String commit) {
         Map<String, List<DiffEntry>> diffList = getMappedFileList(commit);
         if (diffList.keySet().size() == NOT_MERGE) {
@@ -273,12 +304,14 @@ public class JGitHelper implements Closeable {
     public static void main(String[] args) {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
-        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
-        String commitId = "dd0397bd851369b219b8c89defaf84e5339ecaf0";
+//        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
+        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        String commitId = "b0614fa8ae05e23d46fced42f13a3e570411bed8";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
         String s[] = jGitHelper.getCommitParents(commitId);
         int m = jGitHelper.mergeJudgment(commitId);
+        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList(commitId);
         System.out.println(m);
 //        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
 //        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {

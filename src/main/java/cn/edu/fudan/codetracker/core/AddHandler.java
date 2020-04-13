@@ -1,6 +1,9 @@
 package cn.edu.fudan.codetracker.core;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
+import cn.edu.fudan.codetracker.domain.projectinfo.FileNode;
+
+import java.util.Stack;
 
 /**
  * description:
@@ -12,7 +15,7 @@ public class AddHandler implements NodeMapping {
 
     private AddHandler(){}
 
-    static AddHandler getInstance(){
+    public static AddHandler getInstance(){
         return MappingGeneratorHolder.ADD_HANDLER;
     }
 
@@ -23,6 +26,45 @@ public class AddHandler implements NodeMapping {
 
     @Override
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot) {
+        Stack<BaseNode> stack = new Stack<>();
+        stack.push(curRoot);
+        if (curRoot instanceof FileNode) {
+            while (!stack.empty()) {
+                BaseNode baseNode = stack.pop();
+                baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+                //ADD情况，rootUuid即uuid
+                baseNode.setRootUuid(baseNode.getUuid());
+                NodeMapping.setNodeMapped(null,baseNode);
+                for (BaseNode child: baseNode.getChildren()) {
+                    stack.push(child);
+                }
+            }
+        } else {
+            //当curRoot是除了文件节点以外其他节点时，判断其孩子是否为move
+            while (!stack.empty()) {
+                BaseNode baseNode = stack.pop();
+                baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+                //ADD情况，rootUuid即uuid
+                baseNode.setRootUuid(baseNode.getUuid());
+                NodeMapping.setNodeMapped(null,baseNode);
+                for (BaseNode child: baseNode.getChildren()) {
+                    if (isAdd(child)) {
+                        stack.push(child);
+                    } else {
+                        dealWithNotAdd(child);
+                    }
+                }
+            }
+        }
+    }
 
+    //后续完善，判断非文件节点的子节点是否为真正的ADD
+    private boolean isAdd(BaseNode baseNode) {
+        return true;
+    }
+
+    //问题：如果非ADD子节点的孩子为ADD怎么办？
+    private void dealWithNotAdd(BaseNode baseNode) {
+        //处理非ADD子节点
     }
 }

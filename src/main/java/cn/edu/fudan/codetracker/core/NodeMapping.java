@@ -23,10 +23,18 @@ public interface NodeMapping {
      * @param curRoot 当前版本的根节点
      */
     static void setNodeMapped(BaseNode preRoot, BaseNode curRoot) {
-        preRoot.setMapping(true);
-        curRoot.setMapping(true);
-        preRoot.setNextMappingBaseNode(curRoot);
-        curRoot.setPreMappingBaseNode(preRoot);
+        if (preRoot == null && curRoot == null) {
+            return;
+        } else if (preRoot == null) {
+            curRoot.setMapping(true);
+        } else if (curRoot == null) {
+            preRoot.setMapping(true);
+        } else {
+            preRoot.setMapping(true);
+            curRoot.setMapping(true);
+            preRoot.setNextMappingBaseNode(curRoot);
+            curRoot.setPreMappingBaseNode(preRoot);
+        }
     }
 
 }

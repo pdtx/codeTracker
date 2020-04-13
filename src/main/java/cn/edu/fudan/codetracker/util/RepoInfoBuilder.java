@@ -94,10 +94,8 @@ public class RepoInfoBuilder {
         // 一个module内包含哪些package
         for (int i = 0; i < minSize ;i++) {
             String path = fileList.get(i);
-            String[] strs = path.split("/");
-            String str = strs[strs.length-1];
             // 特定文件过滤
-            if (FileFilter.filenameFilter(str)) {
+            if (FileFilter.filenameFilter(path)) {
                 continue;
             }
             JavaBaseRepoInfoParser javaBaseRepoInfoParser = new JavaBaseRepoInfoParser(path, relativePath.get(i), repoUuid);
@@ -293,7 +291,7 @@ public class RepoInfoBuilder {
         String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         String branch = "zhonghui20191012";
-        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "ebf4488c79c5b4bfb02ee90fb2f8c235c84f8859",  repoPath, jGitHelper,  branch, "null", null);
+        RepoInfoBuilder refactor = new RepoInfoBuilder("repoUuid", "883af7cb6806ae3b50ba276fc3994c6bca7b0b50",  repoPath, jGitHelper,  branch, "null", null);
         System.out.println("done");
     }
 }

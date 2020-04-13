@@ -1,164 +1,113 @@
 package cn.edu.fudan.codetracker.domain.diff;
 
-import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
-import com.alibaba.fastjson.JSONArray;
+
 import com.alibaba.fastjson.JSONObject;
-import edu.fdu.se.core.miningchangeentity.base.ChangeEntityDesc;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
 
-/**
- * description:
- * @author fancying
- * create: 2019-12-14 21:07
- **/
 @Slf4j
+@Getter
+@Setter
 public final class DiffInfo {
+    private String type;
+    private Location location;
+    private String changeRelation;
 
-    private Map<ProjectInfoLevel, List<OneDiff>> diffInfo;
-
-    DiffInfo() {
+    public DiffInfo() {
 
     }
 
-    public DiffInfo(JSONArray diffDetail) {
-        diffInfo = new HashMap<>(4);
-        diffInfo.put(ProjectInfoLevel.CLASS, new ArrayList<>());
-        diffInfo.put(ProjectInfoLevel.METHOD, new ArrayList<>());
-        diffInfo.put(ProjectInfoLevel.FIELD, new ArrayList<>());
-        diffInfo.put(ProjectInfoLevel.STATEMENT, new ArrayList<>());
-        for (int j = 0; j < diffDetail.size(); j++) {
-            JSONObject oneDiff = diffDetail.getJSONObject(j);
-            String domainType = oneDiff.getString("type1").toLowerCase();
-            String description = oneDiff.getString("description");
-            if (("statement").equals(domainType)) {
-                diffInfo.get(ProjectInfoLevel.STATEMENT).add(new OneDiff(oneDiff));
-                continue;
-            }
-            // method
-            if ("member".equals(domainType) && description.toLowerCase().contains("method")) {
-                diffInfo.get(ProjectInfoLevel.METHOD).add(new OneDiff(oneDiff));
-                continue;
-            }
-            if ("member".equals(domainType) && description.toLowerCase().contains("field")) {
-                diffInfo.get(ProjectInfoLevel.FIELD).add(new OneDiff(oneDiff));
-                continue;
-            }
-            if (("classorinterface").equals(domainType)) {
-                diffInfo.get(ProjectInfoLevel.CLASS).add(new OneDiff(oneDiff));
-            }
-        }
-        diffInfo.get(ProjectInfoLevel.STATEMENT).sort(Comparator.comparing(OneDiff::getBeginLine));
+    //初始化from ClDiff
+    public DiffInfo(JSONObject jsonObject) {
+        parseDiffInfoFromClDiff(jsonObject);
     }
 
-    public Map<ProjectInfoLevel, List<OneDiff>> getDiffInfo() {
-        return diffInfo;
+    public void parseDiffInfoFromClDiff(JSONObject jsonObject) {
+        String type = jsonObject.getString("type1");
+        switch (type) {
+            case "Class" :
+                this.type = "class";
+                break;
+            case "Member" :
+                String description = jsonObject.getString("description").toLowerCase();
+                if (description.contains("method")) {
+                    this.type = "method";
+                }
+                if (description.contains("field")) {
+                    this.type = "field";
+                }
+                break;
+            case "Statement" :
+                this.type = "statement";
+                break;
+            default:
+                break;
+        }
+
+        this.changeRelation = jsonObject.getString("type2");
+
+        Location location = new Location();
+        String range = jsonObject.getString("range");
+        if (range.contains("-")) {
+            String[] strings = range.split("-");
+            if (range.endsWith("-")) {
+                setPreLine(strings[0],location);
+            } else if (range.startsWith("-")) {
+                setCurLine(strings[1],location);
+            } else {
+                setPreLine(strings[0],location);
+                setCurLine(strings[1],location);
+            }
+        } else {
+            if ("Insert".equals(this.changeRelation)) {
+                setCurLine(range,location);
+            } else if ("Delete".equals(this.changeRelation)) {
+                setPreLine(range,location);
+            }
+        }
+        this.location = location;
     }
 
-    public class OneDiff {
-        private String description;
-        private String changeRelation;
-        private String range;
-        private String parentRange;
-
-        private int beginLine;
-        private JSONObject diffJson;
-//        private int preBegin = -1;
-//        private int preEnd = -1;
-//        private int curBegin = -1;
-//        private int curEnd = -1;
-//        private int preParentBegin = -1;
-//        private int preParentEnd = -1;
-//        private int curParentBegin = -1;
-//        private int curParentEnd = -1;
-
-        private String delimiter = "-";
-
-        OneDiff(JSONObject oneDiff) {
-            diffJson = oneDiff;
-            description = oneDiff.getString("description");
-            changeRelation = oneDiff.getString("type2");
-            parentRange = "";
-            if (oneDiff.containsKey("father-node-range")) {
-                parentRange = oneDiff.getString("father-node-range");
-            }
-            range = oneDiff.getString("range");
-            beginLine = Integer.valueOf(range.substring(range.indexOf('(') + 1, range.indexOf(',')));
-//            analyzeRange();
-//            analyzeParentRange();
+    public void setPreLine(String preRange, Location location) {
+        if (preRange.length() < 5) {
+            log.error("preRange incorrect:" + preRange);
+            return;
         }
+        String str = preRange.substring(1,preRange.length()-1);
+        String[] nums = str.split(",");
+        location.setPreBegin(Integer.parseInt(nums[0]));
+        location.setPreEnd(Integer.parseInt(nums[1]));
+    }
 
-
-        private void analyzeRange() {
-            if (ChangeEntityDesc.StageIIOpt.OPT_CHANGE.equals(changeRelation)) {
-
-            }
+    public void setCurLine(String curRange, Location location) {
+        if (curRange.length() < 5) {
+            log.error("curRange incorrect:" + curRange);
+            return;
         }
+        String str = curRange.substring(1,curRange.length()-1);
+        String[] nums = str.split(",");
+        location.setCurBegin(Integer.parseInt(nums[0]));
+        location.setCurEnd(Integer.parseInt(nums[1]));
+    }
 
-        private void analyzeParentRange() {
-            String fatherRangeName = "father-node-range";
+
+    @Setter
+    @Getter
+    class Location {
+        private int preBegin;
+        private int preEnd;
+        private int curBegin;
+        private int curEnd;
+        private String preName;
+        private String curName;
+        private String preContent;
+        private String curContent;
+
+        Location() {
 
         }
-
-        /**
-         * getter and setter
-         */
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getChangeRelation() {
-            return changeRelation;
-        }
-
-        public String getRange() {
-            return range;
-        }
-
-        public String getParentRange() {
-            return parentRange;
-        }
-
-        int getBeginLine() {
-            return beginLine;
-        }
-
-        public JSONObject getDiffJson() {
-            return diffJson;
-        }
-//        public int getPreBegin() {
-//            return preBegin;
-//        }
-//
-//        public int getPreEnd() {
-//            return preEnd;
-//        }
-//
-//        public int getCurBegin() {
-//            return curBegin;
-//        }
-//
-//        public int getCurEnd() {
-//            return curEnd;
-//        }
-//
-//        public int getPreParentBegin() {
-//            return preParentBegin;
-//        }
-//
-//        public int getPreParentEnd() {
-//            return preParentEnd;
-//        }
-//
-//        public int getCurParentBegin() {
-//            return curParentBegin;
-//        }
-//
-//        public int getCurParentEnd() {
-//            return curParentEnd;
-//        }
 
     }
 

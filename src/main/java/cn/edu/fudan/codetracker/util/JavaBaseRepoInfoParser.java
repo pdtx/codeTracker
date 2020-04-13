@@ -44,7 +44,7 @@ public class JavaBaseRepoInfoParser implements BaseRepoInfoParser {
         try {
             // 根据操作系统修改
             compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
-            parsePackageName();
+            packageName = parsePackageName();
             String[] singleDir = relativePath.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
             // module name is null
