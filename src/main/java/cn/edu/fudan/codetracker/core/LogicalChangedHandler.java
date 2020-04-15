@@ -5,6 +5,7 @@ import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ser.Serializers;
+import com.google.gson.internal.$Gson$Preconditions;
 import javafx.scene.Node;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -107,18 +108,22 @@ public class LogicalChangedHandler implements NodeMapping {
                 continue;
             } else if (pre == null) {
                 addHandler.subTreeMapping(null,cur);
+                backTracing(cur);
                 curSet.remove(cur);
             } else if (cur == null) {
                 deleteHandler.subTreeMapping(pre,null);
+                backTracing(cur);
                 preSet.remove(pre);
             } else {
                 NodeMapping.setNodeMapped(pre,cur);
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
                         cur.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
+                        backTracing(cur);
                         break;
                     case "Move":
                         cur.setChangeStatus(BaseNode.ChangeStatus.MOVE);
+                        backTracing(cur);
                         break;
                     default:
                         break;
@@ -169,6 +174,16 @@ public class LogicalChangedHandler implements NodeMapping {
             }
         }
 
+    }
+
+    public void backTracing(BaseNode baseNode) {
+        while (baseNode.getParent() != null) {
+            BaseNode parent = baseNode.getParent();
+            if (parent.getChangeStatus().getPriority() > BaseNode.ChangeStatus.CHANGE.getPriority()) {
+                parent.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
+            }
+            baseNode = parent;
+        }
     }
 
     public Map<String,Set<BaseNode>> extractMapFromNode(BaseNode root) {
