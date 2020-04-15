@@ -62,6 +62,7 @@ public class RepoInfoBuilder {
         this.commit = commit;
         this.branch = branch;
         this.jGitHelper = jGitHelper;
+        this.jGitHelper.checkout(commit);
         // first time parentCommit is NULL
         this.parentCommit = parentCommit;
         if (this.parentCommit == null || this.parentCommit.length() == 0) {

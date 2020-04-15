@@ -1,10 +1,13 @@
 package cn.edu.fudan.codetracker.domain.diff;
 
 
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Set;
 
 
 @Slf4j
@@ -91,6 +94,70 @@ public final class DiffInfo {
         location.setCurBegin(Integer.parseInt(nums[0]));
         location.setCurEnd(Integer.parseInt(nums[1]));
     }
+
+    public BaseNode findChangeNode(Set<BaseNode> set, boolean isCur) {
+        int begin,end;
+        if (isCur) {
+            begin = location.getCurBegin();
+            end = location.getCurEnd();
+        } else {
+            begin = location.getPreBegin();
+            end = location.getPreEnd();
+        }
+        if (begin == 0 && end == 0) {
+            return null;
+        }
+        boolean isFirst = true;
+        String type = "";
+        for (BaseNode baseNode: set) {
+            if (isFirst) {
+                if (baseNode instanceof ClassNode) {
+                    type = "class";
+                } else if (baseNode instanceof MethodNode) {
+                    type = "method";
+                } else if (baseNode instanceof FieldNode) {
+                    type = "field";
+                } else if (baseNode instanceof StatementNode) {
+                    type = "statement";
+                }
+                isFirst = false;
+            }
+            int nodeBegin = -1,nodeEnd = -1;
+            switch (type) {
+                case "class":
+                    ClassNode classNode = (ClassNode)baseNode;
+                    nodeBegin = classNode.getBegin();
+                    nodeEnd = classNode.getEnd();
+                    break;
+                case "method":
+                    MethodNode methodNode = (MethodNode)baseNode;
+                    nodeBegin = methodNode.getBegin();
+                    nodeEnd = methodNode.getEnd();
+                    break;
+                case "field":
+                    FieldNode fieldNode = (FieldNode)baseNode;
+                    nodeBegin = fieldNode.getBegin();
+                    nodeEnd = fieldNode.getEnd();
+                    break;
+                case "statement":
+                    StatementNode statementNode = (StatementNode)baseNode;
+                    nodeBegin = statementNode.getBegin();
+                    nodeEnd = statementNode.getEnd();
+                    break;
+                default:
+                    break;
+            }
+            if (isMatch(begin,end,nodeBegin,nodeEnd)) {
+                return baseNode;
+            }
+        }
+        return null;
+    }
+
+    public boolean isMatch(int diffBegin, int diffEnd, int nodeBegin, int nodeEnd) {
+        return (diffBegin == nodeBegin) && (diffEnd == nodeEnd);
+    }
+
 
 
     @Setter

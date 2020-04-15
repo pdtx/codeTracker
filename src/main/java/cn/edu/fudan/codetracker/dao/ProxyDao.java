@@ -9,8 +9,10 @@ import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 
 @Slf4j
+@Repository
 public class ProxyDao {
 
     private RepoInfoBuilder repoInfo;

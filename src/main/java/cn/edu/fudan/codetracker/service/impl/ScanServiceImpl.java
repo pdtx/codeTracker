@@ -53,11 +53,10 @@ public class ScanServiceImpl implements ScanService {
     private RepoDao repoDao;
     private ProxyDao proxyDao;
 
-    private AddHandler addHandler;
-    private DeleteHandler deleteHandler;
-//    private LogicalChangedHandler logicalChangedHandler = LogicalChangedHandler.getInstance();
-    private LogicalChangedHandler logicalChangedHandler;
-    private PhysicalChangedHandler physicalChangedHandler;
+    private AddHandler addHandler = AddHandler.getInstance();
+    private DeleteHandler deleteHandler = DeleteHandler.getInstance();
+    private LogicalChangedHandler logicalChangedHandler = LogicalChangedHandler.getInstance();
+    private PhysicalChangedHandler physicalChangedHandler = PhysicalChangedHandler.getInstance();
 
     private RestInterfaceManager restInterface;
 
@@ -568,26 +567,6 @@ public class ScanServiceImpl implements ScanService {
     @Autowired
     public void setProxyDao(ProxyDao proxyDao) {
         this.proxyDao = proxyDao;
-    }
-
-    @Autowired
-    public void setAddHandler(AddHandler addHandler) {
-        this.addHandler = addHandler;
-    }
-
-    @Autowired
-    public void setDeleteHandler(DeleteHandler deleteHandler) {
-        this.deleteHandler = deleteHandler;
-    }
-
-    @Autowired
-    public void setLogicalChangedHandler(LogicalChangedHandler logicalChangedHandler) {
-        this.logicalChangedHandler = logicalChangedHandler;
-    }
-
-    @Autowired
-    public void setPhysicalChangedHandler(PhysicalChangedHandler physicalChangedHandler) {
-        this.physicalChangedHandler = physicalChangedHandler;
     }
 
     public static void main(String[] args) {

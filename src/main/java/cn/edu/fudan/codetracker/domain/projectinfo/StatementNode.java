@@ -47,9 +47,11 @@ public class StatementNode extends BaseNode{
             return false;
         }
 
+        //如何判断两个statement对应
         if(o instanceof StatementNode){
             StatementNode statementNode = (StatementNode) o;
-            return this.getUuid().equals(statementNode.getUuid());
+            return this.getBody().equals(statementNode.getBody()) &&
+                    this.getLevel() == statementNode.getLevel();
         }
         return false;
     }
