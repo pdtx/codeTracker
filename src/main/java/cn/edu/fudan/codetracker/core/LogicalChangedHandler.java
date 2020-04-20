@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * description: 增加的文件映射
+ * description: 逻辑上的改变映射
  *
  * @author fancying
  * create: 2020-03-20 19:27
@@ -229,11 +229,11 @@ public class LogicalChangedHandler implements NodeMapping {
     }
 
     public void extractFromDiff() {
-        map = new HashMap<>();
-        map.put("class",new ArrayList<>());
-        map.put("method",new ArrayList<>());
-        map.put("field",new ArrayList<>());
-        map.put("statement",new ArrayList<>());
+        map = new HashMap<>(8);
+        map.put("class", new ArrayList<>());
+        map.put("method", new ArrayList<>());
+        map.put("field", new ArrayList<>());
+        map.put("statement", new ArrayList<>());
         String input;
         try {
             input = FileUtils.readFileToString(new File(diffPath), "UTF-8");

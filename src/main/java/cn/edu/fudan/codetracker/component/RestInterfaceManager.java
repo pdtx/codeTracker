@@ -6,10 +6,12 @@
 package cn.edu.fudan.codetracker.component;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.tomcat.util.http.fileupload.util.Closeable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

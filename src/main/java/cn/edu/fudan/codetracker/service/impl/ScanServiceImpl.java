@@ -11,11 +11,7 @@ import cn.edu.fudan.codetracker.core.DeleteHandler;
 import cn.edu.fudan.codetracker.core.LogicalChangedHandler;
 import cn.edu.fudan.codetracker.core.PhysicalChangedHandler;
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.LineInfo;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
-import cn.edu.fudan.codetracker.domain.RelationShip;
-//import cn.edu.fudan.codetracker.core.AnalyzeDiffFile;
-//import cn.edu.fudan.codetracker.core.MetaInfoAnalysis;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
@@ -49,7 +45,6 @@ public class ScanServiceImpl implements ScanService {
     private FieldDao fieldDao;
     private MethodDao methodDao;
     private StatementDao statementDao;
-//    private LineInfoDao lineInfoDao;
     private RepoDao repoDao;
     private ProxyDao proxyDao;
 
@@ -92,7 +87,7 @@ public class ScanServiceImpl implements ScanService {
 
     @Async("taskExecutor")
     @Override
-    public void autoScan(String repoUuid, String branch, String beginCommit) {
+    public void scan(String repoUuid, String branch, String beginCommit) {
         if (findScanLatest(repoUuid, branch) == null) {
             repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, "scanning");
         } else {
