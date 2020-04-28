@@ -29,6 +29,11 @@ public class FieldNode extends BaseNode{
         this.initValue = initValue;
     }
 
+    public String getClassName(){
+        ClassNode classNode = (ClassNode)this.getParent();
+        return classNode.getClassName();
+    }
+
     @Override
     public int hashCode() {
         return (this.simpleName + this.modifier + this.simpleType + this.filePath).hashCode();

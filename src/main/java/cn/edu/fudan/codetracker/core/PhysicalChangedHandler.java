@@ -1,9 +1,8 @@
 package cn.edu.fudan.codetracker.core;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.FileNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
-import cn.edu.fudan.codetracker.domain.projectinfo.StatementNode;
+import cn.edu.fudan.codetracker.dao.ProxyDao;
+import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.soap.Node;
 import java.util.ArrayDeque;
@@ -16,8 +15,14 @@ import java.util.Queue;
  * create: 2020-03-21 20:32
  **/
 public class PhysicalChangedHandler implements NodeMapping{
+    private ProxyDao proxyDao;
 
     private PhysicalChangedHandler() {}
+
+    @Autowired
+    public void setProxyDao(ProxyDao proxyDao) {
+        this.proxyDao = proxyDao;
+    }
 
     public static PhysicalChangedHandler getInstance() {
         return MappingGeneratorHolder.PHYSICAL_CHANGED_HANDLER;
@@ -27,7 +32,7 @@ public class PhysicalChangedHandler implements NodeMapping{
         private static final PhysicalChangedHandler PHYSICAL_CHANGED_HANDLER = new PhysicalChangedHandler();
     }
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
         //如果为文件节点
         if(preRoot instanceof FileNode && curRoot instanceof FileNode) {
             Queue<BaseNode> preQueue = new ArrayDeque<>();
@@ -57,7 +62,7 @@ public class PhysicalChangedHandler implements NodeMapping{
                 } else {
                     curNode.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                 }
-                NodeMapping.setNodeMapped(preNode,curNode);
+                NodeMapping.setNodeMapped(preNode,curNode,proxyDao,commonInfo);
                 for (BaseNode baseNode : preNode.getChildren()) {
                     preQueue.offer(baseNode);
                 }

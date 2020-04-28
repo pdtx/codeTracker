@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core;
 
+import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.alibaba.fastjson.JSONArray;
@@ -23,10 +24,18 @@ import java.util.*;
  **/
 @Slf4j
 public class LogicalChangedHandler implements NodeMapping {
+    private ProxyDao proxyDao;
 
     private String diffPath;
 
     private Map<String, List<DiffInfo>> map;
+
+    private CommonInfo commonInfo;
+
+    @Autowired
+    public void setProxyDao(ProxyDao proxyDao) {
+        this.proxyDao = proxyDao;
+    }
 
     private LogicalChangedHandler(){}
 
@@ -46,11 +55,12 @@ public class LogicalChangedHandler implements NodeMapping {
 
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
+        this.commonInfo = commonInfo;
         extractFromDiff();
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
             curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-            NodeMapping.setNodeMapped(preRoot,curRoot);
+            NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
 
             //抽取preMap和curMap
             Map<String, Set<BaseNode>> preMap = extractMapFromNode(preRoot);
@@ -107,15 +117,15 @@ public class LogicalChangedHandler implements NodeMapping {
             if (pre == null && cur == null) {
                 continue;
             } else if (pre == null) {
-                addHandler.subTreeMapping(null,cur);
+                addHandler.subTreeMapping(null,cur,commonInfo);
                 backTracing(cur);
                 curSet.remove(cur);
             } else if (cur == null) {
-                deleteHandler.subTreeMapping(pre,null);
+                deleteHandler.subTreeMapping(pre,null,commonInfo);
                 backTracing(cur);
                 preSet.remove(pre);
             } else {
-                NodeMapping.setNodeMapped(pre,cur);
+                NodeMapping.setNodeMapped(pre,cur,proxyDao,commonInfo);
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
                         cur.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
@@ -146,9 +156,9 @@ public class LogicalChangedHandler implements NodeMapping {
                         MethodNode cMethod = (MethodNode)node;
                         if (pMethod.equals(cMethod)) {
                             if (pMethod.getBegin() != cMethod.getBegin() || pMethod.getEnd() != cMethod.getEnd()) {
-                                physicalChangedHandler.subTreeMapping(preNode,node);
+                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo);
                             } else {
-                                NodeMapping.setNodeMapped(preNode,node);
+                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                             }
                             preSet.remove(preNode);
@@ -159,9 +169,9 @@ public class LogicalChangedHandler implements NodeMapping {
                         StatementNode cStatement = (StatementNode) node;
                         if (pStatement.equals(cStatement)) {
                             if (pStatement.getBegin() != cStatement.getBegin() || pStatement.getEnd() != cStatement.getEnd()) {
-                                physicalChangedHandler.subTreeMapping(preNode,node);
+                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo);
                             } else {
-                                NodeMapping.setNodeMapped(preNode,node);
+                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                             }
                             preSet.remove(preNode);

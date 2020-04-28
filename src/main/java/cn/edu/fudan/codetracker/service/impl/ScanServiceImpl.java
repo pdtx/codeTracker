@@ -316,7 +316,7 @@ public class ScanServiceImpl implements ScanService {
                     continue;
                 }
                 if (deleteSet.contains(fileNode.getFilePath())) {
-                    deleteHandler.subTreeMapping(fileNode, null);
+                    deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo());
                 }
                 if (changeSet.contains(fileNode.getFilePath())) {
                     preMap.put(fileNode.getFilePath(),fileNode);
@@ -327,7 +327,7 @@ public class ScanServiceImpl implements ScanService {
                     continue;
                 }
                 if (addSet.contains(fileNode.getFilePath())) {
-                    addHandler.subTreeMapping(null,fileNode);
+                    addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo());
                 }
                 if (changeSet.contains(fileNode.getFilePath())) {
                     curMap.put(fileNode.getFilePath(),fileNode);
@@ -346,9 +346,9 @@ public class ScanServiceImpl implements ScanService {
                 if(logicalFileMap.keySet().contains(path)) {
                     String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
                     logicalChangedHandler.setDiffPath(diffPath);
-                    logicalChangedHandler.subTreeMapping(preRoot,curRoot);
+                    logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
                 } else {
-                    physicalChangedHandler.subTreeMapping(preRoot,curRoot);
+                    physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
                 }
             }
 

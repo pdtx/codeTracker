@@ -1,7 +1,10 @@
 package cn.edu.fudan.codetracker.core;
 
+import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
+import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.FileNode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Stack;
 
@@ -12,8 +15,14 @@ import java.util.Stack;
  * create: 2020-03-21 00:24
  **/
 public class AddHandler implements NodeMapping {
+    private ProxyDao proxyDao;
 
     private AddHandler(){}
+
+    @Autowired
+    public void setProxyDao(ProxyDao proxyDao) {
+        this.proxyDao = proxyDao;
+    }
 
     public static AddHandler getInstance(){
         return MappingGeneratorHolder.ADD_HANDLER;
@@ -25,7 +34,7 @@ public class AddHandler implements NodeMapping {
 
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(curRoot);
         if (curRoot instanceof FileNode) {
@@ -34,7 +43,7 @@ public class AddHandler implements NodeMapping {
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
                 //ADD情况，rootUuid即uuid
                 baseNode.setRootUuid(baseNode.getUuid());
-                NodeMapping.setNodeMapped(null,baseNode);
+                NodeMapping.setNodeMapped(null,baseNode,proxyDao,commonInfo);
                 for (BaseNode child: baseNode.getChildren()) {
                     stack.push(child);
                 }
@@ -46,7 +55,7 @@ public class AddHandler implements NodeMapping {
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
                 //ADD情况，rootUuid即uuid
                 baseNode.setRootUuid(baseNode.getUuid());
-                NodeMapping.setNodeMapped(null,baseNode);
+                NodeMapping.setNodeMapped(null,baseNode,proxyDao,commonInfo);
                 for (BaseNode child: baseNode.getChildren()) {
                     if (isAdd(child)) {
                         stack.push(child);
