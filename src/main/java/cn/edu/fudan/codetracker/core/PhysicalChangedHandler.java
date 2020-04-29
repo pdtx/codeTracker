@@ -55,6 +55,7 @@ public class PhysicalChangedHandler implements NodeMapping{
                     StatementNode preStatement = (StatementNode)preNode;
                     StatementNode curStatement = (StatementNode)curNode;
                     if (preStatement.getBegin() != curStatement.getBegin() || preStatement.getEnd() != curStatement.getEnd()) {
+                        curStatement.setIsLogic(0);
                         curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
                     } else {
                         curStatement.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
@@ -70,6 +71,13 @@ public class PhysicalChangedHandler implements NodeMapping{
                     curQueue.offer(baseNode);
                 }
             }
+        } else if ((preRoot instanceof MethodNode && curRoot instanceof MethodNode) || (curRoot instanceof StatementNode && curRoot instanceof StatementNode)) {
+            curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+            if (curRoot instanceof StatementNode) {
+                StatementNode statementNode = (StatementNode)curRoot;
+                statementNode.setIsLogic(0);
+            }
+            NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
         }
     }
 }

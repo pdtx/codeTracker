@@ -179,8 +179,6 @@ public class LogicalChangedHandler implements NodeMapping {
                         }
                     }
                 }
-            } else {
-                break;
             }
         }
 

@@ -277,6 +277,11 @@ public class ScanServiceImpl implements ScanService {
         jGitHelper.checkout(branch);
         Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
 
+        //merge情况直接跳过
+        if (fileMap.keySet().size() > 1) {
+            return;
+        }
+
         for (String s : fileMap.keySet()) {
             String preCommit = s;
             Map<String, List<String>> map = fileMap.get(preCommit);
@@ -352,6 +357,9 @@ public class ScanServiceImpl implements ScanService {
                 }
             }
 
+            extractAndSaveInfo(preRepoInfo,curRepoInfo);
+
+
         }
 
 
@@ -393,6 +401,232 @@ public class ScanServiceImpl implements ScanService {
 //        }
 
     }
+
+    private void extractAndSaveInfo(RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo) {
+        //抽取需要入库的数据
+        Map<String,Set<PackageNode>> packageMap = new HashMap<>();
+        Map<String,Set<FileNode>> fileMap = new HashMap<>();
+        Map<String,Set<ClassNode>> classMap = new HashMap<>();
+        Map<String,Set<MethodNode>> methodMap = new HashMap<>();
+        Map<String,Set<FieldNode>> fieldMap = new HashMap<>();
+        Map<String,Set<StatementNode>> statementMap = new HashMap<>();
+
+        //preTree上搜索delete情况
+        for (PackageNode packageNode: preRepoInfo.getPackageInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(packageNode.getChangeStatus())) {
+                if (packageMap.keySet().contains("DELETE")) {
+                    packageMap.get("DELETE").add(packageNode);
+                } else {
+                    Set<PackageNode> set = new HashSet<>();
+                    set.add(packageNode);
+                    packageMap.put("DELETE",set);
+                }
+            }
+        }
+        for (FileNode fileNode: preRepoInfo.getFileInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(fileNode.getChangeStatus())) {
+                if (fileMap.keySet().contains("DELETE")) {
+                    fileMap.get("DELETE").add(fileNode);
+                } else {
+                    Set<FileNode> set = new HashSet<>();
+                    set.add(fileNode);
+                    fileMap.put("DELETE",set);
+                }
+            }
+        }
+        for (ClassNode classNode: preRepoInfo.getClassInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(classNode.getChangeStatus())) {
+                if (classMap.keySet().contains("DELETE")) {
+                    classMap.get("DELETE").add(classNode);
+                } else {
+                    Set<ClassNode> set = new HashSet<>();
+                    set.add(classNode);
+                    classMap.put("DELETE",set);
+                }
+            }
+        }
+        for (MethodNode methodNode: preRepoInfo.getMethodInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(methodNode.getChangeStatus())) {
+                if (methodMap.keySet().contains("DELETE")) {
+                    methodMap.get("DELETE").add(methodNode);
+                } else {
+                    Set<MethodNode> set = new HashSet<>();
+                    set.add(methodNode);
+                    methodMap.put("DELETE",set);
+                }
+            }
+        }
+        for (FieldNode fieldNode: preRepoInfo.getFieldInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(fieldNode.getChangeStatus())) {
+                if (fieldMap.keySet().contains("DELETE")) {
+                    fieldMap.get("DELETE").add(fieldNode);
+                } else {
+                    Set<FieldNode> set = new HashSet<>();
+                    set.add(fieldNode);
+                    fieldMap.put("DELETE",set);
+                }
+            }
+        }
+        for (StatementNode statementNode: preRepoInfo.getStatementInfos()) {
+            if (BaseNode.ChangeStatus.DELETE.equals(statementNode.getChangeStatus())) {
+                if (statementMap.keySet().contains("DELETE")) {
+                    statementMap.get("DELETE").add(statementNode);
+                } else {
+                    Set<StatementNode> set = new HashSet<>();
+                    set.add(statementNode);
+                    statementMap.put("DELETE",set);
+                }
+            }
+        }
+
+        //curTree上搜索add change情况
+        for (PackageNode packageNode: curRepoInfo.getPackageInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(packageNode.getChangeStatus())) {
+                if (packageMap.keySet().contains("ADD")) {
+                    packageMap.get("ADD").add(packageNode);
+                } else {
+                    Set<PackageNode> set = new HashSet<>();
+                    set.add(packageNode);
+                    packageMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(packageNode.getChangeStatus())) {
+                if (packageMap.keySet().contains("CHANGE")) {
+                    packageMap.get("CHANGE").add(packageNode);
+                } else {
+                    Set<PackageNode> set = new HashSet<>();
+                    set.add(packageNode);
+                    packageMap.put("CHANGE",set);
+                }
+            }
+        }
+        for (FileNode fileNode: curRepoInfo.getFileInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(fileNode.getChangeStatus())) {
+                if (fileMap.keySet().contains("ADD")) {
+                    fileMap.get("ADD").add(fileNode);
+                } else {
+                    Set<FileNode> set = new HashSet<>();
+                    set.add(fileNode);
+                    fileMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fileNode.getChangeStatus())) {
+                if (fileMap.keySet().contains("CHANGE")) {
+                    fileMap.get("CHANGE").add(fileNode);
+                } else {
+                    Set<FileNode> set = new HashSet<>();
+                    set.add(fileNode);
+                    fileMap.put("CHANGE",set);
+                }
+            }
+        }
+        for (ClassNode classNode: curRepoInfo.getClassInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
+                if (classMap.keySet().contains("ADD")) {
+                    classMap.get("ADD").add(classNode);
+                } else {
+                    Set<ClassNode> set = new HashSet<>();
+                    set.add(classNode);
+                    classMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
+                if (classMap.keySet().contains("CHANGE")) {
+                    classMap.get("CHANGE").add(classNode);
+                } else {
+                    Set<ClassNode> set = new HashSet<>();
+                    set.add(classNode);
+                    classMap.put("CHANGE",set);
+                }
+            }
+        }
+        for (MethodNode methodNode: curRepoInfo.getMethodInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(methodNode.getChangeStatus())) {
+                if (methodMap.keySet().contains("ADD")) {
+                    methodMap.get("ADD").add(methodNode);
+                } else {
+                    Set<MethodNode> set = new HashSet<>();
+                    set.add(methodNode);
+                    methodMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(methodNode.getChangeStatus())) {
+                if (methodMap.keySet().contains("CHANGE")) {
+                    methodMap.get("CHANGE").add(methodNode);
+                } else {
+                    Set<MethodNode> set = new HashSet<>();
+                    set.add(methodNode);
+                    methodMap.put("CHANGE",set);
+                }
+            }
+        }
+        for (FieldNode fieldNode: curRepoInfo.getFieldInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus())) {
+                if (fieldMap.keySet().contains("ADD")) {
+                    fieldMap.get("ADD").add(fieldNode);
+                } else {
+                    Set<FieldNode> set = new HashSet<>();
+                    set.add(fieldNode);
+                    fieldMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fieldNode.getChangeStatus())) {
+                if (fieldMap.keySet().contains("CHANGE")) {
+                    fieldMap.get("CHANGE").add(fieldNode);
+                } else {
+                    Set<FieldNode> set = new HashSet<>();
+                    set.add(fieldNode);
+                    fieldMap.put("CHANGE",set);
+                }
+            }
+        }
+        for (StatementNode statementNode: curRepoInfo.getStatementInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus())) {
+                if (statementMap.keySet().contains("ADD")) {
+                    statementMap.get("ADD").add(statementNode);
+                } else {
+                    Set<StatementNode> set = new HashSet<>();
+                    set.add(statementNode);
+                    statementMap.put("ADD",set);
+                }
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(statementNode.getChangeStatus())) {
+                if (statementMap.keySet().contains("CHANGE")) {
+                    statementMap.get("CHANGE").add(statementNode);
+                } else {
+                    Set<StatementNode> set = new HashSet<>();
+                    set.add(statementNode);
+                    statementMap.put("CHANGE",set);
+                }
+            }
+        }
+
+        save(packageMap,fileMap,classMap,methodMap,fieldMap,statementMap,curRepoInfo.getCommonInfo());
+    }
+
+    private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
+        //入库
+        try {
+            //add
+            packageDao.setAddInfo(packageMap.get("ADD"),commonInfo);
+            fileDao.setAddInfo(fileMap.get("ADD"),commonInfo);
+            classDao.setAddInfo(classMap.get("ADD"),commonInfo);
+            methodDao.setAddInfo(methodMap.get("ADD"),commonInfo);
+            fieldDao.setAddInfo(fieldMap.get("ADD"),commonInfo);
+            statementDao.setAddInfo(statementMap.get("ADD"),commonInfo);
+            //delete
+            packageDao.setDeleteInfo(packageMap.get("DELETE"),commonInfo);
+            fileDao.setDeleteInfo(fileMap.get("DELETE"),commonInfo);
+            classDao.setDeleteInfo(classMap.get("DELETE"),commonInfo);
+            methodDao.setDeleteInfo(methodMap.get("DELETE"),commonInfo);
+            fieldDao.setDeleteInfo(fieldMap.get("DELETE"),commonInfo);
+            statementDao.setDeleteInfo(statementMap.get("DELETE"),commonInfo);
+            //change
+            packageDao.setChangeInfo(packageMap.get("CHANGE"),commonInfo);
+            fileDao.setChangeInfo(fileMap.get("CHANGE"),commonInfo);
+            classDao.setChangeInfo(classMap.get("CHANGE"),commonInfo);
+            methodDao.setChangeInfo(methodMap.get("CHANGE"),commonInfo);
+            fieldDao.setChangeInfo(fieldMap.get("CHANGE"),commonInfo);
+            statementDao.setChangeInfo(statementMap.get("CHANGE"),commonInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private Map<String,Map<String,String>> extractDiffFilePathFromClDiff(String repoPath,String commitId,String outputPath) {
         Map<String,Map<String,String>> map = new HashMap<>();
