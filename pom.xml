@@ -24,7 +24,6 @@
         <fastjsonVersion>1.2.47</fastjsonVersion>
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
-        <project.basedir>${pwd}</project.basedir>
     </properties>
 
     <repositories>
@@ -65,10 +64,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.kafka</groupId>-->
-<!--            <artifactId>spring-kafka</artifactId>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
@@ -106,18 +101,10 @@
         </dependency>
 
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver &ndash;&gt;
         <dependency>
-            <groupId>org.neo4j.driver</groupId>
-            <artifactId>neo4j-java-driver</artifactId>
-            <version>1.7.2</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        &lt;!&ndash; https://mvnrepository.com/artifact/org.neo4j/neo4j &ndash;&gt;
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j</artifactId>
-            <version>3.5.6</version>
-        </dependency>-->
 
         <!--fastjson-->
         <dependency>
