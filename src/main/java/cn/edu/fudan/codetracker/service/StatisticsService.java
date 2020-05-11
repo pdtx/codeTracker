@@ -49,9 +49,9 @@ public interface StatisticsService {
 
     List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate);
 
-    Map<String,Integer> getChangeCommitterInfoByDate(String repoUuid, String commit, String repoPath, String branch, String beginDate);
-
-    Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch);
+//    Map<String,Integer> getChangeCommitterInfoByDate(String repoUuid, String commit, String repoPath, String branch, String beginDate);
+//
+//    Map<String,Integer> getChangeCommitterInfo(String repoUuid, String commit, String repoPath, String branch);
 
     Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch);
 

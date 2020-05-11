@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import java.util.UUID;
 @SpringBootApplication
 @EnableAsync
 @MapperScan("cn.edu.fudan.codetracker.mapper")
-
 //测试用
 //public class CodeTrackerApplication implements CommandLineRunner {
 public class CodeTrackerApplication {

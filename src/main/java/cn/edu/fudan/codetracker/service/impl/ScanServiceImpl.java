@@ -6,10 +6,7 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.component.RestInterfaceManager;
-import cn.edu.fudan.codetracker.core.AddHandler;
-import cn.edu.fudan.codetracker.core.DeleteHandler;
-import cn.edu.fudan.codetracker.core.LogicalChangedHandler;
-import cn.edu.fudan.codetracker.core.PhysicalChangedHandler;
+import cn.edu.fudan.codetracker.core.*;
 import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
@@ -46,12 +43,8 @@ public class ScanServiceImpl implements ScanService {
     private MethodDao methodDao;
     private StatementDao statementDao;
     private RepoDao repoDao;
-    private ProxyDao proxyDao;
 
-    private AddHandler addHandler = AddHandler.getInstance();
-    private DeleteHandler deleteHandler = DeleteHandler.getInstance();
-    private LogicalChangedHandler logicalChangedHandler = LogicalChangedHandler.getInstance();
-    private PhysicalChangedHandler physicalChangedHandler = PhysicalChangedHandler.getInstance();
+
 
     private RestInterfaceManager restInterface;
 
@@ -306,56 +299,7 @@ public class ScanServiceImpl implements ScanService {
             String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
             Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commitId,outputPath);
 
-            //处理packageNode
-            mappingPackageNode(curRepoInfo.getPackageInfos(),repoUuid,branch);
-
-            //判断fileNode属于add、delete、change
-            Set<String> addSet = new HashSet<>(map.get("ADD"));
-            Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
-            Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
-            Map<String,FileNode> preMap = new HashMap<>();
-            Map<String,FileNode> curMap = new HashMap<>();
-
-            for (FileNode fileNode : preRepoInfo.getFileInfos()) {
-                if (FileFilter.filenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                if (deleteSet.contains(fileNode.getFilePath())) {
-                    deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo());
-                }
-                if (changeSet.contains(fileNode.getFilePath())) {
-                    preMap.put(fileNode.getFilePath(),fileNode);
-                }
-            }
-            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-                if (FileFilter.filenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                if (addSet.contains(fileNode.getFilePath())) {
-                    addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo());
-                }
-                if (changeSet.contains(fileNode.getFilePath())) {
-                    curMap.put(fileNode.getFilePath(),fileNode);
-                }
-            }
-
-            Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
-
-            for (String path : changeSet) {
-                if (FileFilter.filenameFilter(path)) {
-                    continue;
-                }
-                FileNode preRoot = preMap.get(path);
-                FileNode curRoot = curMap.get(path);
-                //判断文件是否有逻辑修改
-                if(logicalFileMap.keySet().contains(path)) {
-                    String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
-                    logicalChangedHandler.setDiffPath(diffPath);
-                    logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
-                } else {
-                    physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
-                }
-            }
+            TrackerCore.mapping(preRepoInfo,curRepoInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
 
             extractAndSaveInfo(preRepoInfo,curRepoInfo);
 
@@ -680,23 +624,6 @@ public class ScanServiceImpl implements ScanService {
         return pathList.get(0);
     }
 
-    private void mappingPackageNode(List<PackageNode> curPackageList, String repoUuid, String branch) {
-        int len = curPackageList.size();
-        for (int i = 0; i < len; i++) {
-            PackageNode packageNode = curPackageList.get(i);
-            TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE,packageNode.getModuleName(),packageNode.getPackageName(),repoUuid,branch);
-            if (trackerInfo == null) {
-                packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                packageNode.setRootUuid(packageNode.getUuid());
-            } else {
-                packageNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-                packageNode.setRootUuid(trackerInfo.getRootUUID());
-                packageNode.setVersion(trackerInfo.getVersion()+1);
-            }
-            packageNode.setMapping(true);
-        }
-    }
-
     //将文件相对路径转成绝对路径
     private List<String> localizeFilePath(String repoPath, List<String> filePath) {
         for (int i = 0; i < filePath.size() ; i++) {
@@ -793,10 +720,6 @@ public class ScanServiceImpl implements ScanService {
         this.repoDao = repoDao;
     }
 
-    @Autowired
-    public void setProxyDao(ProxyDao proxyDao) {
-        this.proxyDao = proxyDao;
-    }
 
     public static void main(String[] args) {
         String repoUuid = "Issue";
