@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.StatementMapper">
 
     <insert id="insertStatementInfoList">
-        insert into codeTracker.meta_statement
+        insert into meta_statement
         (
         uuid,
         meta_method_uuid,
@@ -25,10 +25,10 @@
             (
             #{item.uuid},
             #{item.methodUuid},
-            #{commonInfo.startCommit},
-            #{commonInfo.startCommitDate},
-            #{commonInfo.endCommit},
-            #{commonInfo.endCommitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.body},
@@ -41,7 +41,7 @@
     </insert>
 
     <insert id="insertRawStatementInfoList">
-        insert into codeTracker.raw_statement
+        insert into raw_statement
         (
         uuid,
         meta_statement_uuid,
@@ -84,7 +84,7 @@
     </insert>
 
     <insert id="insertStatementRelationList" parameterType="List">
-        insert into codeTracker.relation_statement
+        insert into relation_statement
         (
         uuid,
         ancestor_uuid,
@@ -109,16 +109,16 @@
     </insert>
 
     <update id="updateChangeInfo">
-        update codeTracker.meta_statement
+        update meta_statement
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="statementNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="statementNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commitDate}
                 </foreach>
             </trim>
             <trim prefix="body = case" suffix="end,">
@@ -150,7 +150,7 @@
     </update>
 
     <update id="updateDeleteInfo">
-        update codeTracker.relation_statement
+        update relation_statement
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="valid_end = case" suffix="end,">
                 <foreach collection="statementNodes" item="item">
@@ -174,10 +174,10 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from codeTracker.raw_statement where meta_method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
+        select version,statement_uuid from raw_statement where meta_method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
     </select>
 
     <select id="getTrackerInfoWithBodyUsingSplice" resultMap="trackerInfo" parameterType="String">
-        select version,statement_uuid from codeTracker.raw_statement where meta_method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
+        select version,statement_uuid from raw_statement where meta_method_uuid = #{methodUuid} and body = ${body} order by version desc limit 1;
     </select>
 </mapper>

@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.PackageMapper">
 
     <insert id="insertPackageInfoList">
-        insert into codeTracker.meta_package
+        insert into meta_package
         (
         uuid,
         package_name,
@@ -23,10 +23,10 @@
             #{item.uuid},
             #{item.packageName},
             #{item.moduleName},
-            #{commonInfo.startCommit},
-            #{commonInfo.startCommitDate},
-            #{commonInfo.endCommit},
-            #{commonInfo.endCommitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.version}
@@ -35,7 +35,7 @@
     </insert>
 
     <insert id="insertRawPackageInfoList">
-        insert into codeTracker.raw_package
+        insert into raw_package
         (
         uuid,
         meta_package_uuid,
@@ -68,16 +68,16 @@
     </insert>
 
     <update id="updateChangeInfo">
-        update codeTracker.meta_package
+        update meta_package
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="packageNodes" item="item">
-                        when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
+                        when uuid=#{item.rootUuid} then #{commonInfo.commit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="packageNodes" item="item">
-                        when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
+                        when uuid=#{item.rootUuid} then #{commonInfo.commitDate}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">
@@ -101,7 +101,7 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from codeTracker.meta_package where module_name = #{moduleName} and package_name = #{packageName} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from meta_package where module_name = #{moduleName} and package_name = #{packageName} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
     <resultMap id="ScanInfo" type="String">
@@ -110,7 +110,7 @@
 
     <!--判断某个repo的某个branch是否扫描过-->
     <select id="findScanLatest" parameterType="String" resultMap="ScanInfo">
-        select commitid from codeTracker.raw_package where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date desc limit 1;
+        select commitid from raw_package where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date desc limit 1;
     </select>
 
 </mapper>

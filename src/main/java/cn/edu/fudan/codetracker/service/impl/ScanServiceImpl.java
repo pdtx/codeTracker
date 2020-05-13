@@ -87,8 +87,8 @@ public class ScanServiceImpl implements ScanService {
             log.error("First Scan Error: this repo has already been scanned!");
             return;
         }
-        String repoPath = restInterface.getRepoPath(repoUuid);
-//        String repoPath = getRepoPathByUuid(repoUuid);
+//        String repoPath = restInterface.getRepoPath(repoUuid);
+        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
@@ -98,7 +98,7 @@ public class ScanServiceImpl implements ScanService {
         } else {
             repoDao.updateScanStatus(repoUuid, branch, "scanned");
         }
-        restInterface.freeRepo(repoUuid, repoPath);
+//        restInterface.freeRepo(repoUuid, repoPath);
     }
 
     @Async("taskExecutor")
@@ -137,6 +137,7 @@ public class ScanServiceImpl implements ScanService {
                     jGitHelper.checkout(commit);
                     repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
 //                    repoInfo.setCommitter(jGitHelper.getAuthorName(commit));
+                    travelAndSetChangeRelation(repoInfo.getPackageInfos());
                     saveData(repoInfo);
                     isInit = true;
 //                    lineCountFirstScan(repoInfo, repoPath, lineInfoMap);
@@ -149,6 +150,22 @@ public class ScanServiceImpl implements ScanService {
             return true;
         }
     }
+
+
+    private void travelAndSetChangeRelation(List<? extends BaseNode> baseNodes){
+        if (baseNodes == null) {
+            return;
+        }
+        for (BaseNode baseNode : baseNodes) {
+            baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            travelAndSetChangeRelation(baseNode.getChildren());
+            if (baseNode instanceof ClassNode) {
+                ClassNode classNode = (ClassNode)baseNode;
+                travelAndSetChangeRelation(classNode.getFieldNodes());
+            }
+        }
+    }
+
 
     /**
      * 返回库里扫描过最新的commitId

@@ -170,6 +170,7 @@ public class RepoInfoBuilder {
                 break;
         }
         for (BaseNode baseNode : baseNodes) {
+            baseNode.setRootUuid(baseNode.getUuid());
             travel(baseNode.getChildren());
         }
     }

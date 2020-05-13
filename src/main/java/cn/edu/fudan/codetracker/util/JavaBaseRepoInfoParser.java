@@ -263,6 +263,7 @@ public class JavaBaseRepoInfoParser implements BaseRepoInfoParser {
             if (statement.getBegin().isPresent() &&  statement.getEnd().isPresent() && statement.getTokenRange().isPresent()) {
                 String body = statement.getTokenRange().get().toString();
                 StatementNode statementNode = new StatementNode(body, statement.getBegin().get().line, statement.getEnd().get().line);
+                statementNode.setLevel(methodNode.getProjectInfoLevel().getLevel()+1);
                 statementNode.setSequence(++sequence);
                 statementNode.setParent(methodNode);
                 //先设methodUuid为raw_method_uuid，在mapping时改为meta_method_uuid
@@ -285,6 +286,7 @@ public class JavaBaseRepoInfoParser implements BaseRepoInfoParser {
                 Statement statement = node.findFirst(Statement.class).get();
                 if ((statement.getTokenRange().isPresent() && statement.getBegin().isPresent() && statement.getEnd().isPresent()) ){
                     StatementNode statementNode = new StatementNode(statement.getTokenRange().get().toString(), statement.getBegin().get().line, statement.getEnd().get().line);
+                    statementNode.setLevel(parent.getLevel()+1);
                     statementNode.setSequence(++sequence);
                     statementNode.setParent(parent);
                     //先设methodUuid为raw_method_uuid，在mapping时改为meta_method_uuid

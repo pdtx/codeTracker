@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.ClassMapper">
 
     <insert id="insertClassInfoList">
-        insert into codeTracker.meta_class
+        insert into meta_class
         (
         uuid,
         fullname,
@@ -28,10 +28,10 @@
             #{item.className},
             #{item.parent.filePath},
             #{item.parent.rootUuid},
-            #{commonInfo.startCommit},
-            #{commonInfo.startCommitDate},
-            #{commonInfo.endCommit},
-            #{commonInfo.endCommitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.version},
@@ -41,7 +41,7 @@
     </insert>
 
     <insert id="insertRawClassInfoList">
-        insert into codeTracker.raw_class
+        insert into raw_class
         (
         uuid,
         fullname,
@@ -80,16 +80,16 @@
     </insert>
 
     <update id="updateChangeInfo">
-        update codeTracker.meta_class
+        update meta_class
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="classNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="classNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commitDate}
                 </foreach>
             </trim>
             <trim prefix="version = case" suffix="end,">
@@ -113,7 +113,7 @@
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from codeTracker.meta_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
+        select version,uuid from meta_class where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch} order by version desc limit 1
     </select>
 
 </mapper>

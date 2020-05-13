@@ -3,7 +3,8 @@ package cn.edu.fudan.codetracker.domain;
 /**
  * @author fancying
  */
-public enum ProjectInfoLevel {
+public enum
+ProjectInfoLevel {
     /**
      * module
      */

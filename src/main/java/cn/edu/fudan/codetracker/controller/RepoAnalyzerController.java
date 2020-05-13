@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -29,11 +30,12 @@ public class RepoAnalyzerController {
      *
      * @param requestParam 包含： repoId、branch、commitId
      */
-    @PostMapping(value = {"/project"})
+    @Async("taskExecutor")
+    @PostMapping(value = {"/project/auto"})
     public ResponseBean scanByRequest(@RequestBody JSONObject requestParam) {
         String repoId = requestParam.getString("repoId");
         String branch = requestParam.getString("branch");
-        String startCommit = requestParam.getString("commitId");
+        String startCommit = requestParam.getString("beginCommit");
         try {
             String status = scanService.getScanStatus(repoId, branch);
             if (!scanning.equals(status)) {

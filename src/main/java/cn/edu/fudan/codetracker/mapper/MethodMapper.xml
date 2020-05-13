@@ -4,7 +4,7 @@
 <mapper namespace="cn.edu.fudan.codetracker.mapper.MethodMapper">
 
     <insert id="insertMethodInfoList">
-        insert into codeTracker.meta_method
+        insert into meta_method
         (
         uuid,
         fullname,
@@ -32,10 +32,10 @@
             #{item.filePath},
             #{item.packageName},
             #{item.parent.rootUuid},
-            #{commonInfo.startCommit},
-            #{commonInfo.startCommitDate},
-            #{commonInfo.endCommit},
-            #{commonInfo.endCommitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
+            #{commonInfo.commit},
+            #{commonInfo.commitDate},
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.content},
@@ -45,7 +45,7 @@
     </insert>
 
     <insert id="insertRawMethodInfoList">
-        insert into codeTracker.raw_method
+        insert into raw_method
         (
         uuid,
         fullname,
@@ -92,7 +92,7 @@
     </insert>
 
     <update id="updateChangeInfo">
-        update codeTracker.meta_method
+        update meta_method
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="fullname = case" suffix="end,">
                 <foreach collection="methodNodes" item="item">
@@ -106,12 +106,12 @@
             </trim>
             <trim prefix="end_commit = case" suffix="end,">
                 <foreach collection="methodNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommit}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commit}
                 </foreach>
             </trim>
             <trim prefix="end_commit_date = case" suffix="end,">
                 <foreach collection="methodNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{commonInfo.endCommitDate}
+                    when uuid=#{item.rootUuid} then #{commonInfo.commitDate}
                 </foreach>
             </trim>
             <trim prefix="content = case" suffix="end,">
@@ -141,9 +141,9 @@
 
     <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from codeTracker.meta_method where uuid =
-        (select meta_method_uuid from codeTracker.raw_method where signature = #{signature} and meta_method_uuid in
-        (select uuid from codeTracker.meta_method
+        select version,uuid from meta_method where uuid =
+        (select meta_method_uuid from raw_method where signature = #{signature} and meta_method_uuid in
+        (select uuid from meta_method
         where file_path = #{filePath} and class_name = #{className}
           and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)
     </select>
