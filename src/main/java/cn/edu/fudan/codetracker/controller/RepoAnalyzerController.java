@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -25,12 +24,25 @@ public class RepoAnalyzerController {
 
     private ScanService scanService;
 
+
     /**
      * description 开始项目扫描 是否是第一次扫描应该由具体的服务决定 与调用的服务无关
      *
      * @param requestParam 包含： repoId、branch、commitId
      */
-    @Async("taskExecutor")
+    @PostMapping(value = {"/codeTracker"})
+    public ResponseBean scan(@RequestBody JSONObject requestParam) {
+        return ResponseBean.builder().build();
+    }
+
+
+
+
+    /**
+     * description 开始项目扫描 是否是第一次扫描应该由具体的服务决定 与调用的服务无关
+     *
+     * @param requestParam 包含： repoId、branch、commitId
+     */
     @PostMapping(value = {"/project/auto"})
     public ResponseBean scanByRequest(@RequestBody JSONObject requestParam) {
         String repoId = requestParam.getString("repoId");
