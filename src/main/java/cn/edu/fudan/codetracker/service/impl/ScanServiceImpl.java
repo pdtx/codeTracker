@@ -146,7 +146,7 @@ public class ScanServiceImpl implements ScanService {
             }
             return false;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
             return true;
         }
     }
