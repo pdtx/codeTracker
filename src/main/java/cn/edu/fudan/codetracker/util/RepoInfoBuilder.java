@@ -1,13 +1,10 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-05-26 22:26
- **/
 package cn.edu.fudan.codetracker.util;
 
 
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -15,7 +12,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * description: 项目结构树
+ * @author fancying
+ * create: 2019-05-26 22:26
+ **/
 @Slf4j
+@Getter
+@Setter
 public class RepoInfoBuilder {
 
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -193,101 +197,6 @@ public class RepoInfoBuilder {
         return pathList;
     }
 
-    /**
-     * getter and setter
-     * */
-    public String getRepoUuid() {
-        return repoUuid;
-    }
-
-    public String getCommit() {
-        return commit;
-    }
-
-    public String getCommitter() {
-        return committer;
-    }
-
-    public void setCommitter(String committer) {
-        this.committer = committer;
-    }
-
-    public JGitHelper getJGitHelper() {
-        return jGitHelper;
-    }
-
-    public String getBranch() {
-        return branch;
-    }
-
-//    public int getImportCount() { return importCount; }
-
-//    public void setImportCount(int importCount) { this.importCount = importCount; }
-
-    @org.jetbrains.annotations.Contract(pure = true)
-    private String getParentCommit() {
-        return this.parentCommit;
-    }
-
-    public String getCommitMessage() {
-        return commitMessage;
-    }
-
-    public Date getCommitDate() {
-        return commitDate;
-    }
-
-    public List<PackageNode> getPackageInfos() {
-        return packageInfos;
-    }
-
-    public void setPackageInfos(List<PackageNode> packageInfos) {
-        this.packageInfos = packageInfos;
-    }
-
-    public List<FileNode> getFileInfos() {
-        return fileInfos;
-    }
-
-    public void setFileInfos(List<FileNode> fileInfos) {
-        this.fileInfos = fileInfos;
-    }
-
-    public List<ClassNode> getClassInfos() {
-        return classInfos;
-    }
-
-    public void setClassInfos(List<ClassNode> classInfos) {
-        this.classInfos = classInfos;
-    }
-
-    public List<FieldNode> getFieldInfos() {
-        return fieldInfos;
-    }
-
-    public void setFieldInfos(List<FieldNode> fieldInfos) {
-        this.fieldInfos = fieldInfos;
-    }
-
-    public List<MethodNode> getMethodInfos() {
-        return methodInfos;
-    }
-
-    public void setMethodInfos(List<MethodNode> methodInfos) {
-        this.methodInfos = methodInfos;
-    }
-
-    public List<StatementNode> getStatementInfos() {
-        return statementInfos;
-    }
-
-    public void setStatementInfos(List<StatementNode> statementInfos) {
-        this.statementInfos = statementInfos;
-    }
-
-    public CommonInfo getCommonInfo() {
-        return commonInfo;
-    }
 
     public static void main(String[] args) {
         String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";

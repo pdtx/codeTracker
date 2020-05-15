@@ -36,12 +36,4 @@
         select scan_status from tracker_repo where repo_id = #{repoId} and branch = #{branch};
     </select>
 
-    <resultMap id="latestCommit" type="String">
-        <id property="commit" column="latest_commit"/>
-    </resultMap>
-
-    <select id="getLatestScan" resultMap="latestCommit" parameterType="String">
-        select latest_commit from tracker_repo where repo_id = #{repoId} and branch = #{branch};
-    </select>
-
 </mapper>

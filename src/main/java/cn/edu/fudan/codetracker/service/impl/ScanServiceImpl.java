@@ -6,14 +6,13 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.component.RestInterfaceManager;
+import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.core.*;
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.DirExplorer;
-import cn.edu.fudan.codetracker.util.FileFilter;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import cn.edu.fudan.codetracker.util.cldiff.ClDiffHelper;
 import com.alibaba.fastjson.JSONArray;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import cn.edu.fudan.codetracker.util.JavancssScaner;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,61 +42,28 @@ public class ScanServiceImpl implements ScanService {
     private StatementDao statementDao;
     private RepoDao repoDao;
 
-
-
     private RestInterfaceManager restInterface;
 
     @Value("${outputDir}")
     private String outputDir;
 
-    /**
-     * 第一次扫描 存储项目结构
-     * */
-    @Async("taskExecutor")
-    @Override
-    public void firstScan(String repoUuid, String branch, String duration) {
-        if (findScanLatest(repoUuid, branch) == null) {
-            repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, "scanning");
-        } else {
-            log.error("First Scan Error: this repo has already been scanned!");
-            return;
-        }
-        String repoPath = IS_WINDOWS ? getRepoPathByUuid(repoUuid) : restInterface.getRepoPath(repoUuid);
-//        String repoPath = getRepoPathByUuid(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        List<String> commitList = jGitHelper.getCommitListByBranchAndDuration(branch, duration);
-        log.info("commit size : " +  commitList.size());
-        boolean isInit = false;
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, isInit);
-        if (isAbort) {
-            repoDao.updateScanStatus(repoUuid, branch, "aborted");
-        } else {
-            repoDao.updateScanStatus(repoUuid, branch, "scanned");
-        }
-        restInterface.freeRepo(repoUuid, repoPath);
-    }
-
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-        if (findScanLatest(repoUuid, branch) == null) {
-            repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, "scanning");
-        } else {
-            log.error("First Scan Error: this repo has already been scanned!");
+        if (findScanLatest(repoUuid, branch) != null) {
+            log.warn("First Scan: this repo[{}] has already been scanned!", repoUuid);
             return;
         }
+
+        repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, ScanStatus.SCANNING);
 //        String repoPath = restInterface.getRepoPath(repoUuid);
         String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
-        if (isAbort) {
-            repoDao.updateScanStatus(repoUuid, branch, "aborted");
-        } else {
-            repoDao.updateScanStatus(repoUuid, branch, "scanned");
-        }
-//        restInterface.freeRepo(repoUuid, repoPath);
+        repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
+        restInterface.freeRepo(repoUuid, repoPath);
     }
 
     @Async("taskExecutor")
@@ -123,14 +88,16 @@ public class ScanServiceImpl implements ScanService {
         restInterface.freeRepo(repoUuid, repoPath);
     }
 
+    /**
+     * FIXME need @Transactional
+     */
     private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
         RepoInfoBuilder repoInfo;
 //        Map<String,LineInfo> lineInfoMap = new HashMap<>();
         int num = 0;
         try {
             for (String commit : commitList) {
-                ++num;
-                log.info("start commit：" + num  + "  " + commit);
+                log.info("start commit：{} {}" , ++num, commit);
                 if (isInit) {
                     scan(repoUuid , commit, branch, jGitHelper, repoPath);
                 } else {
@@ -738,12 +705,4 @@ public class ScanServiceImpl implements ScanService {
     }
 
 
-    public static void main(String[] args) {
-        String repoUuid = "Issue";
-        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
-        String branch = "zhonghui20191012";
-        String commit = "bccc95d2f36a3392d0f746e4fea4399da6397e15";
-        new ScanServiceImpl().scan(repoUuid,commit,branch,new JGitHelper(repoPath),repoPath);
-//        new ScanServiceImpl().extractDiffFilePathFromClDiff(repoPath,commit);
-    }
 }

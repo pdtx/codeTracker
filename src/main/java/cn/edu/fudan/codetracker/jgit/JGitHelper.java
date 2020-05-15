@@ -1,11 +1,5 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-06-05 17:16
- **/
 package cn.edu.fudan.codetracker.jgit;
 
-import com.sun.org.apache.bcel.internal.generic.ANEWARRAY;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
@@ -14,7 +8,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.*;
-import org.eclipse.jgit.revwalk.FooterLine;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -30,6 +23,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
+/**
+ * description: 基于jgit 处理代码仓
+ * @author fancying
+ * create: 2019-06-05 17:16
+ **/
 @Slf4j
 public class JGitHelper implements Closeable {
 

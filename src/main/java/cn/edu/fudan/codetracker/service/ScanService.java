@@ -7,11 +7,6 @@ package cn.edu.fudan.codetracker.service;
  */
 public interface ScanService {
 
-    //void scan(String repoUuid, String commitId, String branch, JGitHelper jGitHelper);
-
-
-    void firstScan(String repoUuid, String branch, String duration);
-
     /**
      * description
      *
@@ -21,8 +16,20 @@ public interface ScanService {
      */
     void scan(String repoUuid, String branch, String beginCommit);
 
+    /**
+     * description
+     *
+     * @param branch 项目分值
+     * @param repoUuid 代码仓库的 uuid
+     */
     void autoUpdate(String repoUuid, String branch);
 
-    String getScanStatus(String repoId, String branch);
+    /**
+     * description
+     *
+     * @param branch 项目分值
+     * @param repoUuid 代码仓库的 uuid
+     */
+    String getScanStatus(String repoUuid, String branch);
 
 }
