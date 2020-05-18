@@ -309,7 +309,7 @@
 //            return null;
 //        }
 //        if (preMethodInfo == null) {
-//            log.error("preMethodInfo is null:can not get mapping node");
+//            log.error("preMethodInfo is null:can not get tree node");
 //            return null;
 //        }
 //        preMethodInfo.setMapped(true);

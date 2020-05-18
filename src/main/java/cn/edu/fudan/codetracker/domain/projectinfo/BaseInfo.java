@@ -35,7 +35,7 @@ public class BaseInfo {
     private List<? extends BaseInfo> children;
     private ProjectInfoLevel projectInfoLevel;
     /**
-     * mark of mapping
+     * mark of tree
      */
     private boolean mapped = false;
     /**
