@@ -44,8 +44,8 @@ public class RestInterfaceManager {
         return restTemplate.getForObject(commitServicePath + "?repo_id=" + repoId + "&start_time=" + startTime + "&end_time=" + endTime, JSONObject.class).getJSONArray("data").getJSONObject(0).getString("commit_id");
     }
 
-    public String getCodeServiceRepo(String repoId, String commitId) {
-        return restTemplate.getForObject(codeServiceRepoPath + "?repo_id=" + repoId + "&commit_id=" + commitId, JSONObject.class).getJSONObject("data").getString("content");
+    public String getCodeServiceRepo(String repoId) {
+        return restTemplate.getForObject(codeServiceRepoPath + "?repo_id=" + repoId, JSONObject.class).getJSONObject("data").getString("content");
     }
 
     public void freeRepo(String repoId, String path) {

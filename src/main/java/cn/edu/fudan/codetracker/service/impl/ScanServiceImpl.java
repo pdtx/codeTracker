@@ -56,14 +56,14 @@ public class ScanServiceImpl implements ScanService {
         }
 
         repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, ScanStatus.SCANNING);
-//        String repoPath = restInterface.getRepoPath(repoUuid);
+//        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
         String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
         repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
-        restInterface.freeRepo(repoUuid, repoPath);
+//        restInterface.freeRepo(repoUuid, repoPath);
     }
 
     @Async("taskExecutor")
@@ -75,7 +75,7 @@ public class ScanServiceImpl implements ScanService {
             return;
         }
         repoDao.updateScanStatus(repoUuid, branch, "scanning");
-        String repoPath = restInterface.getRepoPath(repoUuid);
+        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
