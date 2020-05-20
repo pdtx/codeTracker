@@ -15,14 +15,8 @@ import java.util.Stack;
  * create: 2020-03-20 19:31
  **/
 public class DeleteHandler implements NodeMapping {
-    private ProxyDao proxyDao;
 
     private DeleteHandler(){}
-
-    @Autowired
-    public void setProxyDao(ProxyDao proxyDao) {
-        this.proxyDao = proxyDao;
-    }
 
     public static DeleteHandler getInstance() {
         return SingletonEnum.SINGLETON_ENUM.getDeleteHandler();
@@ -41,7 +35,7 @@ public class DeleteHandler implements NodeMapping {
     }
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(preRoot);
         if (preRoot instanceof FileNode) {

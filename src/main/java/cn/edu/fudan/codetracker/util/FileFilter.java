@@ -15,7 +15,7 @@ public final class FileFilter {
      * true: 过滤
      * false： 不过滤
      */
-    public  static boolean filenameFilter(String path) {
+    public  static boolean javaFilenameFilter(String path) {
         String[] strs = path.split("/");
         String str = strs[strs.length-1];
         boolean isContinue = !str.toLowerCase().endsWith(".java") ||

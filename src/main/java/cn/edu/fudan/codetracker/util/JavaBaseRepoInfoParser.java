@@ -38,7 +38,7 @@ public class JavaBaseRepoInfoParser implements BaseRepoInfoParser {
     private BlockStmt blockStmt;
     private Statement parentStmt;
 
-    JavaBaseRepoInfoParser(String path, String relativePath, String projectName){
+    public JavaBaseRepoInfoParser(String path, String relativePath, String projectName){
         this.projectName = projectName;
         importNames = new HashSet<>();
         try {

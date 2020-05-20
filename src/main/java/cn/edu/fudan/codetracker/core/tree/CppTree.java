@@ -7,7 +7,7 @@ package cn.edu.fudan.codetracker.core.tree;
  * create: 2020-05-18 09:17
  **/
 public class CppTree extends BaseLanguageTree{
-
+    public static final Language LANGUAGE = Language.CPP;
 
     @Override
     public void parseTree() {

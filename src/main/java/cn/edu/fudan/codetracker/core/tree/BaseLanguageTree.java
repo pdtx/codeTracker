@@ -18,13 +18,15 @@ import java.util.List;
 @NoArgsConstructor
 public abstract class BaseLanguageTree {
 
-    private FileParser parser;
     private List<String> fileList;
+    private List<String> relativePath;
+    private String repoUuid;
     private BaseNode root;
 
-    BaseLanguageTree(List<String> fileList, FileParser fileParser) {
+    BaseLanguageTree(List<String> fileList, List<String> relativePath, String repoUuid) {
         this.fileList = fileList;
-        this.parser = fileParser;
+        this.relativePath = relativePath;
+        this.repoUuid = repoUuid;
     }
 
     public abstract void parseTree();

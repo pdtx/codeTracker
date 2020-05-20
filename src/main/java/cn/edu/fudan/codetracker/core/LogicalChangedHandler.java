@@ -24,18 +24,11 @@ import java.util.*;
  **/
 @Slf4j
 public class LogicalChangedHandler implements NodeMapping {
-    private ProxyDao proxyDao;
-
     private String diffPath;
 
     private Map<String, List<DiffInfo>> map;
 
     private CommonInfo commonInfo;
-
-    @Autowired
-    public void setProxyDao(ProxyDao proxyDao) {
-        this.proxyDao = proxyDao;
-    }
 
     private LogicalChangedHandler(){}
 
@@ -55,7 +48,7 @@ public class LogicalChangedHandler implements NodeMapping {
 
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         this.commonInfo = commonInfo;
         extractFromDiff();
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
@@ -74,7 +67,7 @@ public class LogicalChangedHandler implements NodeMapping {
                 Set<BaseNode> preSet = preMap.get(key);
                 Set<BaseNode> curSet = curMap.get(key);
                 Set<DiffInfo> diffSet = new HashSet<>(map.get(key));
-                mapping(preSet,curSet,diffSet);
+                mapping(preSet,curSet,diffSet,proxyDao);
             }
 
             //再mapping属于同一method的statement
@@ -87,7 +80,7 @@ public class LogicalChangedHandler implements NodeMapping {
                     MethodNode preMethodNode = (MethodNode)methodNode.getPreMappingBaseNode();
                     preStatements = getStatementNodeFromMethod(preMethodNode);
                 }
-                mapping(preStatements,statements,statementDiffs);
+                mapping(preStatements,statements,statementDiffs,proxyDao);
             }
 
         }
@@ -100,16 +93,20 @@ public class LogicalChangedHandler implements NodeMapping {
         while (queue.size() != 0) {
             BaseNode baseNode = queue.poll();
             if (baseNode instanceof StatementNode) {
+                StatementNode statementNode = (StatementNode)baseNode;
+                statementNode.setMethodUuid(methodNode.getRootUuid());
                 set.add(baseNode);
             }
-            for (BaseNode child: baseNode.getChildren()) {
-                queue.offer(child);
+            if (baseNode.getChildren() != null) {
+                for (BaseNode child: baseNode.getChildren()) {
+                    queue.offer(child);
+                }
             }
         }
         return set;
     }
 
-    public void mapping(Set<BaseNode> preSet, Set<BaseNode> curSet, Set<DiffInfo> diffSet) {
+    public void mapping(Set<BaseNode> preSet, Set<BaseNode> curSet, Set<DiffInfo> diffSet, ProxyDao proxyDao) {
         //先匹配diffInfo
         for (DiffInfo diffInfo : diffSet) {
             BaseNode pre = diffInfo.findChangeNode(preSet,false);
@@ -117,23 +114,28 @@ public class LogicalChangedHandler implements NodeMapping {
             if (pre == null && cur == null) {
                 continue;
             } else if (pre == null) {
-                addHandler.subTreeMapping(null,cur,commonInfo);
-                backTracing(cur);
+                addHandler.subTreeMapping(null,cur,commonInfo,proxyDao);
+                BaseNode tmp = cur;
+                backTracing(tmp);
                 curSet.remove(cur);
             } else if (cur == null) {
-                deleteHandler.subTreeMapping(pre,null,commonInfo);
-                backTracing(cur);
+                deleteHandler.subTreeMapping(pre,null,commonInfo,proxyDao);
+                BaseNode tmp = pre;
+                backTracing(tmp);
                 preSet.remove(pre);
             } else {
                 NodeMapping.setNodeMapped(pre,cur,proxyDao,commonInfo);
+                BaseNode tmp;
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
                         cur.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-                        backTracing(cur);
+                        tmp = cur;
+                        backTracing(tmp);
                         break;
                     case "Move":
                         cur.setChangeStatus(BaseNode.ChangeStatus.MOVE);
-                        backTracing(cur);
+                        tmp = cur;
+                        backTracing(tmp);
                         break;
                     default:
                         break;
@@ -156,7 +158,7 @@ public class LogicalChangedHandler implements NodeMapping {
                         MethodNode cMethod = (MethodNode)node;
                         if (pMethod.equals(cMethod)) {
                             if (pMethod.getBegin() != cMethod.getBegin() || pMethod.getEnd() != cMethod.getEnd()) {
-                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo);
+                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo,proxyDao);
                             } else {
                                 NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
@@ -169,7 +171,7 @@ public class LogicalChangedHandler implements NodeMapping {
                         StatementNode cStatement = (StatementNode) node;
                         if (pStatement.equals(cStatement)) {
                             if (pStatement.getBegin() != cStatement.getBegin() || pStatement.getEnd() != cStatement.getEnd()) {
-                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo);
+                                physicalChangedHandler.subTreeMapping(preNode,node,commonInfo,proxyDao);
                             } else {
                                 NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
@@ -217,12 +219,14 @@ public class LogicalChangedHandler implements NodeMapping {
             } else if (baseNode instanceof StatementNode) {
                 key = "statement";
             }
-            Set<BaseNode> set = map.get(key);
-            for (BaseNode child: baseNode.getChildren()) {
-                set.add(child);
-                queue.offer(child);
+            if (baseNode.getChildren() != null) {
+                Set<BaseNode> set = map.get(key);
+                for (BaseNode child: baseNode.getChildren()) {
+                    set.add(child);
+                    queue.offer(child);
+                }
+                map.put(key,set);
             }
-            map.put(key,set);
             if (baseNode instanceof ClassNode) {
                 ClassNode classNode = (ClassNode)baseNode;
                 Set<BaseNode> s = map.get("field");

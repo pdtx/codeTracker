@@ -9,6 +9,7 @@ import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
@@ -89,6 +90,7 @@ public class ProxyDao {
         return packageDao;
     }
 
+    @Autowired
     public void setPackageDao(PackageDao packageDao) {
         this.packageDao = packageDao;
     }
@@ -97,6 +99,7 @@ public class ProxyDao {
         return fileDao;
     }
 
+    @Autowired
     public void setFileDao(FileDao fileDao) {
         this.fileDao = fileDao;
     }
@@ -105,6 +108,7 @@ public class ProxyDao {
         return classDao;
     }
 
+    @Autowired
     public void setClassDao(ClassDao classDao) {
         this.classDao = classDao;
     }
@@ -113,6 +117,7 @@ public class ProxyDao {
         return fieldDao;
     }
 
+    @Autowired
     public void setFieldDao(FieldDao fieldDao) {
         this.fieldDao = fieldDao;
     }
@@ -121,6 +126,7 @@ public class ProxyDao {
         return methodDao;
     }
 
+    @Autowired
     public void setMethodDao(MethodDao methodDao) {
         this.methodDao = methodDao;
     }
@@ -129,6 +135,7 @@ public class ProxyDao {
         return statementDao;
     }
 
+    @Autowired
     public void setStatementDao(StatementDao statementDao) {
         this.statementDao = statementDao;
     }

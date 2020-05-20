@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -22,6 +23,7 @@ import static org.springframework.data.util.CastUtils.cast;
  **/
 @Data
 @Slf4j
+@Component
 public class TrackerCore {
 
     private TrackerCore() {}
@@ -45,6 +47,7 @@ public class TrackerCore {
      */
     private static final ThreadLocal<CommonInfo> COMMON_INFO_THREAD_LOCAL = new ThreadLocal<>();
 
+
     private static ProxyDao proxyDao;
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     private static AddHandler addHandler = AddHandler.getInstance();
@@ -52,10 +55,6 @@ public class TrackerCore {
     private static LogicalChangedHandler logicalChangedHandler = LogicalChangedHandler.getInstance();
     private static PhysicalChangedHandler physicalChangedHandler = PhysicalChangedHandler.getInstance();
 
-    @Autowired
-    public static void setProxyDao(ProxyDao proxyDao) {
-        TrackerCore.proxyDao = proxyDao;
-    }
 
     public static void mappingModule() {
 
@@ -73,22 +72,22 @@ public class TrackerCore {
         Map<String,FileNode> curMap = new HashMap<>();
 
         for (FileNode fileNode : preRepoInfo.getFileInfos()) {
-            if (FileFilter.filenameFilter(fileNode.getFilePath())) {
+            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
                 continue;
             }
             if (deleteSet.contains(fileNode.getFilePath())) {
-                deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo());
+                deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo(),proxyDao);
             }
             if (changeSet.contains(fileNode.getFilePath())) {
                 preMap.put(fileNode.getFilePath(),fileNode);
             }
         }
         for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-            if (FileFilter.filenameFilter(fileNode.getFilePath())) {
+            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
                 continue;
             }
             if (addSet.contains(fileNode.getFilePath())) {
-                addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo());
+                addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo(),proxyDao);
             }
             if (changeSet.contains(fileNode.getFilePath())) {
                 curMap.put(fileNode.getFilePath(),fileNode);
@@ -98,7 +97,7 @@ public class TrackerCore {
         Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
 
         for (String path : changeSet) {
-            if (FileFilter.filenameFilter(path)) {
+            if (FileFilter.javaFilenameFilter(path)) {
                 continue;
             }
             FileNode preRoot = preMap.get(path);
@@ -107,9 +106,9 @@ public class TrackerCore {
             if(logicalFileMap.keySet().contains(path)) {
                 String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
                 logicalChangedHandler.setDiffPath(diffPath);
-                logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
+                logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
             } else {
-                physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo());
+                physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
             }
         }
 
@@ -158,6 +157,11 @@ public class TrackerCore {
     private static BaseNode findSimilarNode(List<? extends BaseNode> nodeList, BaseNode target) {
         // FIXME
         return target;
+    }
+
+    @Autowired
+    public void setProxyDao(ProxyDao proxyDao) {
+        TrackerCore.proxyDao = proxyDao;
     }
 
     public static ThreadLocal<Map<String, BaseNode>> getProjectStructureTree() {

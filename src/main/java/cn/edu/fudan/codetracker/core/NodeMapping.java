@@ -19,7 +19,7 @@ public interface NodeMapping {
      * @param preRoot 前一个版本的根结点
      * @param curRoot 当前版本的根节点
      */
-    void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo);
+    void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao);
 
     /**
      * 设置两个节点的映射状态
@@ -31,6 +31,7 @@ public interface NodeMapping {
             return;
         } else if (preRoot == null) {
             curRoot.setMapping(true);
+            curRoot.setRootUuid(curRoot.getUuid());
         } else if (curRoot == null) {
             preRoot.setMapping(true);
             //删除情况
@@ -38,6 +39,8 @@ public interface NodeMapping {
             if (trackerInfo != null) {
                 preRoot.setRootUuid(trackerInfo.getRootUUID());
                 preRoot.setVersion(trackerInfo.getVersion());
+            } else {
+                System.out.println("delete null :" + preRoot.getProjectInfoLevel().getName());
             }
         } else {
             preRoot.setMapping(true);
@@ -50,6 +53,8 @@ public interface NodeMapping {
                 preRoot.setVersion(trackerInfo.getVersion());
                 curRoot.setRootUuid(trackerInfo.getRootUUID());
                 curRoot.setVersion(trackerInfo.getVersion()+1);
+            } else {
+                System.out.println("change null :" + preRoot.getProjectInfoLevel().getName());
             }
         }
     }

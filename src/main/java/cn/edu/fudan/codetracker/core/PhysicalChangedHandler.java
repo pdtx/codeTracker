@@ -15,14 +15,8 @@ import java.util.Queue;
  * create: 2020-03-21 20:32
  **/
 public class PhysicalChangedHandler implements NodeMapping{
-    private ProxyDao proxyDao;
 
     private PhysicalChangedHandler() {}
-
-    @Autowired
-    public void setProxyDao(ProxyDao proxyDao) {
-        this.proxyDao = proxyDao;
-    }
 
     public static PhysicalChangedHandler getInstance() {
         return MappingGeneratorHolder.PHYSICAL_CHANGED_HANDLER;
@@ -32,7 +26,7 @@ public class PhysicalChangedHandler implements NodeMapping{
         private static final PhysicalChangedHandler PHYSICAL_CHANGED_HANDLER = new PhysicalChangedHandler();
     }
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         //如果为文件节点
         if(preRoot instanceof FileNode && curRoot instanceof FileNode) {
             Queue<BaseNode> preQueue = new ArrayDeque<>();

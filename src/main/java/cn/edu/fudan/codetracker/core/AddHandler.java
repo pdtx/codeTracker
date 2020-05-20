@@ -15,14 +15,8 @@ import java.util.Stack;
  * create: 2020-03-21 00:24
  **/
 public class AddHandler implements NodeMapping {
-    private ProxyDao proxyDao;
 
     private AddHandler(){}
-
-    @Autowired
-    public void setProxyDao(ProxyDao proxyDao) {
-        this.proxyDao = proxyDao;
-    }
 
     public static AddHandler getInstance(){
         return MappingGeneratorHolder.ADD_HANDLER;
@@ -34,15 +28,13 @@ public class AddHandler implements NodeMapping {
 
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(curRoot);
         if (curRoot instanceof FileNode) {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                //ADD情况，rootUuid即uuid
-                baseNode.setRootUuid(baseNode.getUuid());
                 NodeMapping.setNodeMapped(null,baseNode,proxyDao,commonInfo);
                 for (BaseNode child: baseNode.getChildren()) {
                     stack.push(child);
@@ -53,14 +45,14 @@ public class AddHandler implements NodeMapping {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                //ADD情况，rootUuid即uuid
-                baseNode.setRootUuid(baseNode.getUuid());
                 NodeMapping.setNodeMapped(null,baseNode,proxyDao,commonInfo);
-                for (BaseNode child: baseNode.getChildren()) {
-                    if (isAdd(child)) {
-                        stack.push(child);
-                    } else {
-                        dealWithNotAdd(child);
+                if (baseNode.getChildren() != null) {
+                    for (BaseNode child: baseNode.getChildren()) {
+                        if (isAdd(child)) {
+                            stack.push(child);
+                        } else {
+                            dealWithNotAdd(child);
+                        }
                     }
                 }
             }

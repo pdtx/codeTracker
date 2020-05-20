@@ -100,7 +100,7 @@ public class RepoInfoBuilder {
         for (int i = 0; i < minSize ;i++) {
             String path = fileList.get(i);
             // 特定文件过滤
-            if (FileFilter.filenameFilter(path)) {
+            if (FileFilter.javaFilenameFilter(path)) {
                 continue;
             }
             JavaBaseRepoInfoParser javaBaseRepoInfoParser = new JavaBaseRepoInfoParser(path, relativePath.get(i), repoUuid);
