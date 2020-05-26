@@ -1,7 +1,7 @@
 package cn.edu.fudan.codetracker.jgit;
 
-public class Rename {
+public class RenameAfter {
     public static void main(String[] args) {
-        System.out.println("rename");
+        System.out.println("rename after");
     }
 }
