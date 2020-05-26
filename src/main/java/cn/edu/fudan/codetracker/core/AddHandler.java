@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.core;
 
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.BaseNode;
+import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.FileNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,18 @@ public class AddHandler implements NodeMapping {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
                 NodeMapping.setNodeMapped(null,baseNode,proxyDao,commonInfo);
-                for (BaseNode child: baseNode.getChildren()) {
-                    stack.push(child);
+                if (baseNode.getChildren() != null) {
+                    for (BaseNode child: baseNode.getChildren()) {
+                        stack.push(child);
+                    }
+                }
+                if (baseNode instanceof ClassNode) {
+                    ClassNode classNode = (ClassNode)baseNode;
+                    if (classNode.getFieldNodes() != null) {
+                        for (BaseNode field : classNode.getFieldNodes()) {
+                            stack.push(field);
+                        }
+                    }
                 }
             }
         } else {
@@ -52,6 +63,18 @@ public class AddHandler implements NodeMapping {
                             stack.push(child);
                         } else {
                             dealWithNotAdd(child);
+                        }
+                    }
+                }
+                if (baseNode instanceof ClassNode) {
+                    ClassNode classNode = (ClassNode)baseNode;
+                    if (classNode.getFieldNodes() != null) {
+                        for (BaseNode field : classNode.getFieldNodes()) {
+                            if (isAdd(field)) {
+                                stack.push(field);
+                            } else {
+                                dealWithNotAdd(field);
+                            }
                         }
                     }
                 }

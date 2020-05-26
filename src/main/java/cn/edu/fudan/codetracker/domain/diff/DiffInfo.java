@@ -30,7 +30,7 @@ public final class DiffInfo {
     public void parseDiffInfoFromClDiff(JSONObject jsonObject) {
         String type = jsonObject.getString("type1");
         switch (type) {
-            case "Class" :
+            case "ClassOrInterface" :
                 this.type = "class";
                 break;
             case "Member" :
@@ -96,6 +96,9 @@ public final class DiffInfo {
     }
 
     public BaseNode findChangeNode(Set<BaseNode> set, boolean isCur) {
+        if (set == null) {
+            return null;
+        }
         int begin,end;
         if (isCur) {
             begin = location.getCurBegin();

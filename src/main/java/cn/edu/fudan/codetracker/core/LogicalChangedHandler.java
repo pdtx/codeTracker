@@ -124,7 +124,6 @@ public class LogicalChangedHandler implements NodeMapping {
                 backTracing(tmp);
                 preSet.remove(pre);
             } else {
-                NodeMapping.setNodeMapped(pre,cur,proxyDao,commonInfo);
                 BaseNode tmp;
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
@@ -140,6 +139,7 @@ public class LogicalChangedHandler implements NodeMapping {
                     default:
                         break;
                 }
+                NodeMapping.setNodeMapped(pre,cur,proxyDao,commonInfo);
                 preSet.remove(pre);
                 curSet.remove(cur);
             }
@@ -160,8 +160,8 @@ public class LogicalChangedHandler implements NodeMapping {
                             if (pMethod.getBegin() != cMethod.getBegin() || pMethod.getEnd() != cMethod.getEnd()) {
                                 physicalChangedHandler.subTreeMapping(preNode,node,commonInfo,proxyDao);
                             } else {
-                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
+                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                             }
                             preSet.remove(preNode);
                             break;
@@ -173,8 +173,8 @@ public class LogicalChangedHandler implements NodeMapping {
                             if (pStatement.getBegin() != cStatement.getBegin() || pStatement.getEnd() != cStatement.getEnd()) {
                                 physicalChangedHandler.subTreeMapping(preNode,node,commonInfo,proxyDao);
                             } else {
-                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
+                                NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                             }
                             preSet.remove(preNode);
                             break;
@@ -257,6 +257,10 @@ public class LogicalChangedHandler implements NodeMapping {
         for (int i = 0; i < diffDetail.size() ; i++) {
             JSONObject jsonObject = diffDetail.getJSONObject(i);
             DiffInfo diffInfo = new DiffInfo(jsonObject);
+            if (diffInfo.getType() == null) {
+                log.error("diff info type error : " + jsonObject.getString("type1") + " ; " + jsonObject.getString("description"));
+                continue;
+            }
             List<DiffInfo> list = map.get(diffInfo.getType());
             list.add(diffInfo);
             map.put(diffInfo.getType(),list);
