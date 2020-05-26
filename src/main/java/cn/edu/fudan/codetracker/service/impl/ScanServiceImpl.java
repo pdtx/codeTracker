@@ -33,6 +33,7 @@ import java.util.*;
 public class ScanServiceImpl implements ScanService {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    private static ThreadLocal<String> repoPath = new ThreadLocal<>();
 
     private PackageDao packageDao;
     private FileDao fileDao;
@@ -56,14 +57,17 @@ public class ScanServiceImpl implements ScanService {
         }
 
         repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, ScanStatus.SCANNING);
+//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+        repoPath.set(getRepoPathByUuid(repoUuid));
+        System.out.println(repoPath.get());
 //        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
-        String repoPath = getRepoPathByUuid(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
+//        String repoPath = getRepoPathByUuid(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, false);
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false);
         repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
-//        restInterface.freeRepo(repoUuid, repoPath);
+//        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     @Async("taskExecutor")
@@ -71,21 +75,19 @@ public class ScanServiceImpl implements ScanService {
     public void autoUpdate(String repoUuid, String branch) {
         String commitId = findScanLatest(repoUuid, branch);
         if (commitId == null) {
-            log.error("Update Scan Error: this repo hasn't been scanned!");
+            log.warn("Update Scan Error: this repo [{}] hasn't been scanned!", repoUuid);
             return;
         }
-        repoDao.updateScanStatus(repoUuid, branch, "scanning");
-        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
+
+        repoDao.updateScanStatus(repoUuid, branch, ScanStatus.SCANNING);
+        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+//        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
+        JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath, jGitHelper, commitList, true);
-        if (isAbort) {
-            repoDao.updateScanStatus(repoUuid, branch, "aborted");
-        } else {
-            repoDao.updateScanStatus(repoUuid, branch, "scanned");
-        }
-        restInterface.freeRepo(repoUuid, repoPath);
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true);
+        repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
+        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
@@ -430,7 +432,7 @@ public class ScanServiceImpl implements ScanService {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
-        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
     }
 
 
