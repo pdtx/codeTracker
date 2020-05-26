@@ -1,4 +1,4 @@
 package cn.edu.fudan.codetracker;
 
-public class TestRename {
+public class TestRenameAfter {
 }
