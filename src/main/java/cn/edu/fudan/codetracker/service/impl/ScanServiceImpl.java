@@ -432,7 +432,7 @@ public class ScanServiceImpl implements ScanService {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
-        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 
 

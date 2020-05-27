@@ -34,11 +34,11 @@ public interface HistoryMapper {
     /**
      * 演示临时接口 工作焦点
      */
-    List<MostModifiedInfo> getFileInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    List<MostModifiedInfo> getFileInfoMost(@Param("committer") String committer, @Param("packageName") String packageName, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     /**
      * 演示临时接口 工作焦点
      */
-    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("moduleName") String moduleName, @Param("packageName") String packageName, @Param("filePath") String filePath, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    List<MostModifiedInfo> getClassInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     /**
      * 演示临时接口 工作焦点
      */

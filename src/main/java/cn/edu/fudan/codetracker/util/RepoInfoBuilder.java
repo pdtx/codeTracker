@@ -133,7 +133,6 @@ public class RepoInfoBuilder {
             packageNode.getFileNodes().add(javaBaseRepoInfoParser.getFileNode());
             // 设置子节点
             packageNode.setChildren(packageNode.getFileNodes());
-//            importCount += fileInfoExtractor.getImportNames().size();
         }
         travelRepoInfo();
     }
@@ -144,6 +143,7 @@ public class RepoInfoBuilder {
             travel(packageInfos);
         }
     }
+
 
     @SuppressWarnings("unchecked")
     private void travel(List<? extends  BaseNode> baseNodes) {

@@ -171,14 +171,14 @@ public class HistoryDao {
             packageInfo.setQuantity(mostModifiedInfo.getVersion());
             packageInfo.setUuid(mostModifiedInfo.getUuid());
             List<TempMostInfo> fileList = new ArrayList<>();
-            List<MostModifiedInfo> fileInfos = historyMapper.getFileInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
+            List<MostModifiedInfo> fileInfos = historyMapper.getFileInfoMost(committer,mostModifiedInfo.getPackageName(),beginDate,endDate,repoUuid,branch);
             //文件
             for (MostModifiedInfo fileMostInfo : fileInfos) {
                 TempMostInfo fileInfo = new TempMostInfo();
                 fileInfo.setName(fileMostInfo.getFileName());
                 fileInfo.setQuantity(fileMostInfo.getVersion());
                 fileInfo.setUuid(fileMostInfo.getUuid());
-                List<MostModifiedInfo> classInfos = historyMapper.getClassInfoMost(committer,mostModifiedInfo.getModuleName(),mostModifiedInfo.getPackageName(),fileMostInfo.getFileName(),beginDate,endDate,repoUuid,branch);
+                List<MostModifiedInfo> classInfos = historyMapper.getClassInfoMost(committer,fileMostInfo.getFileName(),beginDate,endDate,repoUuid,branch);
                 List<TempMostInfo> classList = new ArrayList<>();
                 //类
                 for (MostModifiedInfo modifiedInfo : classInfos) {

@@ -56,14 +56,14 @@
 
     <!--演示用临时 -->
     <resultMap id="PackageInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="root_uuid"/>
+        <id property="uuid" column="meta_package_uuid"/>
         <result property="moduleName" column="module_name"/>
         <result property="packageName" column="package_name"/>
         <result property="version" column="quantity"/>
     </resultMap>
 
     <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.root_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from raw_package as r, meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.root_uuid order by quantity desc,m.package_name;
+        select r.meta_package_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from raw_package as r, meta_package as m  where r.meta_package_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_package_uuid order by quantity desc,m.package_name;
     </select>
 
     <resultMap id="FileInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -73,7 +73,7 @@
     </resultMap>
 
     <select id="getFileInfoMost" parameterType="String" resultMap="FileInfoMost">
-        select r.meta_file_uuid, r.file_name, count(distinct(commitid)) as quantity from raw_file as r, meta_file as m  where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_file_uuid order by quantity desc,m.file_name;
+        select r.meta_file_uuid, r.file_name, count(distinct(commitid)) as quantity from raw_file as r, meta_file as m  where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.package_name = #{packageName} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_file_uuid order by quantity desc,m.file_name;
     </select>
 
     <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -84,7 +84,7 @@
     </resultMap>
 
     <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.meta_class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from raw_class as r, meta_class as m  where r.meta_class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and m.file_path = #{filePath} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_class_uuid order by quantity desc,m.class_name;
+        select r.meta_class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from raw_class as r, meta_class as m  where r.meta_class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_class_uuid order by quantity desc,m.class_name;
     </select>
 
     <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
