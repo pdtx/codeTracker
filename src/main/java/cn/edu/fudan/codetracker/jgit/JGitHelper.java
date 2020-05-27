@@ -303,14 +303,15 @@ public class JGitHelper implements Closeable {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
 //        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
-        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
-        String commitId = "b0614fa8ae05e23d46fced42f13a3e570411bed8";
+        String repoPath = "/Users/tangyuan/Documents/Gitlab/codeTracker";
+        String commitId = "770d1f239b3453be85aa5b8b85d6fd5b13f74dcf";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
-        String s[] = jGitHelper.getCommitParents(commitId);
-        int m = jGitHelper.mergeJudgment(commitId);
-        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList(commitId);
-        System.out.println(m);
+        Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
+//        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
+//        String s[] = jGitHelper.getCommitParents(commitId);
+//        int m = jGitHelper.mergeJudgment(commitId);
+//        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList(commitId);
+        System.out.println(map);
 //        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
 //        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
 //            System.out.println(s);

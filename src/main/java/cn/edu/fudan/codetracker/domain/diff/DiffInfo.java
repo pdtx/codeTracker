@@ -17,6 +17,7 @@ public final class DiffInfo {
     private String type;
     private Location location;
     private String changeRelation;
+    private JSONObject jsonObject;
 
     public DiffInfo() {
 
@@ -24,6 +25,7 @@ public final class DiffInfo {
 
     //初始化from ClDiff
     public DiffInfo(JSONObject jsonObject) {
+        this.jsonObject = jsonObject;
         parseDiffInfoFromClDiff(jsonObject);
     }
 

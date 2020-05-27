@@ -54,7 +54,6 @@ public interface StatisticsMapper {
     void deleteFromRawField(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
     void deleteFromRawStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
     void deleteFromRelationStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    void deleteFromLineCount(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
     void deleteFromTrackerRepo(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
 

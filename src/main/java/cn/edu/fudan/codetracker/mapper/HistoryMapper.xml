@@ -9,15 +9,15 @@
         <result property="committer" column="committer"/>
         <result property="body" column="body"/>
         <result property="changeRelation" column="change_relation"/>
-        <result property="statementUuid" column="statement_uuid"/>
+        <result property="statementUuid" column="meta_statement_uuid"/>
         <result property="begin" column="statement_begin"/>
         <result property="end" column="statement_end"/>
     </resultMap>
 
     <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from codeTracker.raw_statement where statement_uuid in
-        (select s.statement_uuid from (select * from codeTracker.raw_statement where method_uuid = #{methodUuid} and body like #{body}
-         and commit_date &lt;= (select commit_date from codeTracker.raw_method where commitid = #{commitId} limit 1)
+        select meta_statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid in
+        (select s.meta_statement_uuid from (select * from raw_statement where meta_method_uuid = #{methodUuid} and body like #{body}
+         and commit_date &lt;= (select commit_date from raw_method where commitid = #{commitId} limit 1)
          and change_relation != "DELETE" order by commit_date desc limit 1) as s)
         group by commitid order by commit_date desc;
     </select>
@@ -25,20 +25,20 @@
 
     <!--一次性获取有效语句-->
     <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
-        <id property="statementUuid" column="statement_uuid"/>
+        <id property="statementUuid" column="meta_statement_uuid"/>
         <result property="changeRelation" column="change_relation"/>
         <result property="body" column="body"/>
     </resultMap>
 
     <select id="getAllValidStatement" parameterType="String" resultMap="AllValidStatement">
-        select statement_uuid, change_relation, body from codeTracker.raw_statement where method_uuid = #{methodUuid} and commit_date &lt;= #{commitDate} order by statement_begin,statement_uuid,commit_date desc;
+        select meta_statement_uuid, change_relation, body from raw_statement where meta_method_uuid = #{methodUuid} and commit_date &lt;= #{commitDate} order by statement_begin,meta_statement_uuid,commit_date desc;
     </select>
 
 
     <!--获取method历史-->
     <resultMap id="MethodHistory" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
         <id property="commit" column="commitid"/>
-        <result property="parentCommit" column="parent_commit"/>
+        <result property="parentCommit" column="last_change_commit"/>
         <result property="committer" column="committer"/>
         <result property="commitMessage" column="commit_message"/>
         <result property="commitDate" column="commit_date"/>
@@ -50,7 +50,7 @@
     </resultMap>
 
     <select id="getMethodHistory" parameterType="String" resultMap="MethodHistory">
-        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, parent_commit from codeTracker.raw_method where method_uuid=#{methodUuid} group by commitid order by commit_date;
+        select commitid, committer, commit_message, commit_date, content, diff, change_relation, method_begin, method_end, last_change_commit from raw_method where meta_method_uuid=#{methodUuid} group by commitid order by commit_date;
     </select>
 
 
@@ -63,38 +63,38 @@
     </resultMap>
 
     <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.root_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from codeTracker.raw_package as r,codeTracker.meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation != "ADD" group by r.root_uuid order by quantity desc,m.package_name;
+        select r.root_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from raw_package as r, meta_package as m  where r.root_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.root_uuid order by quantity desc,m.package_name;
     </select>
 
     <resultMap id="FileInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="file_uuid"/>
+        <id property="uuid" column="meta_file_uuid"/>
         <result property="fileName" column="file_name"/>
         <result property="version" column="quantity"/>
     </resultMap>
 
     <select id="getFileInfoMost" parameterType="String" resultMap="FileInfoMost">
-        select r.file_uuid, r.file_name, count(distinct(commitid)) as quantity from codeTracker.raw_file as r,codeTracker.meta_file as m  where r.file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation != "ADD" group by r.file_uuid order by quantity desc,m.file_name;
+        select r.meta_file_uuid, r.file_name, count(distinct(commitid)) as quantity from raw_file as r, meta_file as m  where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_file_uuid order by quantity desc,m.file_name;
     </select>
 
     <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="class_uuid"/>
+        <id property="uuid" column="meta_class_uuid"/>
         <result property="className" column="class_name"/>
         <result property="filePath" column="file_path"/>
         <result property="version" column="quantity"/>
     </resultMap>
 
     <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from codeTracker.raw_class as r,codeTracker.meta_class as m  where r.class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and m.file_path = #{filePath} and r.change_relation != "ADD" group by r.class_uuid order by quantity desc,m.class_name;
+        select r.meta_class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from raw_class as r, meta_class as m  where r.meta_class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.module_name = #{moduleName} and m.package_name = #{packageName} and m.file_path = #{filePath} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_class_uuid order by quantity desc,m.class_name;
     </select>
 
     <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
-        <id property="uuid" column="method_uuid"/>
+        <id property="uuid" column="meta_method_uuid"/>
         <result property="methodName" column="signature"/>
         <result property="version" column="quantity"/>
     </resultMap>
 
     <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
-        select r.method_uuid, r.signature, count(distinct(commitid)) as quantity from codeTracker.raw_method as r,codeTracker.meta_method as m where r.method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation != "ADD" group by r.method_uuid order by quantity desc,r.signature;
+        select r.meta_method_uuid, r.signature, count(distinct(commitid)) as quantity from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_method_uuid order by quantity desc,r.signature;
     </select>
 
 </mapper>

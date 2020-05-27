@@ -10,6 +10,7 @@ import com.google.gson.internal.$Gson$Preconditions;
 import javafx.scene.Node;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.reflection.wrapper.MapWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -127,7 +128,11 @@ public class LogicalChangedHandler implements NodeMapping {
                 BaseNode tmp;
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
-                        cur.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
+                        cur.setChangeStatus(BaseNode.ChangeStatus.SELF_CHANGE);
+                        if (cur instanceof MethodNode) {
+                            MethodNode methodNode = (MethodNode)cur;
+                            methodNode.setDiff(diffInfo.getJsonObject());
+                        }
                         tmp = cur;
                         backTracing(tmp);
                         break;

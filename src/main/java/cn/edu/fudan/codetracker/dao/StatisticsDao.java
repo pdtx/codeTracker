@@ -139,7 +139,6 @@ public class StatisticsDao {
         statisticsMapper.deleteFromRawField(repoUuid, branch);
         statisticsMapper.deleteFromRawStatement(repoUuid, branch);
         statisticsMapper.deleteFromRelationStatement(repoUuid, branch);
-        statisticsMapper.deleteFromLineCount(repoUuid, branch);
         statisticsMapper.deleteFromTrackerRepo(repoUuid, branch);
     }
 
