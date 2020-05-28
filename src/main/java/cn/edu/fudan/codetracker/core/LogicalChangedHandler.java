@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -181,6 +182,27 @@ public class LogicalChangedHandler implements NodeMapping {
                                 node.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                                 NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                             }
+                            preSet.remove(preNode);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (BaseNode preNode : preSet) {
+                    if (node instanceof ClassNode) {
+                        ClassNode pClass = (ClassNode)preNode;
+                        ClassNode cClass = (ClassNode)node;
+                        if (pClass.equals(cClass)) {
+                            NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
+                            preSet.remove(preNode);
+                            break;
+                        }
+                    }
+                    if (node instanceof FieldNode) {
+                        FieldNode pField = (FieldNode)preNode;
+                        FieldNode cField = (FieldNode)node;
+                        if (pField.equals(cField)) {
+                            NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                             preSet.remove(preNode);
                             break;
                         }
