@@ -59,7 +59,6 @@ public class ScanServiceImpl implements ScanService {
         repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, ScanStatus.SCANNING);
 //        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
         repoPath.set(getRepoPathByUuid(repoUuid));
-        System.out.println(repoPath.get());
 //        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
 //        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
@@ -430,6 +429,10 @@ public class ScanServiceImpl implements ScanService {
 
         if("iec-wepm-develop".equals(repoUuid)) {
             return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
+        }
+
+        if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
+            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
