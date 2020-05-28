@@ -1,12 +1,19 @@
 package cn.edu.fudan.codetracker.core.tree;
 
+import cn.edu.fudan.codetracker.component.ApplicationContextGetBeanHelper;
+import cn.edu.fudan.codetracker.core.tree.parser.FileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import javafx.application.Application;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import sun.reflect.Reflection;
 
 import java.lang.reflect.Field;
@@ -19,86 +26,85 @@ import java.util.*;
  * create: 2020-05-16 19:16
  **/
 @Slf4j
+@NoArgsConstructor
+@Component
+@Scope("prototype")
 public class RepoInfoTree {
 
+    @Getter
     private Map<Language, BaseLanguageTree> repoTree;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
 
     @Setter
     private CommonInfo commonInfo;
 
-    public RepoInfoTree(String filePath, CommonInfo commonInfo, List<String> relativePath, String repoUuid) {
-
-    }
-
-    public RepoInfoTree(String[] fileList, CommonInfo commonInfo, List<String> relativePath, String repoUuid) {
+    public RepoInfoTree(String filePath, CommonInfo commonInfo, String repoUuid) {
 
     }
 
     public RepoInfoTree(List<String> fileList, CommonInfo commonInfo, List<String> relativePath, String repoUuid) {
-        construct(fileList, commonInfo, relativePath, repoUuid);
+        // todo 适配 relativePath 与 fileList 实际上应该单独抽出来 新建一个类叫做 CLDIFF adapter
     }
 
-    private void construct(List<String> fileList, CommonInfo commonInfo, List<String> relativePath, String repoUuid) {
-        // 根据文件类型对文件进行分类
-        Map<Language, Map<String,List<String>>> classifiedMap = classification(fileList, relativePath);
-        // 根据分类结果 调用不同的parser
-        Set<String> implementedClasses = applicationContext.getBeansOfType(BaseLanguageTree.class).keySet();
-        String packageName = "cn.edu.fudan.codetracker.core.tree";
-        for (String implementedClassName: implementedClasses) {
-            try {
-                String className = packageName + "." + implementedClassName;
-                Class clazz = Class.forName(className);
-                if (classifiedMap.keySet().contains(clazz.getDeclaredField("LANGUAGE"))) {
-                    //使用对应树的实现类，初始化对应语言的树
-                    List<String> files = classifiedMap.get(clazz.getDeclaredField("LANGUAGE")).get("files");
-                    List<String> relativePaths = classifiedMap.get(clazz.getDeclaredField("LANGUAGE")).get("relativePaths");
+    /**
+     * @param fileList 路径地址
+     */
+    public RepoInfoTree(List<String> fileList, CommonInfo commonInfo, String repoUuid) {
+        construct(fileList, commonInfo, repoUuid);
+    }
 
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    private void construct(List<String> fileList, CommonInfo commonInfo, String repoUuid) {
+        // 根据文件类型对文件进行分类
+        Map<Language, List<String>> classifiedMap = classification(fileList);
+        // 根据分类结果 调用不同的parser
+        ApplicationContextGetBeanHelper applicationContextGetBeanHelper = new ApplicationContextGetBeanHelper ();
+        applicationContextGetBeanHelper.setApplicationContext (applicationContext);
+
+        for (Map.Entry<Language, List<String>> entry : classifiedMap.entrySet()) {
+            Language language = entry.getKey();
+            FileParser parser = (FileParser) ApplicationContextGetBeanHelper.getBean(language.getName());
+            repoTree.put(language, constructTree(entry.getValue(), parser));
         }
         this.commonInfo = commonInfo ;
     }
 
+    // 根据 parser 构造出
+    private BaseLanguageTree constructTree(List<String> value, FileParser parser) {
+        return null;
+    }
+
     /**
-     * 根据文件的后缀名将文件分类 并调用不同的parser
+     * 仅用于文件分类
      */
-    private Map<Language, Map<String,List<String>>> classification(List<String> fileList, List<String> relativePath) {
-        Map<Language, Map<String,List<String>>> repoTree = new HashMap<>(4);
-        try {
-            Class clazz = Class.forName("com.cn.edu.fudan.codetracker.core.tree.Language");
-            Language[] objects = (Language[])clazz.getEnumConstants();
-            for (int i = 0; i < fileList.size() ; i++) {
-                String file = fileList.get(i);
-                String relativeFilePath = relativePath.get(i);
-                for (Language language : objects) {
-                    if (file.contains(language.getFilePostfix())) {
-                        if (repoTree.keySet().contains(language)) {
-                            repoTree.get(language).get("files").add(file);
-                            repoTree.get(language).get("relativePaths").add(relativeFilePath);
-                        } else {
-                            Map<String,List<String>> map = new HashMap<>(2);
-                            List<String> files = new ArrayList<>();
-                            files.add(file);
-                            map.put("files",files);
-                            List<String> relativePaths = new ArrayList<>();
-                            relativePaths.add(relativeFilePath);
-                            map.put("relativePaths",relativePaths);
-                            repoTree.put(language,map);
-                        }
-                        break;
-                    }
-                }
+    private Map<Language, List<String>> classification(List<String> fileList) {
+        Map<Language, List<String>> result = new HashMap<>(4);
+        for (String file : fileList) {
+            Language language = getFileLanguage(file);
+            if (result.containsKey(language)) {
+                result.get(language).add(file);
+            } else {
+                List<String> tmp =  new ArrayList<>();
+                tmp.add(file);
+                result.put(language, tmp);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return repoTree;
+        return result;
+    }
+
+    private Language getFileLanguage(String file) {
+        for (Language language : Language.class.getEnumConstants()) {
+            if (file.endsWith(language.getFilePostfix())) {
+                return language;
+            }
+        }
+        log.error("no suitable parser");
+        return Language.JAVA;
     }
 
 
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        RepoInfoTree.applicationContext = applicationContext;
+    }
 }

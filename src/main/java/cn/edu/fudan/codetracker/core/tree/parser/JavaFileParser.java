@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core.tree.parser;
 
+import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -10,9 +11,12 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -28,8 +32,9 @@ import java.util.Set;
  * create: 2020-05-17 15:15
  **/
 @Slf4j
-@Getter
-@Setter
+@Data
+@Component("java")
+@Scope("prototype")
 public class JavaFileParser implements FileParser {
 
     private String projectName;

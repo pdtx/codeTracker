@@ -36,7 +36,7 @@ public class JavaTree extends BaseLanguageTree {
     private List<StatementNode> statementInfos;
 
     public JavaTree(List<String> fileList, List<String> relativePath, String repoUuid) {
-        super(fileList, relativePath, repoUuid);
+        super(fileList, repoUuid);
         moduleInfos = new HashMap<>(4);
         packageInfos = new ArrayList<>();
         fileInfos = new ArrayList<>();
