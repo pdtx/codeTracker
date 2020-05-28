@@ -1,6 +1,6 @@
 package cn.edu.fudan.codetracker.jgit;
 
-public class Rename {
+public class RenameAfter {
     public static void main(String[] args) {
         int a = 2;
         int b = 3;
@@ -8,6 +8,6 @@ public class Rename {
         System.out.println(a);
         System.out.println(b);
         System.out.println(c);
-        System.out.println("rename");
+        System.out.println("rename after");
     }
 }
