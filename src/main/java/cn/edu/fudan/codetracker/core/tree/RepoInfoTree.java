@@ -63,14 +63,15 @@ public class RepoInfoTree {
 
         for (Map.Entry<Language, List<String>> entry : classifiedMap.entrySet()) {
             Language language = entry.getKey();
-            FileParser parser = (FileParser) ApplicationContextGetBeanHelper.getBean(language.getName());
-            repoTree.put(language, constructTree(entry.getValue(), parser));
+            BaseLanguageTree baseLanguageTree = (BaseLanguageTree) ApplicationContextGetBeanHelper.getBean(language.getName());
+            repoTree.put(language, constructTree(entry.getValue(), baseLanguageTree));
         }
         this.commonInfo = commonInfo ;
     }
 
     // 根据 parser 构造出
-    private BaseLanguageTree constructTree(List<String> value, FileParser parser) {
+    private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree) {
+
         return null;
     }
 

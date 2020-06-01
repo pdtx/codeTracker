@@ -8,6 +8,8 @@ import cn.edu.fudan.codetracker.util.JavaBaseRepoInfoParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +25,8 @@ import java.util.Map;
 @Slf4j
 @Getter
 @Setter
+@Component("java")
+@Scope("prototype")
 public class JavaTree extends BaseLanguageTree {
 
     public static final Language LANGUAGE = Language.JAVA;
@@ -35,7 +39,7 @@ public class JavaTree extends BaseLanguageTree {
     private List<MethodNode> methodInfos;
     private List<StatementNode> statementInfos;
 
-    public JavaTree(List<String> fileList, List<String> relativePath, String repoUuid) {
+    public JavaTree(List<String> fileList, String repoUuid) {
         super(fileList, repoUuid);
         moduleInfos = new HashMap<>(4);
         packageInfos = new ArrayList<>();
@@ -50,7 +54,7 @@ public class JavaTree extends BaseLanguageTree {
 
     @Override
     public void parseTree() {
-        analyze(this.getFileList(), this.getRelativePath(), this.getRepoUuid());
+        analyze(this.getFileList(), this.getRepoUuid());
     }
 
     private void analyze(List<String> fileList, List<String> relativePath, String repoUuid) {

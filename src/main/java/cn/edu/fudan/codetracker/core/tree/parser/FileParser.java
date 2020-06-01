@@ -10,6 +10,6 @@ public interface FileParser {
     /**
      * 解析方法
      */
-    void parse(String path, String relativePath, String projectName);
+    void parse(String path, String projectName);
 
 }

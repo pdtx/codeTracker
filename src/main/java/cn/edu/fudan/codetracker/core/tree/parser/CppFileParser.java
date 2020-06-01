@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
  * @author fancying
  * create: 2020-05-17 15:15
  **/
-@Component("java")
-@Scope("prototype")
 public class CppFileParser implements FileParser {
 
     public CppFileParser() {
@@ -18,8 +16,7 @@ public class CppFileParser implements FileParser {
     }
 
     @Override
-    public void parse(String path, String relativePath, String projectName) {
+    public void parse(String path, String projectName) {
 
     }
-
 }
