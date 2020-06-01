@@ -19,16 +19,19 @@ import java.util.List;
 public abstract class BaseLanguageTree {
 
     private List<String> fileList;
-    private List<String> relativePath;
     private String repoUuid;
+    private FileParser parser;
     private BaseNode root;
 
-    BaseLanguageTree(List<String> fileList, List<String> relativePath, String repoUuid) {
+    BaseLanguageTree(List<String> fileList, String repoUuid) {
         this.fileList = fileList;
-        this.relativePath = relativePath;
         this.repoUuid = repoUuid;
+        parseTree();
     }
 
+    /**
+     *
+     */
     public abstract void parseTree();
 
 }
