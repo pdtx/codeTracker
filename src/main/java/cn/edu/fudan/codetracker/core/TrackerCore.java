@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core;
 
+import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
@@ -60,7 +61,7 @@ public class TrackerCore {
 
     }
 
-    public static void mapping(RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
+    public static void mapping(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
         //处理packageNode
         mappingPackageNode(curRepoInfo.getPackageInfos(),repoUuid,branch);
 
@@ -76,7 +77,7 @@ public class TrackerCore {
                 continue;
             }
             if (deleteSet.contains(fileNode.getFilePath())) {
-                deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo(),proxyDao);
+                deleteHandler.subTreeMapping(fileNode, null,preCommonInfo,proxyDao);
             }
             if (changeSet.contains(fileNode.getFilePath())) {
                 preMap.put(fileNode.getFilePath(),fileNode);
@@ -87,7 +88,7 @@ public class TrackerCore {
                 continue;
             }
             if (addSet.contains(fileNode.getFilePath())) {
-                addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo(),proxyDao);
+                addHandler.subTreeMapping(null,fileNode,preCommonInfo,proxyDao);
             }
             if (changeSet.contains(fileNode.getFilePath())) {
                 curMap.put(fileNode.getFilePath(),fileNode);
@@ -106,9 +107,9 @@ public class TrackerCore {
             if(logicalFileMap.keySet().contains(path)) {
                 String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
                 logicalChangedHandler.setDiffPath(diffPath);
-                logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
+                logicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
             } else {
-                physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
+                physicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
             }
         }
 

@@ -8,6 +8,9 @@ package cn.edu.fudan.codetracker.service.impl;
 import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.core.*;
+import cn.edu.fudan.codetracker.core.tree.JavaTree;
+import cn.edu.fudan.codetracker.core.tree.Language;
+import cn.edu.fudan.codetracker.core.tree.RepoInfoTree;
 import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
@@ -26,6 +29,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Slf4j
@@ -33,6 +38,7 @@ import java.util.*;
 public class ScanServiceImpl implements ScanService {
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static ThreadLocal<String> repoPath = new ThreadLocal<>();
 
     private PackageDao packageDao;
@@ -79,22 +85,20 @@ public class ScanServiceImpl implements ScanService {
         }
 
         repoDao.updateScanStatus(repoUuid, branch, ScanStatus.SCANNING);
-        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-//        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
+//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true);
         repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
-        restInterface.freeRepo(repoUuid, repoPath.get());
+//        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
      * FIXME need @Transactional
      */
     private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
-        RepoInfoBuilder repoInfo;
-//        Map<String,LineInfo> lineInfoMap = new HashMap<>();
         int num = 0;
         try {
             for (String commit : commitList) {
@@ -104,9 +108,13 @@ public class ScanServiceImpl implements ScanService {
                 } else {
                     jGitHelper.checkout(branch);
                     jGitHelper.checkout(commit);
-                    repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
-                    travelAndSetChangeRelation(repoInfo.getPackageInfos());
-                    saveData(repoInfo);
+                    CommonInfo commonInfo = constructCommonInfo(repoUuid,branch,commit,null,jGitHelper);
+                    File file = new File(repoPath);
+                    //List<String> fileList, CommonInfo commonInfo, String repoUuid
+                    RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid);
+                    JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
+                    travelAndSetChangeRelation(javaTree.getPackageInfos());
+                    saveData(javaTree,commonInfo);
                     isInit = true;
                 }
                 repoDao.updateLatestCommit(repoUuid, branch, commit);
@@ -116,6 +124,13 @@ public class ScanServiceImpl implements ScanService {
             e.printStackTrace();
             return true;
         }
+    }
+
+    private List<String> listFiles(File projectDir) {
+        List<String> pathList = new ArrayList<>();
+        new DirExplorer((level, path, file) -> (path.endsWith(".java") || path.endsWith(".cpp")),
+                (level, path, file) -> pathList.add(file.getAbsolutePath())).explore(projectDir);
+        return pathList;
     }
 
 
@@ -131,22 +146,6 @@ public class ScanServiceImpl implements ScanService {
                 travelAndSetChangeRelation(classNode.getFieldNodes());
             }
         }
-    }
-
-
-    /**
-     * 返回库里扫描过最新的commitId
-     * @param repoUuid
-     * @param branch
-     * @return
-     */
-    private String findScanLatest(String repoUuid, String branch) {
-        return repoDao.getLatestScan(repoUuid, branch);
-    }
-
-    @Override
-    public String getScanStatus(String repoId, String branch) {
-        return repoDao.getScanStatus(repoId, branch);
     }
 
 
@@ -166,6 +165,8 @@ public class ScanServiceImpl implements ScanService {
 
         for (String s : fileMap.keySet()) {
             String preCommit = s;
+            CommonInfo preCommonInfo = constructCommonInfo(repoUuid,branch,preCommit,null,jGitHelper);
+            CommonInfo curCommonInfo = constructCommonInfo(repoUuid,branch,commitId,preCommit,jGitHelper);
             Map<String, List<String>> map = fileMap.get(preCommit);
 
             //根据file列表构建preTree和curTree
@@ -179,25 +180,95 @@ public class ScanServiceImpl implements ScanService {
             curRelatives.addAll(map.get("CHANGE"));
             curRelatives.addAll(map.get("ADD"));
             curFileList = localizeFilePath(repoPath, curRelatives);
-            //String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath
-            RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid,preCommit,preFileList,jGitHelper,branch,null,preRelatives);
-            RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid,commitId,curFileList,jGitHelper,branch,preCommit,curRelatives);
 
+            //List<String> fileList, CommonInfo commonInfo, String repoUuid
+            RepoInfoTree preRepoInfoTree = new RepoInfoTree(preFileList,preCommonInfo,repoUuid);
+            RepoInfoTree curRepoInfoTree = new RepoInfoTree(curFileList,curCommonInfo,repoUuid);
+
+
+            //Java语言mapping
+            JavaTree preJavaTree = (JavaTree) preRepoInfoTree.getRepoTree().get(Language.JAVA);
+            JavaTree curJavaTree = (JavaTree) curRepoInfoTree.getRepoTree().get(Language.JAVA);
             //通过ClDiff拿到逻辑修改文件
             String [] paths = repoPath.replace('\\','/').split("/");
             String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
             Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commitId,outputPath);
 
-            TrackerCore.mapping(preRepoInfo,curRepoInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
-
-            extractAndSaveInfo(preRepoInfo,curRepoInfo);
+            TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
+            //Java入库
+            extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
 
 
         }
 
     }
 
-    private void extractAndSaveInfo(RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo) {
+    private CommonInfo constructCommonInfo(String repoUuid, String branch, String commit, String parentCommit, JGitHelper jGitHelper) {
+        if (parentCommit == null || parentCommit.length() == 0) {
+            parentCommit = commit;
+        }
+        jGitHelper.checkout(commit);
+        try{
+            Date commitDate = FORMATTER.parse(jGitHelper.getCommitTime(commit));
+            String committer = jGitHelper.getAuthorName(commit);
+            String commitMessage = jGitHelper.getMess(commit);
+            // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
+            CommonInfo commonInfo = new CommonInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, parentCommit);
+            return commonInfo;
+        }catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+//    private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
+//        if (jGitHelper != null) {
+//            jGitHelper = new JGitHelper(repoPath);
+//        }
+//        //通过jgit拿到file列表
+//        jGitHelper.checkout(branch);
+//        jGitHelper.checkout(commitId);
+//        Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
+//
+//        //merge情况直接跳过
+//        if (fileMap.keySet().size() > 1) {
+//            return;
+//        }
+//
+//        for (String s : fileMap.keySet()) {
+//            String preCommit = s;
+//            Map<String, List<String>> map = fileMap.get(preCommit);
+//
+//            //根据file列表构建preTree和curTree
+//            List<String> preRelatives = new ArrayList<>();
+//            List<String> curRelatives = new ArrayList<>();
+//            List<String> preFileList;
+//            List<String> curFileList;
+//            preRelatives.addAll(map.get("CHANGE"));
+//            preRelatives.addAll(map.get("DELETE"));
+//            preFileList = localizeFilePath(repoPath, preRelatives);
+//            curRelatives.addAll(map.get("CHANGE"));
+//            curRelatives.addAll(map.get("ADD"));
+//            curFileList = localizeFilePath(repoPath, curRelatives);
+//            //String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath
+//            RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid,preCommit,preFileList,jGitHelper,branch,null,preRelatives);
+//            RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid,commitId,curFileList,jGitHelper,branch,preCommit,curRelatives);
+//
+//            //通过ClDiff拿到逻辑修改文件
+//            String [] paths = repoPath.replace('\\','/').split("/");
+//            String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
+//            Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commitId,outputPath);
+//
+//            TrackerCore.mapping(preRepoInfo,curRepoInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
+//
+//            extractAndSaveInfo(preRepoInfo,curRepoInfo);
+//
+//
+//        }
+//
+//    }
+
+    private void extractAndSaveInfo(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo commonInfo) {
         //抽取需要入库的数据
         Map<String,Set<PackageNode>> packageMap = new HashMap<>();
         packageMap.put("ADD",new HashSet<>());
@@ -318,7 +389,7 @@ public class ScanServiceImpl implements ScanService {
             }
         }
 
-        save(packageMap,fileMap,classMap,methodMap,fieldMap,statementMap,curRepoInfo.getCommonInfo());
+        save(packageMap,fileMap,classMap,methodMap,fieldMap,statementMap,commonInfo);
     }
 
     private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
@@ -411,31 +482,46 @@ public class ScanServiceImpl implements ScanService {
         return filePath;
     }
 
-    private void saveData(RepoInfoBuilder repoInfo) {
+    private void saveData(JavaTree repoInfo,CommonInfo commonInfo) {
         try {
 
-            packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),repoInfo.getCommonInfo());
-            packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),repoInfo.getCommonInfo());
+            packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
+            packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
 
-            fileDao.insertFileInfoList(repoInfo.getFileInfos(),repoInfo.getCommonInfo());
-            fileDao.insertRawFileInfoList(repoInfo.getFileInfos(),repoInfo.getCommonInfo());
+            fileDao.insertFileInfoList(repoInfo.getFileInfos(),commonInfo);
+            fileDao.insertRawFileInfoList(repoInfo.getFileInfos(),commonInfo);
 
-            classDao.insertClassInfoList(repoInfo.getClassInfos(),repoInfo.getCommonInfo());
-            classDao.insertRawClassInfoList(repoInfo.getClassInfos(),repoInfo.getCommonInfo());
+            classDao.insertClassInfoList(repoInfo.getClassInfos(),commonInfo);
+            classDao.insertRawClassInfoList(repoInfo.getClassInfos(),commonInfo);
 
-            methodDao.insertMethodInfoList(repoInfo.getMethodInfos(),repoInfo.getCommonInfo());
-            methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos(),repoInfo.getCommonInfo());
+            methodDao.insertMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
+            methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
 
-            fieldDao.insertFieldInfoList(repoInfo.getFieldInfos(),repoInfo.getCommonInfo());
-            fieldDao.insertRawFieldInfoList(repoInfo.getFieldInfos(),repoInfo.getCommonInfo());
+            fieldDao.insertFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
+            fieldDao.insertRawFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
 
-            statementDao.insertStatementInfoList(repoInfo.getStatementInfos(),repoInfo.getCommonInfo());
-            statementDao.insertRawStatementInfoList(repoInfo.getStatementInfos(),repoInfo.getCommonInfo());
-            statementDao.insertStatementRelationList(repoInfo.getStatementInfos(),repoInfo.getCommonInfo());
+            statementDao.insertStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
+            statementDao.insertRawStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
+            statementDao.insertStatementRelationList(repoInfo.getStatementInfos(),commonInfo);
 
         }catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 返回库里扫描过最新的commitId
+     * @param repoUuid
+     * @param branch
+     * @return
+     */
+    private String findScanLatest(String repoUuid, String branch) {
+        return repoDao.getLatestScan(repoUuid, branch);
+    }
+
+    @Override
+    public String getScanStatus(String repoId, String branch) {
+        return repoDao.getScanStatus(repoId, branch);
     }
 
 
@@ -450,8 +536,8 @@ public class ScanServiceImpl implements ScanService {
         }
 
         if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
-            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-//            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+//            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";

@@ -51,6 +51,7 @@ public class RepoInfoTree {
      * @param fileList 路径地址
      */
     public RepoInfoTree(List<String> fileList, CommonInfo commonInfo, String repoUuid) {
+        repoTree = new HashMap<>();
         construct(fileList, commonInfo, repoUuid);
     }
 
@@ -64,14 +65,20 @@ public class RepoInfoTree {
         for (Map.Entry<Language, List<String>> entry : classifiedMap.entrySet()) {
             Language language = entry.getKey();
             BaseLanguageTree baseLanguageTree = (BaseLanguageTree) ApplicationContextGetBeanHelper.getBean(language.getName());
-            repoTree.put(language, constructTree(entry.getValue(), baseLanguageTree));
+            repoTree.put(language, constructTree(entry.getValue(), baseLanguageTree, repoUuid));
         }
         this.commonInfo = commonInfo ;
     }
 
     // 根据 parser 构造出
-    private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree) {
-
+    private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree, String repoUuid) {
+        if (baseLanguageTree instanceof JavaTree) {
+            JavaTree javaTree = new JavaTree(value,repoUuid);
+            return javaTree;
+        } else if (baseLanguageTree instanceof CppTree) {
+            CppTree cppTree = new CppTree(value,repoUuid);
+            return cppTree;
+        }
         return null;
     }
 
@@ -82,6 +89,9 @@ public class RepoInfoTree {
         Map<Language, List<String>> result = new HashMap<>(4);
         for (String file : fileList) {
             Language language = getFileLanguage(file);
+            if (language == null) {
+                continue;
+            }
             if (result.containsKey(language)) {
                 result.get(language).add(file);
             } else {
@@ -99,8 +109,8 @@ public class RepoInfoTree {
                 return language;
             }
         }
-        log.error("no suitable parser");
-        return Language.JAVA;
+        log.info("{} : no suitable parser",file);
+        return null;
     }
 
 

@@ -31,10 +31,8 @@ import java.util.Set;
  * @author fancying
  * create: 2020-05-17 15:15
  **/
-@Slf4j
 @Data
-@Component("java")
-@Scope("prototype")
+@Slf4j
 public class JavaFileParser implements FileParser {
 
     private String projectName;
@@ -54,17 +52,17 @@ public class JavaFileParser implements FileParser {
     }
 
     @Override
-    public void parse(String path, String relativePath, String projectName) {
+    public void parse(String path, String projectName) {
         this.projectName = projectName;
         try {
             // 根据操作系统修改
             compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
             packageName = parsePackageName();
-            String[] singleDir = relativePath.replace('\\','/').split("/");
+            String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            String [] s = relativePath.replace('\\','/').split( moduleName + "/");
+            String [] s = path.replace('\\','/').split( moduleName + "/");
             filePath = moduleName + "/" + s[s.length - 1];
             fileNode = new FileNode(fileName, filePath);
             // analyze import package
