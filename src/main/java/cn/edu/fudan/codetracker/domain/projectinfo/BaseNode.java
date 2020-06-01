@@ -56,7 +56,8 @@ public  class BaseNode {
         MOVE(2),
         CHANGE(2),
         CHANGE_RECORD(3),
-        UNCHANGED(4);
+        CHANGE_LINE(4),
+        UNCHANGED(5);
 
         private int priority;
         ChangeStatus(int priority) {
