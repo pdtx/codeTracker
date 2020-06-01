@@ -537,7 +537,8 @@ public class ScanServiceImpl implements ScanService {
 
         if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
 //            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+            return "E:\\Lab\\scanProject\\IssueTracker-Master";
+//            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";

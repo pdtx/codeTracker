@@ -7,6 +7,7 @@ import cn.edu.fudan.codetracker.util.FileFilter;
 import cn.edu.fudan.codetracker.util.JavaBaseRepoInfoParser;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
@@ -27,6 +28,7 @@ import java.util.Map;
 @Data
 @Component("java")
 @Scope("prototype")
+@NoArgsConstructor
 public class JavaTree extends BaseLanguageTree {
 
     private Map<String, List<PackageNode>> moduleInfos;

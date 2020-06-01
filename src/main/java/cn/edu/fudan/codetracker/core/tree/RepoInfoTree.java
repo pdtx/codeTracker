@@ -34,8 +34,6 @@ public class RepoInfoTree {
     @Getter
     private Map<Language, BaseLanguageTree> repoTree;
 
-    private static ApplicationContext applicationContext;
-
     @Setter
     private CommonInfo commonInfo;
 
@@ -59,8 +57,8 @@ public class RepoInfoTree {
         // 根据文件类型对文件进行分类
         Map<Language, List<String>> classifiedMap = classification(fileList);
         // 根据分类结果 调用不同的parser
-        ApplicationContextGetBeanHelper applicationContextGetBeanHelper = new ApplicationContextGetBeanHelper ();
-        applicationContextGetBeanHelper.setApplicationContext (applicationContext);
+        //ApplicationContextGetBeanHelper applicationContextGetBeanHelper = new ApplicationContextGetBeanHelper ();
+        //applicationContextGetBeanHelper.setApplicationContext (applicationContext);
 
         for (Map.Entry<Language, List<String>> entry : classifiedMap.entrySet()) {
             Language language = entry.getKey();
@@ -113,9 +111,4 @@ public class RepoInfoTree {
         return null;
     }
 
-
-    @Autowired
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        RepoInfoTree.applicationContext = applicationContext;
-    }
 }
