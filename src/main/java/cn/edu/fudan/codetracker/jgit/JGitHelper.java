@@ -304,7 +304,7 @@ public class JGitHelper implements Closeable {
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
 //        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
         String repoPath = "/Users/tangyuan/Documents/Gitlab/codeTracker";
-        String commitId = "770d1f239b3453be85aa5b8b85d6fd5b13f74dcf";
+        String commitId = "6d51c089986c9c7f8766d31a95a20254ecbdbc46";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
         Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
 //        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");

@@ -258,6 +258,9 @@ public class ScanServiceImpl implements ScanService {
 
         //curTree上搜索add change情况
         for (PackageNode packageNode: curRepoInfo.getPackageInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(packageNode.getChangeStatus()) && packageNode.getVersion() == 1) {
+                packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(packageNode.getChangeStatus())) {
                 packageMap.get("ADD").add(packageNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(packageNode.getChangeStatus())) {
@@ -265,6 +268,9 @@ public class ScanServiceImpl implements ScanService {
             }
         }
         for (FileNode fileNode: curRepoInfo.getFileInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(fileNode.getChangeStatus()) && fileNode.getVersion() == 1) {
+                fileNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(fileNode.getChangeStatus())) {
                 fileMap.get("ADD").add(fileNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fileNode.getChangeStatus())) {
@@ -272,6 +278,9 @@ public class ScanServiceImpl implements ScanService {
             }
         }
         for (ClassNode classNode: curRepoInfo.getClassInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(classNode.getChangeStatus()) && classNode.getVersion() == 1) {
+                classNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
                 classMap.get("ADD").add(classNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
@@ -279,6 +288,9 @@ public class ScanServiceImpl implements ScanService {
             }
         }
         for (MethodNode methodNode: curRepoInfo.getMethodInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(methodNode.getChangeStatus()) && methodNode.getVersion() == 1) {
+                methodNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(methodNode.getChangeStatus())) {
                 methodMap.get("ADD").add(methodNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(methodNode.getChangeStatus())) {
@@ -286,6 +298,9 @@ public class ScanServiceImpl implements ScanService {
             }
         }
         for (FieldNode fieldNode: curRepoInfo.getFieldInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(fieldNode.getChangeStatus()) && fieldNode.getVersion() == 1) {
+                fieldNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus())) {
                 fieldMap.get("ADD").add(fieldNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fieldNode.getChangeStatus())) {
@@ -293,6 +308,9 @@ public class ScanServiceImpl implements ScanService {
             }
         }
         for (StatementNode statementNode: curRepoInfo.getStatementInfos()) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(statementNode.getChangeStatus()) && statementNode.getVersion() == 1) {
+                statementNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
             if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus())) {
                 statementMap.get("ADD").add(statementNode);
             } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(statementNode.getChangeStatus())) {
@@ -433,6 +451,7 @@ public class ScanServiceImpl implements ScanService {
 
         if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
             return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+//            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
