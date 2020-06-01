@@ -41,6 +41,12 @@ public class JavaTree extends BaseLanguageTree {
 
     public JavaTree(List<String> fileList, String repoUuid) {
         super(fileList, repoUuid);
+        parseTree();
+    }
+
+
+    @Override
+    public void parseTree() {
         moduleInfos = new HashMap<>(4);
         packageInfos = new ArrayList<>();
         fileInfos = new ArrayList<>();
@@ -48,12 +54,6 @@ public class JavaTree extends BaseLanguageTree {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         statementInfos = new ArrayList<>();
-        parseTree();
-    }
-
-
-    @Override
-    public void parseTree() {
         analyze(this.getFileList(), this.getRepoUuid());
     }
 

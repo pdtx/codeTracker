@@ -107,7 +107,8 @@ public class RepoInfoTree {
                 return language;
             }
         }
-        log.info("{} : no suitable parser",file);
+        String[] dirs = file.split(".");
+        log.warn("{} : no suitable parser",dirs[dirs.length-1]);
         return null;
     }
 
