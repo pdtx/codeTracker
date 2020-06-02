@@ -41,7 +41,11 @@ public class PhysicalChangedHandler implements NodeMapping{
                     MethodNode preMethod = (MethodNode)preNode;
                     MethodNode curMethod = (MethodNode)curNode;
                     if (preMethod.getBegin() != curMethod.getBegin() || preMethod.getEnd() != curMethod.getEnd()) {
-                        curMethod.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                        if (preMethod.getContent().equals(curMethod.getContent())) {
+                            curMethod.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
+                        } else {
+                            curMethod.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                        }
                     } else {
                         curMethod.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                     }
@@ -50,7 +54,11 @@ public class PhysicalChangedHandler implements NodeMapping{
                     StatementNode curStatement = (StatementNode)curNode;
                     if (preStatement.getBegin() != curStatement.getBegin() || preStatement.getEnd() != curStatement.getEnd()) {
                         curStatement.setIsLogic(0);
-                        curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                        if (preStatement.getBody().equals(curStatement.getBody())) {
+                            curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
+                        } else {
+                            curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                        }
                     } else {
                         curStatement.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                     }
@@ -66,10 +74,24 @@ public class PhysicalChangedHandler implements NodeMapping{
                 }
             }
         } else if ((preRoot instanceof MethodNode && curRoot instanceof MethodNode) || (curRoot instanceof StatementNode && curRoot instanceof StatementNode)) {
-            curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
-            if (curRoot instanceof StatementNode) {
-                StatementNode statementNode = (StatementNode)curRoot;
-                statementNode.setIsLogic(0);
+            if (preRoot instanceof MethodNode && curRoot instanceof MethodNode) {
+                MethodNode curMethod = (MethodNode)curRoot;
+                MethodNode preMethod = (MethodNode)preRoot;
+                if (curMethod.getContent().equals(preMethod.getContent())) {
+                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
+                } else {
+                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                }
+            }
+            if (curRoot instanceof StatementNode && curRoot instanceof StatementNode) {
+                StatementNode curStatement = (StatementNode)curRoot;
+                StatementNode preStatement = (StatementNode)preRoot;
+                if (preStatement.getBody().equals(curStatement.getBody())) {
+                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
+                } else {
+                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
+                }
+                curStatement.setIsLogic(0);
             }
             NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
         }

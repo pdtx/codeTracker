@@ -39,9 +39,10 @@ public interface NodeMapping {
             if (trackerInfo != null) {
                 preRoot.setRootUuid(trackerInfo.getRootUUID());
                 preRoot.setVersion(trackerInfo.getVersion());
-            } else {
-                System.out.println("delete null : " + preRoot.getProjectInfoLevel());
             }
+//            else {
+//                System.out.println("delete null : " + preRoot.getProjectInfoLevel());
+//            }
         } else {
             preRoot.setMapping(true);
             curRoot.setMapping(true);
@@ -54,7 +55,7 @@ public interface NodeMapping {
                 curRoot.setRootUuid(trackerInfo.getRootUUID());
                 curRoot.setVersion(trackerInfo.getVersion()+1);
             } else {
-                System.out.println("change null : " + preRoot.getProjectInfoLevel());
+//                System.out.println("change null : " + preRoot.getProjectInfoLevel());
                 //追溯不到 处理为ADD
                 curRoot.setRootUuid(curRoot.getUuid());
                 curRoot.setVersion(1);

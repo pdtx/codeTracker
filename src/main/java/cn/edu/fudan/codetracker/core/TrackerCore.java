@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core;
 
+import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
@@ -60,82 +61,89 @@ public class TrackerCore {
 
     }
 
-    public static void mapping(RepoInfoBuilder preRepoInfo, RepoInfoBuilder curRepoInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
-        //处理packageNode
-        mappingPackageNode(curRepoInfo.getPackageInfos(),repoUuid,branch);
-
-        //判断fileNode属于add、delete、change
-        Set<String> addSet = new HashSet<>(map.get("ADD"));
-        Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
-        Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
-        Map<String,FileNode> preMap = new HashMap<>();
-        Map<String,FileNode> curMap = new HashMap<>();
-
-        for (FileNode fileNode : preRepoInfo.getFileInfos()) {
-            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                continue;
+    public static void mapping(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
+        Set<PackageNode> packageNodeSet;
+        if (preRepoInfo == null && curRepoInfo == null) {
+            return;
+        } else if (preRepoInfo == null) {
+            packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
+            mappingPackageNode(packageNodeSet,repoUuid,branch);
+            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
+                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                    continue;
+                }
+                addHandler.subTreeMapping(null,fileNode,preCommonInfo,proxyDao);
             }
-            if (deleteSet.contains(fileNode.getFilePath())) {
-                deleteHandler.subTreeMapping(fileNode, null,preRepoInfo.getCommonInfo(),proxyDao);
+        } else if (curRepoInfo == null) {
+            packageNodeSet = new HashSet<>(preRepoInfo.getPackageInfos());
+            mappingPackageNode(packageNodeSet,repoUuid,branch);
+            for (FileNode fileNode : preRepoInfo.getFileInfos()) {
+                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                    continue;
+                }
+                deleteHandler.subTreeMapping(fileNode,null,preCommonInfo,proxyDao);
             }
-            if (changeSet.contains(fileNode.getFilePath())) {
-                preMap.put(fileNode.getFilePath(),fileNode);
+        } else {
+            //处理packageNode
+            packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
+            packageNodeSet.addAll(preRepoInfo.getPackageInfos());
+            mappingPackageNode(packageNodeSet,repoUuid,branch);
+
+            //判断fileNode属于add、delete、change
+            Set<String> addSet = new HashSet<>(map.get("ADD"));
+            Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
+            Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
+            Map<String,FileNode> preMap = new HashMap<>();
+            Map<String,FileNode> curMap = new HashMap<>();
+
+            for (FileNode fileNode : preRepoInfo.getFileInfos()) {
+                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                    continue;
+                }
+                if (deleteSet.contains(fileNode.getFilePath())) {
+                    deleteHandler.subTreeMapping(fileNode, null,preCommonInfo,proxyDao);
+                }
+                if (changeSet.contains(fileNode.getFilePath())) {
+                    preMap.put(fileNode.getFilePath(),fileNode);
+                }
+            }
+            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
+                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                    continue;
+                }
+                if (addSet.contains(fileNode.getFilePath())) {
+                    addHandler.subTreeMapping(null,fileNode,preCommonInfo,proxyDao);
+                }
+                if (changeSet.contains(fileNode.getFilePath())) {
+                    curMap.put(fileNode.getFilePath(),fileNode);
+                }
+            }
+
+            Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
+
+            for (String path : changeSet) {
+                if (FileFilter.javaFilenameFilter(path)) {
+                    continue;
+                }
+                FileNode preRoot = preMap.get(path);
+                FileNode curRoot = curMap.get(path);
+                //判断文件是否有逻辑修改
+                if(logicalFileMap.keySet().contains(path)) {
+                    String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
+                    logicalChangedHandler.setDiffPath(diffPath);
+                    logicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
+                } else {
+                    physicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
+                }
             }
         }
-        for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                continue;
-            }
-            if (addSet.contains(fileNode.getFilePath())) {
-                addHandler.subTreeMapping(null,fileNode,preRepoInfo.getCommonInfo(),proxyDao);
-            }
-            if (changeSet.contains(fileNode.getFilePath())) {
-                curMap.put(fileNode.getFilePath(),fileNode);
-            }
-        }
 
-        Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
 
-        for (String path : changeSet) {
-            if (FileFilter.javaFilenameFilter(path)) {
-                continue;
-            }
-            FileNode preRoot = preMap.get(path);
-            FileNode curRoot = curMap.get(path);
-            //判断文件是否有逻辑修改
-            if(logicalFileMap.keySet().contains(path)) {
-                String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
-                logicalChangedHandler.setDiffPath(diffPath);
-                logicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
-            } else {
-                physicalChangedHandler.subTreeMapping(preRoot,curRoot,preRepoInfo.getCommonInfo(),proxyDao);
-            }
-        }
-
-//        // TODO 参数为两个相同的 moduleInfo
-//        for (BaseNode baseNode : curRoot.getChildren()) {
-//            PackageNode prePackageNode = cast(findSimilarNode(preRoot.getChildren(), baseNode));
-//            PackageNode curPackageNode = cast(baseNode);
-//            // TODO 新增
-//            if (prePackageNode == null) {
-//                AddHandler.getInstance().subTreeMapping(prePackageNode, curPackageNode);
-//            } else {
-//                // TODO change: logical physical
-//                changeMapping(prePackageNode, curPackageNode);
-//                NodeMapping.setNodeMapped(preRoot, curRoot);
-//            }
-//        }
-//        preRoot.getChildren()
-//                .stream()
-//                .filter(node -> !(node.isMapping()))
-//                .forEach(preNode -> DeleteHandler.getInstance().subTreeMapping(preNode, null));
 
     }
 
-    private static void mappingPackageNode(List<PackageNode> curPackageList, String repoUuid, String branch) {
-        int len = curPackageList.size();
-        for (int i = 0; i < len; i++) {
-            PackageNode packageNode = curPackageList.get(i);
+    private static void mappingPackageNode(Set<PackageNode> packageNodeSet, String repoUuid, String branch) {
+        for (PackageNode packageNode : packageNodeSet) {
             TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE,packageNode.getModuleName(),packageNode.getPackageName(),repoUuid,branch);
             if (trackerInfo == null) {
                 packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);

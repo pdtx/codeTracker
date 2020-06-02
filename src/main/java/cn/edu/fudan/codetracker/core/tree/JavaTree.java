@@ -5,9 +5,13 @@ import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.FileFilter;
 import cn.edu.fudan.codetracker.util.JavaBaseRepoInfoParser;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,11 +25,11 @@ import java.util.Map;
  * create: 2020-05-18 00:22
  **/
 @Slf4j
-@Getter
-@Setter
+@Data
+@Component("java")
+@Scope("prototype")
+@NoArgsConstructor
 public class JavaTree extends BaseLanguageTree {
-
-    public static final Language LANGUAGE = Language.JAVA;
 
     private Map<String, List<PackageNode>> moduleInfos;
     private List<PackageNode> packageInfos;
@@ -35,8 +39,14 @@ public class JavaTree extends BaseLanguageTree {
     private List<MethodNode> methodInfos;
     private List<StatementNode> statementInfos;
 
-    public JavaTree(List<String> fileList, List<String> relativePath, String repoUuid) {
-        super(fileList, relativePath, repoUuid);
+    public JavaTree(List<String> fileList, String repoUuid) {
+        super(fileList, repoUuid);
+        parseTree();
+    }
+
+
+    @Override
+    public void parseTree() {
         moduleInfos = new HashMap<>(4);
         packageInfos = new ArrayList<>();
         fileInfos = new ArrayList<>();
@@ -44,29 +54,19 @@ public class JavaTree extends BaseLanguageTree {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         statementInfos = new ArrayList<>();
-        parseTree();
+        analyze(this.getFileList(), this.getRepoUuid());
     }
 
-
-    @Override
-    public void parseTree() {
-        analyze(this.getFileList(), this.getRelativePath(), this.getRepoUuid());
-    }
-
-    private void analyze(List<String> fileList, List<String> relativePath, String repoUuid) {
-        if (fileList.size() != relativePath.size()) {
-            log.error("fileList：{}，relativePath：{} ", fileList.size(), relativePath.size());
-        }
-        int minSize = Math.min(fileList.size(), relativePath.size());
+    private void analyze(List<String> fileList, String repoUuid) {
         // 一个module内包含哪些package
-        for (int i = 0; i < minSize ;i++) {
+        for (int i = 0; i < fileList.size() ;i++) {
             String path = fileList.get(i);
             // 特定文件过滤
             if (FileFilter.javaFilenameFilter(path)) {
                 continue;
             }
             JavaFileParser javaFileParser = new JavaFileParser();
-            javaFileParser.parse(path, relativePath.get(i), repoUuid);
+            javaFileParser.parse(path, repoUuid);
             String packageName = javaFileParser.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {

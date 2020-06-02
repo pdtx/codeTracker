@@ -14,16 +14,17 @@ public enum Language {
     /**
      * java
      */
-    JAVA(".java"),
+    JAVA(".java","java"),
     /**
      * c++
      */
-    CPP(".cpp");
+    CPP(".cpp","c++");
 
-    Language(String filePostfix) {
+    Language(String filePostfix, String name) {
         this.filePostfix = filePostfix;
+        this.name = name;
     }
-
-    private String filePostfix;
+    private final String name;
+    private final String filePostfix;
 
 }

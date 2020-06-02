@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.jgit;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
@@ -7,11 +8,13 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.Closeable;
@@ -230,17 +233,8 @@ public class JGitHelper implements Closeable {
             RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
             RevCommit[] parentCommits = currCommit.getParents();
             for (RevCommit p : parentCommits) {
-                RevCommit parentCommit = revWalk.parseCommit(ObjectId.fromString(p.getName()));
-                ObjectReader reader = git.getRepository().newObjectReader();
-                CanonicalTreeParser currTreeIter = new CanonicalTreeParser();
-                currTreeIter.reset(reader, currCommit.getTree().getId());
-
-                CanonicalTreeParser parentTreeIter = new CanonicalTreeParser();
-                parentTreeIter.reset(reader, parentCommit.getTree().getId());
-                DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-                diffFormatter.setRepository(git.getRepository());
-                List<DiffEntry> entries = diffFormatter.scan(parentTreeIter, currTreeIter);
-                result.put(parentCommit.getName(), entries);
+                List<DiffEntry> entries = getDiffEntry(p,currCommit);
+                result.put(p.getName(), entries);
             }
             return result;
         } catch (IOException e) {
@@ -257,6 +251,7 @@ public class JGitHelper implements Closeable {
             tmp.put("ADD",new ArrayList<>());
             tmp.put("DELETE",new ArrayList<>());
             tmp.put("CHANGE", new ArrayList<>());
+            tmp.put("RENAME", new ArrayList<>());
             List<DiffEntry> entryList = res.get(preCommit);
             for (DiffEntry diff: entryList) {
                 switch (diff.getChangeType()){
@@ -268,6 +263,10 @@ public class JGitHelper implements Closeable {
                         break;
                     case DELETE:
                         tmp.get("DELETE").add(diff.getOldPath());
+                        break;
+                    case RENAME:
+                        String path = diff.getOldPath() + ":" + diff.getNewPath();
+                        tmp.get("RENAME").add(path);
                         break;
                     default:
                         break;
@@ -299,18 +298,90 @@ public class JGitHelper implements Closeable {
         return MERGE_WITHOUT_CONFLICT;
     }
 
+    @SneakyThrows
+    public List<DiffEntry> getConflictDiffEntryList (String commit) {
+        RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
+        RevCommit[] parentCommits = currCommit.getParents();
+        if (parentCommits.length != 2) {
+            return null;
+        }
+
+        List<DiffEntry> parent1 = getDiffEntry(parentCommits[0], currCommit);
+        List<DiffEntry> parent2 = getDiffEntry(parentCommits[1], currCommit);
+        List<DiffEntry> result = new ArrayList<>();
+        if (isParent2(parentCommits[0], parentCommits[1], currCommit)) {
+            List<DiffEntry> tmp = parent1;
+            parent1 = parent2;
+            parent2 = tmp;
+        }
+
+        // oldPath 相同
+        for (DiffEntry diffEntry1 : parent1) {
+            for (DiffEntry diffEntry2 :parent2) {
+                // todo 暂未考虑重命名的情况 或者无需考虑重命名的情况
+                //  如 p1 a=a1  p2 a=>a2 是否冲突待验证
+                boolean isSame = diffEntry1.getOldPath().equals(diffEntry2.getOldPath()) &&
+                        diffEntry1.getNewPath().equals(diffEntry2.getNewPath());
+
+                if (isSame) {
+                    result.add(diffEntry1);
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean isParent2(RevCommit parent1, RevCommit parent2, RevCommit currCommit) {
+        String author1 = parent1.getAuthorIdent().getName();
+        String author2 = parent2.getAuthorIdent().getName();
+        String author = currCommit.getAuthorIdent().getName();
+        if (author.equals(author2) && !author.equals(author1)) {
+            return true;
+        }
+
+        if (!author.equals(author2) && author.equals(author1)) {
+            return false;
+        }
+
+        return parent2.getCommitTime() > parent1.getCommitTime();
+    }
+
+    @SneakyThrows
+    private List<DiffEntry> getDiffEntry(RevCommit parentCommit, RevCommit currCommit) {
+        // 不可少 否则parentCommit的 tree为null
+        parentCommit = revWalk.parseCommit(ObjectId.fromString(parentCommit.getName()));
+        TreeWalk tw = new TreeWalk(repository);
+        tw.addTree(parentCommit.getTree());
+        tw.addTree(currCommit.getTree());
+        tw.setRecursive(true);
+        RenameDetector rd = new RenameDetector(repository);
+        rd.addAll(DiffEntry.scan(tw));
+        rd.setRenameScore(50);
+        return rd.compute();
+    }
+
+
     public static void main(String[] args) {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
 //        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
         String repoPath = "/Users/tangyuan/Documents/Gitlab/codeTracker";
-        String commitId = "770d1f239b3453be85aa5b8b85d6fd5b13f74dcf";
+//        String commitId = "6d51c089986c9c7f8766d31a95a20254ecbdbc46";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
-        Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
+//        Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
+//        List<DiffEntry> map = null;
+//        try {
+//            RevCommit currCommit = jGitHelper.revWalk.parseCommit(ObjectId.fromString("6d51c089986c9c7f8766d31a95a20254ecbdbc46"));
+//            RevCommit preCommit = jGitHelper.revWalk.parseCommit(ObjectId.fromString("e43a8c19634265f5ff057183c54e8f13e132fd05"));
+//            map = jGitHelper.getDiffEntry(preCommit,currCommit);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
 //        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
 //        String s[] = jGitHelper.getCommitParents(commitId);
 //        int m = jGitHelper.mergeJudgment(commitId);
-//        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList(commitId);
+        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList("6d51c089986c9c7f8766d31a95a20254ecbdbc46");
         System.out.println(map);
 //        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
 //        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
