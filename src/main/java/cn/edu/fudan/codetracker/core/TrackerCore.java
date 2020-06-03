@@ -93,8 +93,17 @@ public class TrackerCore {
             Set<String> addSet = new HashSet<>(map.get("ADD"));
             Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
             Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
+            Set<String> preRenameSet = new HashSet<>();
+            Set<String> curRenameSet = new HashSet<>();
+            for (String str: map.get("RENAME")) {
+                String[] paths = str.split(":");
+                preRenameSet.add(paths[0]);
+                curRenameSet.add(paths[1]);
+            }
             Map<String,FileNode> preMap = new HashMap<>();
             Map<String,FileNode> curMap = new HashMap<>();
+            Map<String,FileNode> preRenameMap = new HashMap<>();
+            Map<String,FileNode> curRenameMap = new HashMap<>();
 
             for (FileNode fileNode : preRepoInfo.getFileInfos()) {
                 if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
@@ -106,6 +115,9 @@ public class TrackerCore {
                 if (changeSet.contains(fileNode.getFilePath())) {
                     preMap.put(fileNode.getFilePath(),fileNode);
                 }
+                if (preRenameSet.contains(fileNode.getFilePath())) {
+                    preRenameMap.put(fileNode.getFilePath(),fileNode);
+                }
             }
             for (FileNode fileNode : curRepoInfo.getFileInfos()) {
                 if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
@@ -116,6 +128,9 @@ public class TrackerCore {
                 }
                 if (changeSet.contains(fileNode.getFilePath())) {
                     curMap.put(fileNode.getFilePath(),fileNode);
+                }
+                if (curRenameSet.contains(fileNode.getFilePath())) {
+                    curRenameMap.put(fileNode.getFilePath(),fileNode);
                 }
             }
 
@@ -136,10 +151,22 @@ public class TrackerCore {
                     physicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
                 }
             }
+            //处理rename情况 待完善
+            for (String str: map.get("RENAME")) {
+                String[] paths = str.split(":");
+                FileNode preRenameRoot = preRenameMap.get(paths[0]);
+                FileNode curRenameRoot = curRenameMap.get(paths[1]);
+                dealWithRename(preRenameRoot,curRenameRoot,proxyDao,preCommonInfo);
+            }
+
         }
 
+    }
 
-
+    private static void dealWithRename(BaseNode preRoot, BaseNode curRoot, ProxyDao proxyDao, CommonInfo commonInfo) {
+        curRoot.setChangeStatus(BaseNode.ChangeStatus.SELF_CHANGE);
+        NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
+        //如何实现rename文件间的diff，待完善
     }
 
     private static void mappingPackageNode(Set<PackageNode> packageNodeSet, String repoUuid, String branch) {

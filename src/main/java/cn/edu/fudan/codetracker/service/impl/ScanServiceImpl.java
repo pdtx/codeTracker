@@ -174,6 +174,7 @@ public class ScanServiceImpl implements ScanService {
             List<String> curRelatives = new ArrayList<>();
             List<String> preFileList;
             List<String> curFileList;
+            //抽取rename情况
             for (String str: map.get("RENAME")) {
                 String[] paths = str.split(":");
                 preRelatives.add(paths[0]);
@@ -553,11 +554,6 @@ public class ScanServiceImpl implements ScanService {
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
-    }
-
-    public static void main(String[] args) {
-        JGitHelper jGitHelper = new JGitHelper("/Users/tangyuan/Documents/Gitlab/codeTracker");
-        new ScanServiceImpl().scan("codeTracker","6d51c089986c9c7f8766d31a95a20254ecbdbc46","dev",jGitHelper,"/Users/tangyuan/Documents/Gitlab/codeTracker");
     }
 
 
