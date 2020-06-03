@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.jgit;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -299,7 +300,7 @@ public class JGitHelper implements Closeable {
     }
 
     @SneakyThrows
-    public List<DiffEntry> getConflictDiffEntryList (String commit) {
+    public Map<String, List<DiffEntry>> getConflictDiffEntryList (String commit) {
         RevCommit currCommit = revWalk.parseCommit(ObjectId.fromString(commit));
         RevCommit[] parentCommits = currCommit.getParents();
         if (parentCommits.length != 2) {
@@ -308,11 +309,14 @@ public class JGitHelper implements Closeable {
 
         List<DiffEntry> parent1 = getDiffEntry(parentCommits[0], currCommit);
         List<DiffEntry> parent2 = getDiffEntry(parentCommits[1], currCommit);
-        List<DiffEntry> result = new ArrayList<>();
+        Map<String, List<DiffEntry>> result = new HashMap<>();
+        String parent = parentCommits[0].getName() + "|" + parentCommits[1].getName();
+        List<DiffEntry> entryList = new ArrayList<>();
         if (isParent2(parentCommits[0], parentCommits[1], currCommit)) {
             List<DiffEntry> tmp = parent1;
             parent1 = parent2;
             parent2 = tmp;
+            parent = parentCommits[1].getName() + "|" + parentCommits[0].getName();
         }
 
         // oldPath 相同
@@ -324,10 +328,12 @@ public class JGitHelper implements Closeable {
                         diffEntry1.getNewPath().equals(diffEntry2.getNewPath());
 
                 if (isSame) {
-                    result.add(diffEntry1);
+                    entryList.add(diffEntry1);
                 }
             }
         }
+
+        result.put(parent,entryList);
         return result;
     }
 
@@ -365,7 +371,7 @@ public class JGitHelper implements Closeable {
         //gitCheckout("E:\\Lab\\project\\IssueTracker-Master", "f8263335ef380d93d6bb93b2876484e325116ac2");
         //String repoPath = "E:\\Lab\\iec-wepm-develop";
 //        String repoPath = "E:\\Lab\\project\\IssueTracker-Master-pre";
-        String repoPath = "/Users/tangyuan/Documents/Gitlab/codeTracker";
+        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
 //        String commitId = "6d51c089986c9c7f8766d31a95a20254ecbdbc46";
         JGitHelper jGitHelper = new JGitHelper(repoPath);
 //        Map<String, List<DiffEntry>> map = jGitHelper.getMappedFileList(commitId);
@@ -381,7 +387,7 @@ public class JGitHelper implements Closeable {
 //        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
 //        String s[] = jGitHelper.getCommitParents(commitId);
 //        int m = jGitHelper.mergeJudgment(commitId);
-        Map<String,Map<String, List<String>>> map = jGitHelper.getFileList("6d51c089986c9c7f8766d31a95a20254ecbdbc46");
+        Map<String, List<DiffEntry>> map = jGitHelper.getConflictDiffEntryList("f0f090c7541ca09dbf0d132a511591fdb57ecb23");
         System.out.println(map);
 //        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
 //        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {

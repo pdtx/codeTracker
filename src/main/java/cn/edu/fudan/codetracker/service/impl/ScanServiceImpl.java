@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.diff.DiffEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -158,8 +159,13 @@ public class ScanServiceImpl implements ScanService {
         jGitHelper.checkout(commitId);
         Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
 
+        //CLDiff输出路径
+        String [] paths = repoPath.replace('\\','/').split("/");
+        String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
+
         //merge情况直接跳过
         if (fileMap.keySet().size() > 1) {
+            dealWithMerge(jGitHelper,commitId,repoPath,outputPath);
             return;
         }
 
@@ -176,9 +182,9 @@ public class ScanServiceImpl implements ScanService {
             List<String> curFileList;
             //抽取rename情况
             for (String str: map.get("RENAME")) {
-                String[] paths = str.split(":");
-                preRelatives.add(paths[0]);
-                curRelatives.add(paths[1]);
+                String[] renamePaths = str.split(":");
+                preRelatives.add(renamePaths[0]);
+                curRelatives.add(renamePaths[1]);
             }
             preRelatives.addAll(map.get("CHANGE"));
             preRelatives.addAll(map.get("DELETE"));
@@ -197,8 +203,6 @@ public class ScanServiceImpl implements ScanService {
             JavaTree preJavaTree = (JavaTree) preRepoInfoTree.getRepoTree().get(Language.JAVA);
             JavaTree curJavaTree = (JavaTree) curRepoInfoTree.getRepoTree().get(Language.JAVA);
             //通过ClDiff拿到逻辑修改文件
-            String [] paths = repoPath.replace('\\','/').split("/");
-            String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
             Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commitId,outputPath);
 
             TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
@@ -207,6 +211,34 @@ public class ScanServiceImpl implements ScanService {
 
 
         }
+
+    }
+
+    private void dealWithMerge(JGitHelper jGitHelper, String commit, String repoPath, String outputPath) {
+        Map<String, List<DiffEntry>> conflictInfo = jGitHelper.getConflictDiffEntryList(commit);
+        if (conflictInfo == null || conflictInfo.size() == 0) {
+            return;
+        }
+        String str = null;
+        List<DiffEntry> list = null;
+        for (Map.Entry<String,List<DiffEntry>> entry: conflictInfo.entrySet()) {
+            str = entry.getKey();
+            list = entry.getValue();
+        }
+        if (str == null || list == null || list.size() == 0) {
+            return;
+        }
+
+        //获取parent1，parent2；parent1和parent2是通过比对提交者和时间确定的顺序
+        String[] parents = str.split("|");
+        String parent1 = parents[0];
+        String parent2 = parents[1];
+
+        //目前策略：处理conflict，首先由parent1与current进行对比，若有add情况，去parent2中寻找有无对应节点
+        Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commit,outputPath);
+        //构造三棵树
+        List<String> fileList = new ArrayList<>();
+
 
     }
 
@@ -228,52 +260,6 @@ public class ScanServiceImpl implements ScanService {
         }
     }
 
-//    private void scan (String repoUuid, String commitId, String branch, JGitHelper jGitHelper, String repoPath) {
-//        if (jGitHelper != null) {
-//            jGitHelper = new JGitHelper(repoPath);
-//        }
-//        //通过jgit拿到file列表
-//        jGitHelper.checkout(branch);
-//        jGitHelper.checkout(commitId);
-//        Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
-//
-//        //merge情况直接跳过
-//        if (fileMap.keySet().size() > 1) {
-//            return;
-//        }
-//
-//        for (String s : fileMap.keySet()) {
-//            String preCommit = s;
-//            Map<String, List<String>> map = fileMap.get(preCommit);
-//
-//            //根据file列表构建preTree和curTree
-//            List<String> preRelatives = new ArrayList<>();
-//            List<String> curRelatives = new ArrayList<>();
-//            List<String> preFileList;
-//            List<String> curFileList;
-//            preRelatives.addAll(map.get("CHANGE"));
-//            preRelatives.addAll(map.get("DELETE"));
-//            preFileList = localizeFilePath(repoPath, preRelatives);
-//            curRelatives.addAll(map.get("CHANGE"));
-//            curRelatives.addAll(map.get("ADD"));
-//            curFileList = localizeFilePath(repoPath, curRelatives);
-//            //String repoUuid, String commit, List<String> fileList, JGitHelper jGitHelper, String branch, String parentCommit, List<String> relativePath
-//            RepoInfoBuilder preRepoInfo = new RepoInfoBuilder(repoUuid,preCommit,preFileList,jGitHelper,branch,null,preRelatives);
-//            RepoInfoBuilder curRepoInfo = new RepoInfoBuilder(repoUuid,commitId,curFileList,jGitHelper,branch,preCommit,curRelatives);
-//
-//            //通过ClDiff拿到逻辑修改文件
-//            String [] paths = repoPath.replace('\\','/').split("/");
-//            String outputPath = outputDir +  (IS_WINDOWS ?  "\\" : "/") + paths[paths.length -1] + (IS_WINDOWS ?  "\\" : "/") + commitId;
-//            Map<String,Map<String,String>> logicalChangedFileMap = extractDiffFilePathFromClDiff(repoPath,commitId,outputPath);
-//
-//            TrackerCore.mapping(preRepoInfo,curRepoInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
-//
-//            extractAndSaveInfo(preRepoInfo,curRepoInfo);
-//
-//
-//        }
-//
-//    }
 
     private void extractAndSaveInfo(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo commonInfo) {
         //抽取需要入库的数据
@@ -554,6 +540,11 @@ public class ScanServiceImpl implements ScanService {
         }
 
         return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
+    }
+
+    public static void main(String[] args) {
+        Map<String,Map<String,String>> map = new ScanServiceImpl().extractDiffFilePathFromClDiff("/Users/tangyuan/Documents/Git/IssueTracker-Master","c2d014ec63e6079f62fe734f1f9650c0890e6569","/Users/tangyuan/Desktop/demo/IssueTracker-Master/c2d014ec63e6079f62fe734f1f9650c0890e6569");
+        System.out.println(map);
     }
 
 
