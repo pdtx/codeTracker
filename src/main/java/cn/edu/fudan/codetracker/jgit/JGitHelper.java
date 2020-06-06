@@ -248,7 +248,7 @@ public class JGitHelper implements Closeable {
         Map<String, Map<String,List<String>>> map = new HashMap<>();
         Map<String, List<DiffEntry>> res = getMappedFileList(commit);
         for (String preCommit: res.keySet()) {
-            Map<String,List<String>> tmp = new HashMap<>();
+            Map<String,List<String>> tmp = new HashMap<>(8);
             tmp.put("ADD",new ArrayList<>());
             tmp.put("DELETE",new ArrayList<>());
             tmp.put("CHANGE", new ArrayList<>());
@@ -396,16 +396,4 @@ public class JGitHelper implements Closeable {
 //        }
     }
 
-
-    public static int getMergeWithConflict() {
-        return MERGE_WITH_CONFLICT;
-    }
-
-    public static int getMergeWithoutConflict() {
-        return MERGE_WITHOUT_CONFLICT;
-    }
-
-    public static int getNotMerge() {
-        return NOT_MERGE;
-    }
 }
