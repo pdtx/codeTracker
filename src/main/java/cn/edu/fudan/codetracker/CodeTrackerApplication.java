@@ -34,7 +34,7 @@ public class CodeTrackerApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        testScan();
+        //testScan();
     }
 
     private void testScan() {
