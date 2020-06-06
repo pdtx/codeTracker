@@ -11,7 +11,7 @@ import java.util.List;
  * @author fancying
  * create: 2020-06-06 15:47
  **/
-public class SuffixUtils {
+public class SuffixUtil {
 
     /**
      * 判断两端代码是否相似

@@ -8,7 +8,7 @@ import java.util.*;
  * @author fancying
  * create: 2020-06-06 15:48
  **/
-public class CosineUtils {
+public class CosineUtil {
 
     /**
      * 判断两段代码是否相似
