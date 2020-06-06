@@ -20,6 +20,7 @@ public class StatementNode extends BaseNode{
     private StatementType type;
     private int sequence;
     private String methodUuid;
+    private String description;
     /**
      * 是否为逻辑修改
      */

@@ -18,6 +18,7 @@ public final class DiffInfo {
     private Location location;
     private String changeRelation;
     private JSONObject jsonObject;
+    private String description;
 
     public DiffInfo() {
 
@@ -52,6 +53,7 @@ public final class DiffInfo {
         }
 
         this.changeRelation = jsonObject.getString("type2");
+        this.description = jsonObject.getString("description");
 
         Location location = new Location();
         String range = jsonObject.getString("range");

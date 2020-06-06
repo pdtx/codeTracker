@@ -154,6 +154,9 @@ public class TrackerCore {
             //处理rename情况 待完善
             for (String str: map.get("RENAME")) {
                 String[] paths = str.split(":");
+                if (FileFilter.javaFilenameFilter(paths[0]) || FileFilter.javaFilenameFilter(paths[1])) {
+                    continue;
+                }
                 FileNode preRenameRoot = preRenameMap.get(paths[0]);
                 FileNode curRenameRoot = curRenameMap.get(paths[1]);
                 dealWithRename(preRenameRoot,curRenameRoot,proxyDao,preCommonInfo);

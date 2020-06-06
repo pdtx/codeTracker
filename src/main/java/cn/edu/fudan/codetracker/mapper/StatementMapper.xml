@@ -58,7 +58,8 @@
         branch,
         body,
         version,
-        isLogic
+        isLogic,
+        description
         )
         VALUES
         <foreach collection="statementNodes" item="item" index="index" separator=",">
@@ -78,7 +79,8 @@
             #{commonInfo.branch},
             #{item.body},
             #{item.version},
-            #{item.isLogic}
+            #{item.isLogic},
+            #{item.description}
             )
         </foreach>
     </insert>
