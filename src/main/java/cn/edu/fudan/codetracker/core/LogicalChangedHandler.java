@@ -116,24 +116,41 @@ public class LogicalChangedHandler implements NodeMapping {
             if (pre == null && cur == null) {
                 continue;
             } else if (pre == null) {
+                if (cur instanceof StatementNode) {
+                    ((StatementNode) cur).setDescription(diffInfo.getDescription());
+                }
+                if (cur instanceof MethodNode) {
+                    MethodNode methodNode = (MethodNode)cur;
+                    methodNode.setDiff(diffInfo.getJsonObject());
+                }
                 addHandler.subTreeMapping(null,cur,commonInfo,proxyDao);
                 BaseNode tmp = cur;
                 backTracing(tmp);
                 curSet.remove(cur);
             } else if (cur == null) {
+                if (pre instanceof StatementNode) {
+                    ((StatementNode) pre).setDescription(diffInfo.getDescription());
+                }
+                if (pre instanceof MethodNode) {
+                    MethodNode methodNode = (MethodNode)pre;
+                    methodNode.setDiff(diffInfo.getJsonObject());
+                }
                 deleteHandler.subTreeMapping(pre,null,commonInfo,proxyDao);
                 BaseNode tmp = pre;
                 backTracing(tmp);
                 preSet.remove(pre);
             } else {
+                if (cur instanceof StatementNode) {
+                    ((StatementNode) cur).setDescription(diffInfo.getDescription());
+                }
+                if (cur instanceof MethodNode) {
+                    MethodNode methodNode = (MethodNode)cur;
+                    methodNode.setDiff(diffInfo.getJsonObject());
+                }
                 BaseNode tmp;
                 switch (diffInfo.getChangeRelation()) {
                     case "Change":
                         cur.setChangeStatus(BaseNode.ChangeStatus.SELF_CHANGE);
-                        if (cur instanceof MethodNode) {
-                            MethodNode methodNode = (MethodNode)cur;
-                            methodNode.setDiff(diffInfo.getJsonObject());
-                        }
                         tmp = cur;
                         backTracing(tmp);
                         break;
