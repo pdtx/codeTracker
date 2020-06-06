@@ -1,11 +1,7 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-09-25 20:41
- **/
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.component.RestInterfaceManager;
+import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.core.*;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
@@ -16,7 +12,6 @@ import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
 import cn.edu.fudan.codetracker.util.DirExplorer;
-import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import cn.edu.fudan.codetracker.util.cldiff.ClDiffHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -30,16 +25,17 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * description 扫描服务
+ * @author fancying
+ * create 2019-09-25 20:41
+ **/
 @Slf4j
 @Service
-public class ScanServiceImpl implements ScanService {
+public class ScanServiceImpl implements ScanService, PublicConstants {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static ThreadLocal<String> repoPath = new ThreadLocal<>();
 
     private PackageDao packageDao;
@@ -99,12 +95,12 @@ public class ScanServiceImpl implements ScanService {
     /**
      * FIXME need @Transactional
      */
-    private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isInit) {
+    private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate) {
         int num = 0;
         try {
             for (String commit : commitList) {
                 log.info("start commit：{} {}" , ++num, commit);
-                if (isInit) {
+                if (isUpdate) {
                     scan(repoUuid , commit, branch, jGitHelper, repoPath);
                 } else {
                     jGitHelper.checkout(branch);
@@ -116,7 +112,7 @@ public class ScanServiceImpl implements ScanService {
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
                     travelAndSetChangeRelation(javaTree.getPackageInfos());
                     saveData(javaTree,commonInfo);
-                    isInit = true;
+                    isUpdate = true;
                 }
                 repoDao.updateLatestCommit(repoUuid, branch, commit);
             }
@@ -169,8 +165,7 @@ public class ScanServiceImpl implements ScanService {
             return;
         }
 
-        for (String s : fileMap.keySet()) {
-            String preCommit = s;
+        for (String preCommit : fileMap.keySet()) {
             CommonInfo preCommonInfo = constructCommonInfo(repoUuid,branch,preCommit,null,jGitHelper);
             CommonInfo curCommonInfo = constructCommonInfo(repoUuid,branch,commitId,preCommit,jGitHelper);
             Map<String, List<String>> map = fileMap.get(preCommit);
@@ -208,8 +203,6 @@ public class ScanServiceImpl implements ScanService {
             TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
             //Java入库
             extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
-
-
         }
 
     }
@@ -247,109 +240,92 @@ public class ScanServiceImpl implements ScanService {
             parentCommit = commit;
         }
         jGitHelper.checkout(commit);
-        try{
-            Date commitDate = FORMATTER.parse(jGitHelper.getCommitTime(commit));
-            String committer = jGitHelper.getAuthorName(commit);
-            String commitMessage = jGitHelper.getMess(commit);
-            // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
-            CommonInfo commonInfo = new CommonInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, parentCommit);
-            return commonInfo;
-        }catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
+
+        Date commitDate = getDateByString(jGitHelper.getCommitTime(commit));
+        String committer = jGitHelper.getAuthorName(commit);
+        String commitMessage = jGitHelper.getMess(commit);
+        // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
+        return new CommonInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, parentCommit);
     }
 
 
     private void extractAndSaveInfo(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo commonInfo) {
         //抽取需要入库的数据
-        Map<String,Set<PackageNode>> packageMap = new HashMap<>();
-        packageMap.put("ADD",new HashSet<>());
-        packageMap.put("CHANGE",new HashSet<>());
-        packageMap.put("DELETE",new HashSet<>());
-        Map<String,Set<FileNode>> fileMap = new HashMap<>();
-        fileMap.put("ADD",new HashSet<>());
-        fileMap.put("CHANGE",new HashSet<>());
-        fileMap.put("DELETE",new HashSet<>());
-        Map<String,Set<ClassNode>> classMap = new HashMap<>();
-        classMap.put("ADD",new HashSet<>());
-        classMap.put("CHANGE",new HashSet<>());
-        classMap.put("DELETE",new HashSet<>());
-        Map<String,Set<MethodNode>> methodMap = new HashMap<>();
-        methodMap.put("ADD",new HashSet<>());
-        methodMap.put("CHANGE",new HashSet<>());
-        methodMap.put("DELETE",new HashSet<>());
-        Map<String,Set<FieldNode>> fieldMap = new HashMap<>();
-        fieldMap.put("ADD",new HashSet<>());
-        fieldMap.put("CHANGE",new HashSet<>());
-        fieldMap.put("DELETE",new HashSet<>());
-        Map<String,Set<StatementNode>> statementMap = new HashMap<>();
-        statementMap.put("ADD",new HashSet<>());
-        statementMap.put("CHANGE",new HashSet<>());
-        statementMap.put("DELETE",new HashSet<>());
+        Map<String,Set<PackageNode>> packageMap = initNodeMap();
+        Map<String,Set<FileNode>> fileMap = initNodeMap();
+        Map<String,Set<ClassNode>> classMap = initNodeMap();
+        Map<String,Set<MethodNode>> methodMap = initNodeMap();
+        Map<String,Set<FieldNode>> fieldMap = initNodeMap();
+        Map<String,Set<StatementNode>> statementMap = initNodeMap();
 
         if (curRepoInfo != null) {
             //curTree上搜索add change情况
-            for (PackageNode packageNode : curRepoInfo.getPackageInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(packageNode.getChangeStatus()) && packageNode.getVersion() == 1) {
-                    packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(packageNode.getChangeStatus())) {
-                    packageMap.get("ADD").add(packageNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(packageNode.getChangeStatus())) {
-                    packageMap.get("CHANGE").add(packageNode);
-                }
-            }
-            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(fileNode.getChangeStatus()) && fileNode.getVersion() == 1) {
-                    fileNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(fileNode.getChangeStatus())) {
-                    fileMap.get("ADD").add(fileNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fileNode.getChangeStatus())) {
-                    fileMap.get("CHANGE").add(fileNode);
-                }
-            }
-            for (ClassNode classNode : curRepoInfo.getClassInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(classNode.getChangeStatus()) && classNode.getVersion() == 1) {
-                    classNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
-                    classMap.get("ADD").add(classNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
-                    classMap.get("CHANGE").add(classNode);
-                }
-            }
-            for (MethodNode methodNode : curRepoInfo.getMethodInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(methodNode.getChangeStatus()) && methodNode.getVersion() == 1) {
-                    methodNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(methodNode.getChangeStatus())) {
-                    methodMap.get("ADD").add(methodNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(methodNode.getChangeStatus())) {
-                    methodMap.get("CHANGE").add(methodNode);
-                }
-            }
-            for (FieldNode fieldNode : curRepoInfo.getFieldInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(fieldNode.getChangeStatus()) && fieldNode.getVersion() == 1) {
-                    fieldNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus())) {
-                    fieldMap.get("ADD").add(fieldNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fieldNode.getChangeStatus())) {
-                    fieldMap.get("CHANGE").add(fieldNode);
-                }
-            }
-            for (StatementNode statementNode : curRepoInfo.getStatementInfos()) {
-                if (BaseNode.ChangeStatus.CHANGE.equals(statementNode.getChangeStatus()) && statementNode.getVersion() == 1) {
-                    statementNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                }
-                if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus())) {
-                    statementMap.get("ADD").add(statementNode);
-                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(statementNode.getChangeStatus())) {
-                    statementMap.get("CHANGE").add(statementNode);
-                }
-            }
+            handleNode(packageMap, curRepoInfo.getPackageInfos());
+            handleNode(fileMap, curRepoInfo.getFileInfos());
+            handleNode(fileMap, curRepoInfo.getFileInfos());
+            handleNode(methodMap, curRepoInfo.getMethodInfos());
+            handleNode(fieldMap, curRepoInfo.getFieldInfos());
+            handleNode(statementMap, curRepoInfo.getStatementInfos());
+//            for (PackageNode packageNode : curRepoInfo.getPackageInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(packageNode.getChangeStatus()) && packageNode.getVersion() == 1) {
+//                    packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(packageNode.getChangeStatus())) {
+//                    packageMap.get("ADD").add(packageNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(packageNode.getChangeStatus())) {
+//                    packageMap.get("CHANGE").add(packageNode);
+//                }
+//            }
+//            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(fileNode.getChangeStatus()) && fileNode.getVersion() == 1) {
+//                    fileNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(fileNode.getChangeStatus())) {
+//                    fileMap.get("ADD").add(fileNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fileNode.getChangeStatus())) {
+//                    fileMap.get("CHANGE").add(fileNode);
+//                }
+//            }
+//            for (ClassNode classNode : curRepoInfo.getClassInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(classNode.getChangeStatus()) && classNode.getVersion() == 1) {
+//                    classNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
+//                    classMap.get("ADD").add(classNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
+//                    classMap.get("CHANGE").add(classNode);
+//                }
+//            }
+//            for (MethodNode methodNode : curRepoInfo.getMethodInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(methodNode.getChangeStatus()) && methodNode.getVersion() == 1) {
+//                    methodNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(methodNode.getChangeStatus())) {
+//                    methodMap.get("ADD").add(methodNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(methodNode.getChangeStatus())) {
+//                    methodMap.get("CHANGE").add(methodNode);
+//                }
+//            }
+//            for (FieldNode fieldNode : curRepoInfo.getFieldInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(fieldNode.getChangeStatus()) && fieldNode.getVersion() == 1) {
+//                    fieldNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus())) {
+//                    fieldMap.get("ADD").add(fieldNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fieldNode.getChangeStatus())) {
+//                    fieldMap.get("CHANGE").add(fieldNode);
+//                }
+//            }
+//            for (StatementNode statementNode : curRepoInfo.getStatementInfos()) {
+//                if (BaseNode.ChangeStatus.CHANGE.equals(statementNode.getChangeStatus()) && statementNode.getVersion() == 1) {
+//                    statementNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//                }
+//                if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus())) {
+//                    statementMap.get("ADD").add(statementNode);
+//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(statementNode.getChangeStatus())) {
+//                    statementMap.get("CHANGE").add(statementNode);
+//                }
+//            }
         }
 
         if (preRepoInfo != null) {
@@ -360,34 +336,70 @@ public class ScanServiceImpl implements ScanService {
                     packageMap.get("CHANGE").add(packageNode);
                 }
             }
-            for (FileNode fileNode: preRepoInfo.getFileInfos()) {
-                if (BaseNode.ChangeStatus.DELETE.equals(fileNode.getChangeStatus())) {
-                    fileMap.get("DELETE").add(fileNode);
-                }
-            }
-            for (ClassNode classNode: preRepoInfo.getClassInfos()) {
-                if (BaseNode.ChangeStatus.DELETE.equals(classNode.getChangeStatus())) {
-                    classMap.get("DELETE").add(classNode);
-                }
-            }
-            for (MethodNode methodNode: preRepoInfo.getMethodInfos()) {
-                if (BaseNode.ChangeStatus.DELETE.equals(methodNode.getChangeStatus())) {
-                    methodMap.get("DELETE").add(methodNode);
-                }
-            }
-            for (FieldNode fieldNode: preRepoInfo.getFieldInfos()) {
-                if (BaseNode.ChangeStatus.DELETE.equals(fieldNode.getChangeStatus())) {
-                    fieldMap.get("DELETE").add(fieldNode);
-                }
-            }
-            for (StatementNode statementNode: preRepoInfo.getStatementInfos()) {
-                if (BaseNode.ChangeStatus.DELETE.equals(statementNode.getChangeStatus())) {
-                    statementMap.get("DELETE").add(statementNode);
-                }
-            }
+            handleNodeDelete(fileMap, preRepoInfo.getFileInfos());
+            handleNodeDelete(classMap, preRepoInfo.getClassInfos());
+            handleNodeDelete(methodMap, preRepoInfo.getMethodInfos());
+            handleNodeDelete(fieldMap, preRepoInfo.getFieldInfos());
+            handleNodeDelete(statementMap, preRepoInfo.getStatementInfos());
+
+//            for (FileNode fileNode: preRepoInfo.getFileInfos()) {
+//                if (BaseNode.ChangeStatus.DELETE.equals(fileNode.getChangeStatus())) {
+//                    fileMap.get("DELETE").add(fileNode);
+//                }
+//            }
+//            for (ClassNode classNode: preRepoInfo.getClassInfos()) {
+//                if (BaseNode.ChangeStatus.DELETE.equals(classNode.getChangeStatus())) {
+//                    classMap.get("DELETE").add(classNode);
+//                }
+//            }
+//            for (MethodNode methodNode: preRepoInfo.getMethodInfos()) {
+//                if (BaseNode.ChangeStatus.DELETE.equals(methodNode.getChangeStatus())) {
+//                    methodMap.get("DELETE").add(methodNode);
+//                }
+//            }
+//            for (FieldNode fieldNode: preRepoInfo.getFieldInfos()) {
+//                if (BaseNode.ChangeStatus.DELETE.equals(fieldNode.getChangeStatus())) {
+//                    fieldMap.get("DELETE").add(fieldNode);
+//                }
+//            }
+//            for (StatementNode statementNode: preRepoInfo.getStatementInfos()) {
+//                if (BaseNode.ChangeStatus.DELETE.equals(statementNode.getChangeStatus())) {
+//                    statementMap.get("DELETE").add(statementNode);
+//                }
+//            }
         }
 
         save(packageMap,fileMap,classMap,methodMap,fieldMap,statementMap,commonInfo);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void handleNodeDelete(Map<String, Set<T>> map, List<? extends BaseNode> baseNodes) {
+        baseNodes.stream().
+                filter(t -> BaseNode.ChangeStatus.DELETE.equals(t.getChangeStatus())).
+                forEach(t -> map.get("DELETE").add((T)t));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void handleNode(Map<String, Set<T>> nodeMap, List<? extends BaseNode> packageNodeList) {
+        for (BaseNode node : packageNodeList) {
+            if (BaseNode.ChangeStatus.CHANGE.equals(node.getChangeStatus()) && node.getVersion() == 1) {
+                node.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            }
+            T t = (T)node;
+            if (BaseNode.ChangeStatus.ADD.equals(node.getChangeStatus())) {
+                nodeMap.get("ADD").add(t);
+            } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(node.getChangeStatus())) {
+                nodeMap.get("CHANGE").add(t);
+            }
+        }
+    }
+
+    private <T>  Map<String,Set<T>> initNodeMap() {
+        Map<String,Set<T>> result = new HashMap<>(4);
+        result.put("ADD",new HashSet<>(128));
+        result.put("CHANGE",new HashSet<>(128));
+        result.put("DELETE",new HashSet<>(128));
+        return result;
     }
 
     private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
@@ -472,7 +484,9 @@ public class ScanServiceImpl implements ScanService {
         return pathList.get(0);
     }
 
-    //将文件相对路径转成绝对路径
+    /**
+     *将文件相对路径转成绝对路径
+     */
     private List<String> localizeFilePath(String repoPath, List<String> filePath) {
         for (int i = 0; i < filePath.size() ; i++) {
             filePath.set(i, repoPath + "/" + filePath.get(i));
@@ -526,7 +540,7 @@ public class ScanServiceImpl implements ScanService {
 
     private String getRepoPathByUuid(String repoUuid) {
         if ("dubbo".equals(repoUuid)) {
-            return "E:\\Lab\\project\\dubbo";
+            return "E:\\Lab\\scanProject\\dubbo";
         }
 
         if("iec-wepm-develop".equals(repoUuid)) {
