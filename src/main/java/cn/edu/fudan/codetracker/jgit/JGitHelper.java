@@ -387,7 +387,7 @@ public class JGitHelper implements Closeable {
 //        jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.30");
 //        String s[] = jGitHelper.getCommitParents(commitId);
 //        int m = jGitHelper.mergeJudgment(commitId);
-        Map<String, List<DiffEntry>> map = jGitHelper.getConflictDiffEntryList("f0f090c7541ca09dbf0d132a511591fdb57ecb23");
+        Map<String, List<DiffEntry>> map = jGitHelper.getConflictDiffEntryList("392930be1e53fe1b92a66431c64ae102afa1be3c");
         System.out.println(map);
 //        String t = jGitHelper.getCommitTime("f61e34233aa536cf5e698b502099e12d1caf77e4");
 //        for (String s : jGitHelper.getCommitListByBranchAndDuration("zhonghui20191012", "2019.10.12-2019.12.16")) {
