@@ -15,6 +15,7 @@ import cn.edu.fudan.codetracker.util.DirExplorer;
 import cn.edu.fudan.codetracker.util.cldiff.ClDiffHelper;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -151,8 +152,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             jGitHelper = new JGitHelper(repoPath);
         }
         //通过jgit拿到file列表
-        jGitHelper.checkout(branch);
         jGitHelper.checkout(commitId);
+        // key parentCommit value Map <key ADD CHANGE RENAME DELETE value >
         Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
 
         //CLDiff输出路径
@@ -266,66 +267,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             handleNode(methodMap, curRepoInfo.getMethodInfos());
             handleNode(fieldMap, curRepoInfo.getFieldInfos());
             handleNode(statementMap, curRepoInfo.getStatementInfos());
-//            for (PackageNode packageNode : curRepoInfo.getPackageInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(packageNode.getChangeStatus()) && packageNode.getVersion() == 1) {
-//                    packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(packageNode.getChangeStatus())) {
-//                    packageMap.get("ADD").add(packageNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(packageNode.getChangeStatus())) {
-//                    packageMap.get("CHANGE").add(packageNode);
-//                }
-//            }
-//            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(fileNode.getChangeStatus()) && fileNode.getVersion() == 1) {
-//                    fileNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(fileNode.getChangeStatus())) {
-//                    fileMap.get("ADD").add(fileNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fileNode.getChangeStatus())) {
-//                    fileMap.get("CHANGE").add(fileNode);
-//                }
-//            }
-//            for (ClassNode classNode : curRepoInfo.getClassInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(classNode.getChangeStatus()) && classNode.getVersion() == 1) {
-//                    classNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
-//                    classMap.get("ADD").add(classNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
-//                    classMap.get("CHANGE").add(classNode);
-//                }
-//            }
-//            for (MethodNode methodNode : curRepoInfo.getMethodInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(methodNode.getChangeStatus()) && methodNode.getVersion() == 1) {
-//                    methodNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(methodNode.getChangeStatus())) {
-//                    methodMap.get("ADD").add(methodNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(methodNode.getChangeStatus())) {
-//                    methodMap.get("CHANGE").add(methodNode);
-//                }
-//            }
-//            for (FieldNode fieldNode : curRepoInfo.getFieldInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(fieldNode.getChangeStatus()) && fieldNode.getVersion() == 1) {
-//                    fieldNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus())) {
-//                    fieldMap.get("ADD").add(fieldNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(fieldNode.getChangeStatus())) {
-//                    fieldMap.get("CHANGE").add(fieldNode);
-//                }
-//            }
-//            for (StatementNode statementNode : curRepoInfo.getStatementInfos()) {
-//                if (BaseNode.ChangeStatus.CHANGE.equals(statementNode.getChangeStatus()) && statementNode.getVersion() == 1) {
-//                    statementNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-//                }
-//                if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus())) {
-//                    statementMap.get("ADD").add(statementNode);
-//                } else if (!BaseNode.ChangeStatus.UNCHANGED.equals(statementNode.getChangeStatus())) {
-//                    statementMap.get("CHANGE").add(statementNode);
-//                }
-//            }
         }
 
         if (preRepoInfo != null) {
@@ -341,32 +282,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             handleNodeDelete(methodMap, preRepoInfo.getMethodInfos());
             handleNodeDelete(fieldMap, preRepoInfo.getFieldInfos());
             handleNodeDelete(statementMap, preRepoInfo.getStatementInfos());
-
-//            for (FileNode fileNode: preRepoInfo.getFileInfos()) {
-//                if (BaseNode.ChangeStatus.DELETE.equals(fileNode.getChangeStatus())) {
-//                    fileMap.get("DELETE").add(fileNode);
-//                }
-//            }
-//            for (ClassNode classNode: preRepoInfo.getClassInfos()) {
-//                if (BaseNode.ChangeStatus.DELETE.equals(classNode.getChangeStatus())) {
-//                    classMap.get("DELETE").add(classNode);
-//                }
-//            }
-//            for (MethodNode methodNode: preRepoInfo.getMethodInfos()) {
-//                if (BaseNode.ChangeStatus.DELETE.equals(methodNode.getChangeStatus())) {
-//                    methodMap.get("DELETE").add(methodNode);
-//                }
-//            }
-//            for (FieldNode fieldNode: preRepoInfo.getFieldInfos()) {
-//                if (BaseNode.ChangeStatus.DELETE.equals(fieldNode.getChangeStatus())) {
-//                    fieldMap.get("DELETE").add(fieldNode);
-//                }
-//            }
-//            for (StatementNode statementNode: preRepoInfo.getStatementInfos()) {
-//                if (BaseNode.ChangeStatus.DELETE.equals(statementNode.getChangeStatus())) {
-//                    statementMap.get("DELETE").add(statementNode);
-//                }
-//            }
         }
 
         save(packageMap,fileMap,classMap,methodMap,fieldMap,statementMap,commonInfo);
@@ -494,31 +409,26 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         return filePath;
     }
 
+    @SneakyThrows
     private void saveData(JavaTree repoInfo,CommonInfo commonInfo) {
-        try {
+        packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
+        packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
 
-            packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
-            packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
+        fileDao.insertFileInfoList(repoInfo.getFileInfos(),commonInfo);
+        fileDao.insertRawFileInfoList(repoInfo.getFileInfos(),commonInfo);
 
-            fileDao.insertFileInfoList(repoInfo.getFileInfos(),commonInfo);
-            fileDao.insertRawFileInfoList(repoInfo.getFileInfos(),commonInfo);
+        classDao.insertClassInfoList(repoInfo.getClassInfos(),commonInfo);
+        classDao.insertRawClassInfoList(repoInfo.getClassInfos(),commonInfo);
 
-            classDao.insertClassInfoList(repoInfo.getClassInfos(),commonInfo);
-            classDao.insertRawClassInfoList(repoInfo.getClassInfos(),commonInfo);
+        methodDao.insertMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
+        methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
 
-            methodDao.insertMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
-            methodDao.insertRawMethodInfoList(repoInfo.getMethodInfos(),commonInfo);
+        fieldDao.insertFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
+        fieldDao.insertRawFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
 
-            fieldDao.insertFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
-            fieldDao.insertRawFieldInfoList(repoInfo.getFieldInfos(),commonInfo);
-
-            statementDao.insertStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
-            statementDao.insertRawStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
-            statementDao.insertStatementRelationList(repoInfo.getStatementInfos(),commonInfo);
-
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        statementDao.insertStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
+        statementDao.insertRawStatementInfoList(repoInfo.getStatementInfos(),commonInfo);
+        statementDao.insertStatementRelationList(repoInfo.getStatementInfos(),commonInfo);
     }
 
     /**

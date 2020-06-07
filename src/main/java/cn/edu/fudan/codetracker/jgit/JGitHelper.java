@@ -245,7 +245,7 @@ public class JGitHelper implements Closeable {
     }
 
     public Map<String, Map<String,List<String>>> getFileList(String commit) {
-        Map<String, Map<String,List<String>>> map = new HashMap<>();
+        Map<String, Map<String,List<String>>> map = new HashMap<>(4);
         Map<String, List<DiffEntry>> res = getMappedFileList(commit);
         for (String preCommit: res.keySet()) {
             Map<String,List<String>> tmp = new HashMap<>(8);

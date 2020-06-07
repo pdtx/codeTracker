@@ -18,6 +18,8 @@ public interface NodeMapping {
      * 两个节点树的映射
      * @param preRoot 前一个版本的根结点
      * @param curRoot 当前版本的根节点
+     * @param commonInfo 公共信息
+     * @param proxyDao  提供入库
      */
     void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao);
 
@@ -68,6 +70,9 @@ public interface NodeMapping {
         }
     }
 
+    /**
+     *
+     */
     static TrackerInfo getTrackerInfo(BaseNode baseNode,ProxyDao proxyDao,CommonInfo commonInfo) {
         TrackerInfo trackerInfo = null;
         if (baseNode instanceof FileNode) {

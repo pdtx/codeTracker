@@ -18,13 +18,12 @@ public final class FileFilter {
     public  static boolean javaFilenameFilter(String path) {
         String[] strs = path.split("/");
         String str = strs[strs.length-1];
-        boolean isContinue = !str.toLowerCase().endsWith(".java") ||
+        return  !str.toLowerCase().endsWith(".java") ||
                 path.toLowerCase().contains("/test/") ||
                 str.toLowerCase().endsWith("test.java") ||
                 str.toLowerCase().endsWith("tests.java") ||
                 str.toLowerCase().startsWith("test") ||
                 str.toLowerCase().endsWith("enum.java") ||
                 path.contains(JPMS);
-        return isContinue;
     }
 }

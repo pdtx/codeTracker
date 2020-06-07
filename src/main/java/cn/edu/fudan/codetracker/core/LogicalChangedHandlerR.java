@@ -19,26 +19,20 @@ import java.util.*;
  * create: 2020-03-20 19:27
  **/
 @Slf4j
-public class LogicalChangedHandler implements NodeMapping {
-
-    public void setDiffPath(String diffPath) {
-        this.diffPath = diffPath;
-    }
-
-    private String diffPath;
+public class LogicalChangedHandlerR implements NodeMapping {
 
     private Map<String, List<DiffInfo>> map;
 
     private CommonInfo commonInfo;
 
-    private LogicalChangedHandler(){}
+    private LogicalChangedHandlerR(){}
 
-    static LogicalChangedHandler getInstance(){
+    static LogicalChangedHandlerR getInstance(){
         return MappingGeneratorHolder.LOGICAL_CHANGED_HANDLER;
     }
 
     private static final class MappingGeneratorHolder {
-        private static final LogicalChangedHandler LOGICAL_CHANGED_HANDLER = new LogicalChangedHandler();
+        private static final LogicalChangedHandlerR LOGICAL_CHANGED_HANDLER = new LogicalChangedHandlerR();
     }
 
     private AddHandler addHandler = AddHandler.getInstance();
@@ -49,7 +43,7 @@ public class LogicalChangedHandler implements NodeMapping {
     @Override
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         this.commonInfo = commonInfo;
-        extractFromDiff();
+        //extractFromDiff();
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
             curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
             NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
@@ -284,7 +278,7 @@ public class LogicalChangedHandler implements NodeMapping {
     /**
      * todo 提取出来 解耦操作
      */
-    public void extractFromDiff() {
+    public void extractFromDiff(String diffPath) {
         map = new HashMap<>(8);
         map.put("class", new ArrayList<>());
         map.put("method", new ArrayList<>());
@@ -312,7 +306,4 @@ public class LogicalChangedHandler implements NodeMapping {
     }
 
 
-    public void setMap(Map<String, List<DiffInfo>> map) {
-        this.map = map;
-    }
 }

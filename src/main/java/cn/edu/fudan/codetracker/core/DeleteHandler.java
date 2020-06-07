@@ -44,43 +44,40 @@ public class DeleteHandler implements NodeMapping {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
                 NodeMapping.setNodeMapped(preRoot,null,proxyDao,commonInfo);
-                if (baseNode.getChildren() != null) {
-                    for (BaseNode child : baseNode.getChildren()) {
+                AddHandler.pushChildrenInto(baseNode, stack);
+            }
+        }
+
+        // todo 处理当前节点 不处理子节点
+        //singleNodeAddMapping(preRoot, curRoot, commonInfo, proxyDao);
+        curRoot.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+        NodeMapping.setNodeMapped(preRoot, null, proxyDao, commonInfo);
+    }
+
+    private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+        Stack<BaseNode> stack = new Stack<>();
+        stack.push(preRoot);
+        while (!stack.empty()) {
+            BaseNode baseNode = stack.pop();
+            baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+            NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
+            if (baseNode.getChildren() != null) {
+                for (BaseNode child : baseNode.getChildren()) {
+                    if (isDelete(child)) {
                         stack.push(child);
-                    }
-                }
-                if (baseNode instanceof ClassNode) {
-                    ClassNode classNode = (ClassNode)baseNode;
-                    if (classNode.getFieldNodes() != null) {
-                        for (BaseNode field : classNode.getFieldNodes()) {
-                            stack.push(field);
-                        }
+                    } else {
+                        dealWithNotDelete(child);
                     }
                 }
             }
-        } else {
-            while (!stack.empty()) {
-                BaseNode baseNode = stack.pop();
-                baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-                NodeMapping.setNodeMapped(preRoot,null,proxyDao,commonInfo);
-                if (baseNode.getChildren() != null) {
-                    for (BaseNode child : baseNode.getChildren()) {
-                        if (isDelete(child)) {
-                            stack.push(child);
+            if (baseNode instanceof ClassNode) {
+                ClassNode classNode = (ClassNode)baseNode;
+                if (classNode.getFieldNodes() != null) {
+                    for (BaseNode field : classNode.getFieldNodes()) {
+                        if (isDelete(field)) {
+                            stack.push(field);
                         } else {
-                            dealWithNotDelete(child);
-                        }
-                    }
-                }
-                if (baseNode instanceof ClassNode) {
-                    ClassNode classNode = (ClassNode)baseNode;
-                    if (classNode.getFieldNodes() != null) {
-                        for (BaseNode field : classNode.getFieldNodes()) {
-                            if (isDelete(field)) {
-                                stack.push(field);
-                            } else {
-                                dealWithNotDelete(field);
-                            }
+                            dealWithNotDelete(field);
                         }
                     }
                 }

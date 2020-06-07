@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.core;
 
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.soap.Node;
@@ -9,11 +10,12 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 /**
- * description:
+ * description: 匹配物理上的代码变更
  *
  * @author fancying
  * create: 2020-03-21 20:32
  **/
+@Slf4j
 public class PhysicalChangedHandler implements NodeMapping{
 
     private PhysicalChangedHandler() {}
@@ -27,8 +29,18 @@ public class PhysicalChangedHandler implements NodeMapping{
     }
     @Override
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+        if (preRoot == null || curRoot == null) {
+            log.error("root node  is null");
+            return;
+        }
+
+        if (! preRoot.getClass().equals(curRoot.getClass())) {
+            log.error("class type is inconsistent");
+            return;
+        }
+
         //如果为文件节点
-        if(preRoot instanceof FileNode && curRoot instanceof FileNode) {
+        if(preRoot instanceof FileNode) {
             Queue<BaseNode> preQueue = new ArrayDeque<>();
             Queue<BaseNode> curQueue = new ArrayDeque<>();
             preQueue.offer(preRoot);
@@ -40,60 +52,48 @@ public class PhysicalChangedHandler implements NodeMapping{
                 if (preNode instanceof MethodNode && curNode instanceof MethodNode) {
                     MethodNode preMethod = (MethodNode)preNode;
                     MethodNode curMethod = (MethodNode)curNode;
-                    if (preMethod.getBegin() != curMethod.getBegin() || preMethod.getEnd() != curMethod.getEnd()) {
-                        if (preMethod.getContent().equals(curMethod.getContent())) {
-                            curMethod.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
-                        } else {
-                            curMethod.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
-                        }
-                    } else {
-                        curMethod.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
+                    boolean isSameLine = preMethod.getBegin() == curMethod.getBegin() && preMethod.getEnd() == curMethod.getEnd();
+                    boolean isSameContent = preMethod.getContent().equals(curMethod.getContent());
+                    if (!isSameLine || !isSameContent) {
+                        BaseNode.ChangeStatus c = isSameContent ?  BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
+                        curMethod.setChangeStatus(c);
                     }
-                } else if (preNode instanceof StatementNode && curNode instanceof StatementNode) {
+                }
+                if (preNode instanceof StatementNode && curNode instanceof StatementNode) {
                     StatementNode preStatement = (StatementNode)preNode;
                     StatementNode curStatement = (StatementNode)curNode;
-                    if (preStatement.getBegin() != curStatement.getBegin() || preStatement.getEnd() != curStatement.getEnd()) {
+                    boolean isSameLine = preStatement.getBegin() == curStatement.getBegin() && preStatement.getEnd() == curStatement.getEnd();
+                    boolean isSameContent = preStatement.getBody().equals(curStatement.getBody());
+                    if (!isSameLine || !isSameContent) {
+                        // fixme curStatement.setIsLogic(0) ??
                         curStatement.setIsLogic(0);
-                        if (preStatement.getBody().equals(curStatement.getBody())) {
-                            curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
-                        } else {
-                            curStatement.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
-                        }
-                    } else {
-                        curStatement.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
+                        BaseNode.ChangeStatus c = isSameContent ?  BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
+                        curStatement.setChangeStatus(c);
                     }
-                } else {
-                    curNode.setChangeStatus(BaseNode.ChangeStatus.UNCHANGED);
                 }
-                NodeMapping.setNodeMapped(preNode,curNode,proxyDao,commonInfo);
-                for (BaseNode baseNode : preNode.getChildren()) {
-                    preQueue.offer(baseNode);
-                }
-                for (BaseNode baseNode : curNode.getChildren()) {
-                    curQueue.offer(baseNode);
-                }
+                // fixme 物理上的改变是否需要 version + 1 ？
+                NodeMapping.setNodeMapped(preNode, curNode, proxyDao, commonInfo);
+                preNode.getChildren().forEach(preQueue::offer);
+                curNode.getChildren().forEach(curQueue::offer);
             }
-        } else if ((preRoot instanceof MethodNode && curRoot instanceof MethodNode) || (curRoot instanceof StatementNode && curRoot instanceof StatementNode)) {
-            if (preRoot instanceof MethodNode && curRoot instanceof MethodNode) {
+            return;
+        }
+        // fixme 不递归遍历其他的节点是否是逻辑上的改变？
+        if (preRoot instanceof MethodNode  || preRoot instanceof StatementNode) {
+            if (preRoot instanceof MethodNode) {
                 MethodNode curMethod = (MethodNode)curRoot;
                 MethodNode preMethod = (MethodNode)preRoot;
-                if (curMethod.getContent().equals(preMethod.getContent())) {
-                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
-                } else {
-                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
-                }
+                BaseNode.ChangeStatus changeStatus = curMethod.getContent().equals(preMethod.getContent()) ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
+                curRoot.setChangeStatus(changeStatus);
             }
-            if (curRoot instanceof StatementNode && curRoot instanceof StatementNode) {
+            if (preRoot instanceof StatementNode) {
                 StatementNode curStatement = (StatementNode)curRoot;
                 StatementNode preStatement = (StatementNode)preRoot;
-                if (preStatement.getBody().equals(curStatement.getBody())) {
-                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_LINE);
-                } else {
-                    curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE_RECORD);
-                }
+                BaseNode.ChangeStatus changeStatus = curStatement.getBody().equals(preStatement.getBody()) ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
+                curRoot.setChangeStatus(changeStatus);
                 curStatement.setIsLogic(0);
             }
-            NodeMapping.setNodeMapped(preRoot,curRoot,proxyDao,commonInfo);
+            NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
         }
     }
 }

@@ -73,7 +73,7 @@ public class StatisticsController {
     /**
      * 删除操作
      */
-    @GetMapping(value = {"/delete"})
+    @DeleteMapping(value = {"/codetracker"})
     public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
         try{
             statisticsService.delete(repoUuid, branch);

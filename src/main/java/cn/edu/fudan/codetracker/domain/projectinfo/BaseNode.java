@@ -49,7 +49,7 @@ public  class BaseNode {
      */
     public enum ChangeStatus {
 
-        // 增加、删除、自己改变、移动、因 子节点的改变而改变、非逻辑上改变、无变化
+        // 增加、删除、自己改变、移动、因 子节点的改变而改变、非逻辑上改变内容 （如增加注释、空格等）、只是改变行号、无变化
         ADD(1),
         DELETE(1),
         SELF_CHANGE(1),

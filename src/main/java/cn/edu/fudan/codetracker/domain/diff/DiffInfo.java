@@ -10,9 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Set;
 
 
+/**
+ * @author 汤圆
+ */
 @Slf4j
 @Getter
-@Setter
 public final class DiffInfo {
     private String type;
     private Location location;
@@ -20,11 +22,9 @@ public final class DiffInfo {
     private JSONObject jsonObject;
     private String description;
 
-    public DiffInfo() {
-
-    }
-
-    //初始化from ClDiff
+    /**
+     * 初始化from ClDiff
+     */
     public DiffInfo(JSONObject jsonObject) {
         this.jsonObject = jsonObject;
         parseDiffInfoFromClDiff(jsonObject);
