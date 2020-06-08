@@ -1,11 +1,6 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-09-26 18:47
- **/
+
 package cn.edu.fudan.codetracker.dao;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.ClassInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
@@ -16,7 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
+/**
+ * @author fancying
+ * create: 2019-09-26 18:47
+ **/
 @Repository
 public class ClassDao {
     private ClassMapper classMapper;

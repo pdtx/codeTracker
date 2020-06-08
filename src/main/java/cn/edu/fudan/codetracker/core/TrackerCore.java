@@ -3,18 +3,16 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.diff.CldiffAdapter;
+import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.FileFilter;
-import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-
-import static org.springframework.data.util.CastUtils.cast;
 
 /**
  * description: 每个项目一个实例
@@ -62,108 +60,118 @@ public class TrackerCore {
     }
 
     public static void mapping(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
-        Set<PackageNode> packageNodeSet;
         if (preRepoInfo == null && curRepoInfo == null) {
             return;
-        } else if (preRepoInfo == null) {
-            packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
-            mappingPackageNode(packageNodeSet,repoUuid,branch);
-            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                addHandler.subTreeMapping(null,fileNode,preCommonInfo,proxyDao);
-            }
-        } else if (curRepoInfo == null) {
-            packageNodeSet = new HashSet<>(preRepoInfo.getPackageInfos());
-            mappingPackageNode(packageNodeSet,repoUuid,branch);
-            for (FileNode fileNode : preRepoInfo.getFileInfos()) {
-                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                deleteHandler.subTreeMapping(fileNode,null,preCommonInfo,proxyDao);
-            }
-        } else {
-            //处理packageNode
-            packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
-            packageNodeSet.addAll(preRepoInfo.getPackageInfos());
-            mappingPackageNode(packageNodeSet,repoUuid,branch);
-
-            //判断fileNode属于add、delete、change
-            Set<String> addSet = new HashSet<>(map.get("ADD"));
-            Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
-            Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
-            Set<String> preRenameSet = new HashSet<>();
-            Set<String> curRenameSet = new HashSet<>();
-            for (String str: map.get("RENAME")) {
-                String[] paths = str.split(":");
-                preRenameSet.add(paths[0]);
-                curRenameSet.add(paths[1]);
-            }
-            Map<String,FileNode> preMap = new HashMap<>();
-            Map<String,FileNode> curMap = new HashMap<>();
-            Map<String,FileNode> preRenameMap = new HashMap<>();
-            Map<String,FileNode> curRenameMap = new HashMap<>();
-
-            for (FileNode fileNode : preRepoInfo.getFileInfos()) {
-                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                if (deleteSet.contains(fileNode.getFilePath())) {
-                    deleteHandler.subTreeMapping(fileNode, null,preCommonInfo,proxyDao);
-                }
-                if (changeSet.contains(fileNode.getFilePath())) {
-                    preMap.put(fileNode.getFilePath(),fileNode);
-                }
-                if (preRenameSet.contains(fileNode.getFilePath())) {
-                    preRenameMap.put(fileNode.getFilePath(),fileNode);
-                }
-            }
-            for (FileNode fileNode : curRepoInfo.getFileInfos()) {
-                if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
-                    continue;
-                }
-                if (addSet.contains(fileNode.getFilePath())) {
-                    addHandler.subTreeMapping(null,fileNode,preCommonInfo,proxyDao);
-                }
-                if (changeSet.contains(fileNode.getFilePath())) {
-                    curMap.put(fileNode.getFilePath(),fileNode);
-                }
-                if (curRenameSet.contains(fileNode.getFilePath())) {
-                    curRenameMap.put(fileNode.getFilePath(),fileNode);
-                }
-            }
-
-            Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
-
-            for (String path : changeSet) {
-                if (FileFilter.javaFilenameFilter(path)) {
-                    continue;
-                }
-                FileNode preRoot = preMap.get(path);
-                FileNode curRoot = curMap.get(path);
-                //判断文件是否有逻辑修改
-                if(logicalFileMap.keySet().contains(path)) {
-                    String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
-                    logicalChangedHandler.setDiffPath(diffPath);
-                    logicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
-                } else {
-                    physicalChangedHandler.subTreeMapping(preRoot,curRoot,preCommonInfo,proxyDao);
-                }
-            }
-            //处理rename情况 待完善
-            for (String str: map.get("RENAME")) {
-                String[] paths = str.split(":");
-                if (FileFilter.javaFilenameFilter(paths[0]) || FileFilter.javaFilenameFilter(paths[1])) {
-                    continue;
-                }
-                FileNode preRenameRoot = preRenameMap.get(paths[0]);
-                FileNode curRenameRoot = curRenameMap.get(paths[1]);
-                dealWithRename(preRenameRoot,curRenameRoot,proxyDao,preCommonInfo);
-            }
-
+        }
+        // package 处理
+        if (packageHandler(preRepoInfo, curRepoInfo, repoUuid, branch, preCommonInfo)){
+            return;
         }
 
+        //判断fileNode属于add、delete、change
+        Set<String> preRenameSet = new HashSet<>();
+        Set<String> curRenameSet = new HashSet<>();
+        for (String str: map.get("RENAME")) {
+            String renameDelimiter = ":";
+            String[] paths = str.split(renameDelimiter);
+            preRenameSet.add(paths[0]);
+            curRenameSet.add(paths[1]);
+        }
+
+
+        Set<String> addSet = new HashSet<>(map.get("ADD"));
+        Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
+        Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
+        int mapInitialCapacity = changeSet.size() << 1;
+        Map<String,FileNode> preMap = new HashMap<>(mapInitialCapacity);
+        Map<String,FileNode> curMap = new HashMap<>(mapInitialCapacity);
+        int renameInitialCapacity = curRenameSet.size() << 1;
+        Map<String,FileNode> preRenameMap = new HashMap<>(renameInitialCapacity);
+        Map<String,FileNode> curRenameMap = new HashMap<>(renameInitialCapacity);
+
+        for (FileNode fileNode : preRepoInfo.getFileInfos()) {
+            // fixme 之前已近过滤了 这里还有必要？
+            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                continue;
+            }
+            if (deleteSet.contains(fileNode.getFilePath())) {
+                deleteHandler.subTreeMapping(fileNode, null, preCommonInfo, proxyDao);
+            }
+            if (changeSet.contains(fileNode.getFilePath())) {
+                preMap.put(fileNode.getFilePath(), fileNode);
+            }
+            if (preRenameSet.contains(fileNode.getFilePath())) {
+                preRenameMap.put(fileNode.getFilePath(), fileNode);
+            }
+        }
+        for (FileNode fileNode : curRepoInfo.getFileInfos()) {
+            if (FileFilter.javaFilenameFilter(fileNode.getFilePath())) {
+                continue;
+            }
+            if (addSet.contains(fileNode.getFilePath())) {
+                addHandler.subTreeMapping(null, fileNode, preCommonInfo, proxyDao);
+            }
+            if (changeSet.contains(fileNode.getFilePath())) {
+                curMap.put(fileNode.getFilePath(),fileNode);
+            }
+            if (curRenameSet.contains(fileNode.getFilePath())) {
+                curRenameMap.put(fileNode.getFilePath(),fileNode);
+            }
+        }
+
+        Map<String,String> logicalFileMap = logicalChangedFileMap.get(preCommit);
+
+        for (String path : changeSet) {
+            if (FileFilter.javaFilenameFilter(path)) {
+                continue;
+            }
+            FileNode preRoot = preMap.get(path);
+            FileNode curRoot = curMap.get(path);
+            //判断文件是否有逻辑修改
+            if(logicalFileMap.keySet().contains(path)) {
+                String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
+                logicalChangedHandler.setMapThreadLocal(CldiffAdapter.extractFromDiff(diffPath));
+                logicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
+            } else {
+                physicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
+            }
+        }
+        //todo 处理rename情况 待完善
+        for (String str: map.get("RENAME")) {
+            String[] paths = str.split(":");
+            if (FileFilter.javaFilenameFilter(paths[0]) || FileFilter.javaFilenameFilter(paths[1])) {
+                continue;
+            }
+            FileNode preRenameRoot = preRenameMap.get(paths[0]);
+            FileNode curRenameRoot = curRenameMap.get(paths[1]);
+            dealWithRename(preRenameRoot, curRenameRoot, proxyDao, preCommonInfo);
+        }
+
+    }
+
+    private static boolean packageHandler(JavaTree preRepoInfo, JavaTree curRepoInfo, String repoUuid, String branch, CommonInfo preCommonInfo) {
+        Set<PackageNode> packageNodeSet;
+        if (preRepoInfo == null) {
+            packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
+            mappingPackageNode(packageNodeSet, repoUuid, branch);
+            curRepoInfo.getFileInfos().stream().
+                    filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
+                    forEach(f -> addHandler.subTreeMapping(null, f, preCommonInfo, proxyDao));
+            return true;
+        }
+        if (curRepoInfo == null) {
+            packageNodeSet = new HashSet<>(preRepoInfo.getPackageInfos());
+            mappingPackageNode(packageNodeSet, repoUuid, branch);
+            preRepoInfo.getFileInfos().stream().
+                    filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
+                    forEach(f -> deleteHandler.subTreeMapping(f,null, preCommonInfo, proxyDao));
+            return true;
+        }
+        //处理packageNode
+        packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
+        packageNodeSet.addAll(preRepoInfo.getPackageInfos());
+        mappingPackageNode(packageNodeSet, repoUuid, branch);
+        return false;
     }
 
     private static void dealWithRename(BaseNode preRoot, BaseNode curRoot, ProxyDao proxyDao, CommonInfo commonInfo) {
@@ -172,24 +180,22 @@ public class TrackerCore {
         //如何实现rename文件间的diff，待完善
     }
 
+    /**
+     * todo 没有考虑package删除的情况
+     */
     private static void mappingPackageNode(Set<PackageNode> packageNodeSet, String repoUuid, String branch) {
         for (PackageNode packageNode : packageNodeSet) {
-            TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE,packageNode.getModuleName(),packageNode.getPackageName(),repoUuid,branch);
+            TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE, packageNode.getModuleName(), packageNode.getPackageName(), repoUuid, branch);
             if (trackerInfo == null) {
                 packageNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
                 packageNode.setRootUuid(packageNode.getUuid());
             } else {
                 packageNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
                 packageNode.setRootUuid(trackerInfo.getRootUUID());
-                packageNode.setVersion(trackerInfo.getVersion()+1);
+                packageNode.setVersion(trackerInfo.getVersion() + 1);
             }
             packageNode.setMapping(true);
         }
-    }
-
-
-    private static void changeMapping(PackageNode prePackageNode, PackageNode curPackageNode) {
-
     }
 
     private static BaseNode findSimilarNode(List<? extends BaseNode> nodeList, BaseNode target) {

@@ -23,6 +23,13 @@ public  class BaseNode {
      * isMapping:描述该节点是否已经mapping,新增的节点以及删除的节点也算mapping过
      */
     private boolean isMapping = false;
+
+    public void setChangeStatus(ChangeStatus changeStatus) {
+        if (this.changeStatus.priority > changeStatus.priority) {
+            this.changeStatus = changeStatus;
+        }
+    }
+
     private ChangeStatus changeStatus = ChangeStatus.UNCHANGED;
 
     /**
@@ -49,7 +56,7 @@ public  class BaseNode {
      */
     public enum ChangeStatus {
 
-        // 增加、删除、自己改变、移动、因 子节点的改变而改变、非逻辑上改变、无变化
+        // 增加、删除、自己改变、移动、因 子节点的改变而改变、非逻辑上改变内容 （如增加注释、空格等）、只是改变行号、无变化
         ADD(1),
         DELETE(1),
         SELF_CHANGE(1),

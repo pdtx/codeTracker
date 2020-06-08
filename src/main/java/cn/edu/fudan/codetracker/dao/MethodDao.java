@@ -6,17 +6,14 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.MethodInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.VersionStatistics;
 import cn.edu.fudan.codetracker.mapper.MethodMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Repository

@@ -231,27 +231,27 @@ public class StatisticsServiceImpl implements StatisticsService {
 //        }
 //    }
 
-    private List<StatementInfo> getChildList(List<StatementInfo> statementInfoList, String beginDate) {
-        List<StatementInfo> statementInfos = new ArrayList<>();
-        for(StatementInfo statementInfo: statementInfoList) {
-            if (statementInfo.getChildren() != null && statementInfo.getChildren().size() > 0) {
-                for(StatementInfo childStatementInfo: (List<StatementInfo>)statementInfo.getChildren()) {
-                    childStatementInfo.setMethodUuid(statementInfo.getMethodUuid());
-                    statementInfos.add(childStatementInfo);
-                }
-            }
-            String statementCommitter = statisticsDao.getChangeCommitter("statement", beginDate, statementInfo.getMethodUuid(), statementInfo.getBody(), FORMATTER.format(statementInfo.getCommitDate()));
-            if (statementCommitter == null) {
-                continue;
-            }
-            if (committerMap.keySet().contains(statementCommitter)) {
-                committerMap.replace(statementCommitter, committerMap.get(statementCommitter) + addOne);
-            } else {
-                committerMap.put(statementCommitter, addOne);
-            }
-        }
-        return statementInfos;
-    }
+//    private List<StatementInfo> getChildList(List<StatementInfo> statementInfoList, String beginDate) {
+//        List<StatementInfo> statementInfos = new ArrayList<>();
+//        for(StatementInfo statementInfo: statementInfoList) {
+//            if (statementInfo.getChildren() != null && statementInfo.getChildren().size() > 0) {
+//                for(StatementInfo childStatementInfo: (List<StatementInfo>)statementInfo.getChildren()) {
+//                    childStatementInfo.setMethodUuid(statementInfo.getMethodUuid());
+//                    statementInfos.add(childStatementInfo);
+//                }
+//            }
+//            String statementCommitter = statisticsDao.getChangeCommitter("statement", beginDate, statementInfo.getMethodUuid(), statementInfo.getBody(), FORMATTER.format(statementInfo.getCommitDate()));
+//            if (statementCommitter == null) {
+//                continue;
+//            }
+//            if (committerMap.keySet().contains(statementCommitter)) {
+//                committerMap.replace(statementCommitter, committerMap.get(statementCommitter) + addOne);
+//            } else {
+//                committerMap.put(statementCommitter, addOne);
+//            }
+//        }
+//        return statementInfos;
+//    }
 
     @Override
     public Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch) {

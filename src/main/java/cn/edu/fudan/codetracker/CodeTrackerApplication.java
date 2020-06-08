@@ -1,9 +1,5 @@
 package cn.edu.fudan.codetracker;
 
-import cn.edu.fudan.codetracker.controller.RepoAnalyzerController;
-import cn.edu.fudan.codetracker.dao.PackageDao;
-import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.PackageNode;
 import cn.edu.fudan.codetracker.service.ScanService;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +9,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
+/**
+ * 测试可用 {@link CommandLineRunner} or {@link ApplicationRunner}
+ * @author fancying
+ */
 @SpringBootApplication
 @EnableAsync
 @MapperScan("cn.edu.fudan.codetracker.mapper")
-//测试用
-//public class CodeTrackerApplication implements CommandLineRunner {
 public class CodeTrackerApplication implements ApplicationRunner {
 
     public static void main(String[] args) {

@@ -39,48 +39,45 @@ public class DeleteHandler implements NodeMapping {
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(preRoot);
-        if (preRoot instanceof FileNode) {
+        if (preRoot instanceof FileNode || curRoot instanceof ClassNode) {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-                NodeMapping.setNodeMapped(preRoot,null,proxyDao,commonInfo);
-                if (baseNode.getChildren() != null) {
-                    for (BaseNode child : baseNode.getChildren()) {
+                NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
+                AddHandler.pushChildrenInto(baseNode, stack);
+            }
+        }
+
+        // todo 处理当前节点 不处理子节点
+        //singleNodeAddMapping(preRoot, curRoot, commonInfo, proxyDao);
+        curRoot.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+        NodeMapping.setNodeMapped(preRoot, null, proxyDao, commonInfo);
+    }
+
+    private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+        Stack<BaseNode> stack = new Stack<>();
+        stack.push(preRoot);
+        while (!stack.empty()) {
+            BaseNode baseNode = stack.pop();
+            baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+            NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
+            if (baseNode.getChildren() != null) {
+                for (BaseNode child : baseNode.getChildren()) {
+                    if (isDelete(child)) {
                         stack.push(child);
-                    }
-                }
-                if (baseNode instanceof ClassNode) {
-                    ClassNode classNode = (ClassNode)baseNode;
-                    if (classNode.getFieldNodes() != null) {
-                        for (BaseNode field : classNode.getFieldNodes()) {
-                            stack.push(field);
-                        }
+                    } else {
+                        dealWithNotDelete(child);
                     }
                 }
             }
-        } else {
-            while (!stack.empty()) {
-                BaseNode baseNode = stack.pop();
-                baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-                NodeMapping.setNodeMapped(preRoot,null,proxyDao,commonInfo);
-                if (baseNode.getChildren() != null) {
-                    for (BaseNode child : baseNode.getChildren()) {
-                        if (isDelete(child)) {
-                            stack.push(child);
+            if (baseNode instanceof ClassNode) {
+                ClassNode classNode = (ClassNode)baseNode;
+                if (classNode.getFieldNodes() != null) {
+                    for (BaseNode field : classNode.getFieldNodes()) {
+                        if (isDelete(field)) {
+                            stack.push(field);
                         } else {
-                            dealWithNotDelete(child);
-                        }
-                    }
-                }
-                if (baseNode instanceof ClassNode) {
-                    ClassNode classNode = (ClassNode)baseNode;
-                    if (classNode.getFieldNodes() != null) {
-                        for (BaseNode field : classNode.getFieldNodes()) {
-                            if (isDelete(field)) {
-                                stack.push(field);
-                            } else {
-                                dealWithNotDelete(field);
-                            }
+                            dealWithNotDelete(field);
                         }
                     }
                 }
@@ -88,12 +85,16 @@ public class DeleteHandler implements NodeMapping {
         }
     }
 
-    //后续完善，判断非文件节点的子节点是否为真正的DELETE
+    /**
+     *后续完善，判断非文件节点的子节点是否为真正的DELETE
+     */
     private boolean isDelete(BaseNode baseNode) {
         return true;
     }
 
-    //问题：如果非DELETE子节点的孩子为DELETE怎么办？
+    /**
+     *问题：如果非DELETE子节点的孩子为DELETE怎么办？
+     */
     private void dealWithNotDelete(BaseNode baseNode) {
         //处理非DELETE子节点
     }

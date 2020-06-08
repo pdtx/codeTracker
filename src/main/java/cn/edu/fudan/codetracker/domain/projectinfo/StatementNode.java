@@ -23,6 +23,8 @@ public class StatementNode extends BaseNode{
     private String description;
     /**
      * 是否为逻辑修改
+     * 1 for true
+     * 0 for false
      */
     private int isLogic = 1;
 

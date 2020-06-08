@@ -1,7 +1,6 @@
 package cn.edu.fudan.codetracker.mapper;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.FileInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.FileNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import org.apache.ibatis.annotations.Param;

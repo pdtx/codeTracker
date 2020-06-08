@@ -5,7 +5,6 @@
  **/
 package cn.edu.fudan.codetracker.mapper;
 
-import cn.edu.fudan.codetracker.domain.projectinfo.ClassInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
