@@ -3,6 +3,8 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.domain.diff.CldiffAdapter;
+import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.FileFilter;
 import lombok.Data;
@@ -67,9 +69,6 @@ public class TrackerCore {
         }
 
         //判断fileNode属于add、delete、change
-        Set<String> addSet = new HashSet<>(map.get("ADD"));
-        Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
-        Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
         Set<String> preRenameSet = new HashSet<>();
         Set<String> curRenameSet = new HashSet<>();
         for (String str: map.get("RENAME")) {
@@ -78,6 +77,11 @@ public class TrackerCore {
             preRenameSet.add(paths[0]);
             curRenameSet.add(paths[1]);
         }
+
+
+        Set<String> addSet = new HashSet<>(map.get("ADD"));
+        Set<String> deleteSet = new HashSet<>(map.get("DELETE"));
+        Set<String> changeSet = new HashSet<>(map.get("CHANGE"));
         int mapInitialCapacity = changeSet.size() << 1;
         Map<String,FileNode> preMap = new HashMap<>(mapInitialCapacity);
         Map<String,FileNode> curMap = new HashMap<>(mapInitialCapacity);
@@ -126,8 +130,7 @@ public class TrackerCore {
             //判断文件是否有逻辑修改
             if(logicalFileMap.keySet().contains(path)) {
                 String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
-                logicalChangedHandler.setDiffPath(diffPath);
-                //logicalChangedHandler.setMap();
+                logicalChangedHandler.setMapThreadLocal(CldiffAdapter.extractFromDiff(diffPath));
                 logicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
             } else {
                 physicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
@@ -177,6 +180,9 @@ public class TrackerCore {
         //如何实现rename文件间的diff，待完善
     }
 
+    /**
+     * todo 没有考虑package删除的情况
+     */
     private static void mappingPackageNode(Set<PackageNode> packageNodeSet, String repoUuid, String branch) {
         for (PackageNode packageNode : packageNodeSet) {
             TrackerInfo trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.PACKAGE, packageNode.getModuleName(), packageNode.getPackageName(), repoUuid, branch);

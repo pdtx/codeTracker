@@ -23,6 +23,13 @@ public  class BaseNode {
      * isMapping:描述该节点是否已经mapping,新增的节点以及删除的节点也算mapping过
      */
     private boolean isMapping = false;
+
+    public void setChangeStatus(ChangeStatus changeStatus) {
+        if (this.changeStatus.priority > changeStatus.priority) {
+            this.changeStatus = changeStatus;
+        }
+    }
+
     private ChangeStatus changeStatus = ChangeStatus.UNCHANGED;
 
     /**

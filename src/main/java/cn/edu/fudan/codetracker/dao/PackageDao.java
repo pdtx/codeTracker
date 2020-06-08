@@ -1,8 +1,4 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-09-26 17:08
- **/
+
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
@@ -16,7 +12,11 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
+/**
+ * description:
+ * @author fancying
+ * create: 2019-09-26 17:08
+ **/
 @Repository
 public class PackageDao {
 

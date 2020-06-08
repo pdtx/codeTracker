@@ -1,10 +1,10 @@
 package cn.edu.fudan.codetracker.domain;
 
 /**
+ * java 树上的节点和层级
  * @author fancying
  */
-public enum
-ProjectInfoLevel {
+public enum ProjectInfoLevel {
     /**
      * module
      */

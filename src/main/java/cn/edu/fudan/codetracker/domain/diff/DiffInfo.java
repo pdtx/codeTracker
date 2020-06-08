@@ -3,18 +3,19 @@ package cn.edu.fudan.codetracker.domain.diff;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.alibaba.fastjson.JSONObject;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
 
 /**
+ * 记录每一个变更信息
  * @author 汤圆
  */
 @Slf4j
-@Getter
+@Data
 public final class DiffInfo {
     private String type;
     private Location location;
@@ -100,7 +101,7 @@ public final class DiffInfo {
     }
 
     public BaseNode findChangeNode(Set<BaseNode> set, boolean isCur) {
-        if (set == null) {
+        if (set == null || set.size() == 0) {
             return null;
         }
         int begin,end;
@@ -118,18 +119,11 @@ public final class DiffInfo {
         String type = "";
         for (BaseNode baseNode: set) {
             if (isFirst) {
-                if (baseNode instanceof ClassNode) {
-                    type = "class";
-                } else if (baseNode instanceof MethodNode) {
-                    type = "method";
-                } else if (baseNode instanceof FieldNode) {
-                    type = "field";
-                } else if (baseNode instanceof StatementNode) {
-                    type = "statement";
-                }
+                type = baseNode.getProjectInfoLevel().getName();
                 isFirst = false;
             }
             int nodeBegin = -1,nodeEnd = -1;
+
             switch (type) {
                 case "class":
                     ClassNode classNode = (ClassNode)baseNode;
@@ -154,21 +148,23 @@ public final class DiffInfo {
                 default:
                     break;
             }
-            if (isMatch(begin,end,nodeBegin,nodeEnd)) {
+
+            if (isMatch(begin, end, nodeBegin, nodeEnd)) {
                 return baseNode;
             }
         }
         return null;
     }
 
-    public boolean isMatch(int diffBegin, int diffEnd, int nodeBegin, int nodeEnd) {
+
+    private boolean isMatch(int diffBegin, int diffEnd, int nodeBegin, int nodeEnd) {
         return (diffBegin == nodeBegin) && (diffEnd == nodeEnd);
     }
 
 
 
-    @Setter
-    @Getter
+    @Data
+    @NoArgsConstructor
     class Location {
         private int preBegin;
         private int preEnd;
@@ -178,10 +174,6 @@ public final class DiffInfo {
         private String curName;
         private String preContent;
         private String curContent;
-
-        Location() {
-
-        }
 
     }
 

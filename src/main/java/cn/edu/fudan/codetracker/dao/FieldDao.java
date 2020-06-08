@@ -1,12 +1,7 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-09-26 18:48
- **/
+
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
-import cn.edu.fudan.codetracker.domain.projectinfo.FieldInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.FieldNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
 import cn.edu.fudan.codetracker.mapper.FieldMapper;
@@ -16,7 +11,11 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
+/**
+ * description:
+ * @author fancying
+ * create: 2019-09-26 18:48
+ **/
 @Repository
 public class FieldDao {
 

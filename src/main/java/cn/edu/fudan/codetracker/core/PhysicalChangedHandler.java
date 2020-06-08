@@ -72,6 +72,7 @@ public class PhysicalChangedHandler implements NodeMapping{
                     }
                 }
                 // fixme 物理上的改变是否需要 version + 1 ？
+                // todo 只有行号变的话 version应该不变
                 NodeMapping.setNodeMapped(preNode, curNode, proxyDao, commonInfo);
                 preNode.getChildren().forEach(preQueue::offer);
                 curNode.getChildren().forEach(curQueue::offer);

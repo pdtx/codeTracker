@@ -31,7 +31,7 @@ public class AddHandler implements NodeMapping {
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(curRoot);
-        if (curRoot instanceof FileNode) {
+        if (curRoot instanceof FileNode || curRoot instanceof ClassNode) {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
