@@ -71,11 +71,9 @@ public class RepoInfoTree {
     // 根据 parser 构造出
     private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree, String repoUuid) {
         if (baseLanguageTree instanceof JavaTree) {
-            JavaTree javaTree = new JavaTree(value,repoUuid);
-            return javaTree;
+            return new JavaTree(value,repoUuid);
         } else if (baseLanguageTree instanceof CppTree) {
-            CppTree cppTree = new CppTree(value,repoUuid);
-            return cppTree;
+            return new CppTree(value,repoUuid);
         }
         return null;
     }

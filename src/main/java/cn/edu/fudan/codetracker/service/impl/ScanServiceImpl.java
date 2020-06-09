@@ -194,16 +194,16 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             List<String> preFileList;
             List<String> curFileList;
             //抽取rename情况
-            for (String str: map.get("RENAME")) {
+            for (String str: map.get(RENAME)) {
                 String[] renamePaths = str.split(":");
                 preRelatives.add(renamePaths[0]);
                 curRelatives.add(renamePaths[1]);
             }
-            preRelatives.addAll(map.get("CHANGE"));
-            preRelatives.addAll(map.get("DELETE"));
+            preRelatives.addAll(map.get(CHANGE));
+            preRelatives.addAll(map.get(DELETE));
             preFileList = localizeFilePath(repoPath, preRelatives);
-            curRelatives.addAll(map.get("CHANGE"));
-            curRelatives.addAll(map.get("ADD"));
+            curRelatives.addAll(map.get(CHANGE));
+            curRelatives.addAll(map.get(ADD));
             curFileList = localizeFilePath(repoPath, curRelatives);
 
             //List<String> fileList, CommonInfo commonInfo, String repoUuid
@@ -335,6 +335,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     }
 
 
+    /**
+     * todo 放在 cldiff Adapter中 与 cldiff解耦
+     */
     private Map<String,Map<String,String>> extractDiffFilePathFromClDiff(String repoPath,String commitId,String outputPath) {
         Map<String,Map<String,String>> map = new HashMap<>();
         ClDiffHelper.executeDiff(repoPath,commitId,outputDir);
