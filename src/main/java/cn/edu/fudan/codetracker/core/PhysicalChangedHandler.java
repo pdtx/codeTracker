@@ -72,6 +72,10 @@ public class PhysicalChangedHandler implements NodeMapping{
                 // fixme 物理上的改变是否需要 version + 1 ？
                 // todo 只有行号变的话 version应该不变
                 NodeMapping.setNodeMapped(preNode, curNode, proxyDao, commonInfo);
+                //物理改变版本号不变 如果trackerInfo拿不到，处理为ADD，版本号为1情况需排除
+                if (curNode.getVersion() > 1) {
+                    curNode.setVersion(curNode.getVersion()-1);
+                }
                 preNode.getChildren().forEach(preQueue::offer);
                 curNode.getChildren().forEach(curQueue::offer);
             }
@@ -93,6 +97,10 @@ public class PhysicalChangedHandler implements NodeMapping{
                 curStatement.setIsLogic(0);
             }
             NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
+            //物理改变版本号不变 如果trackerInfo拿不到，处理为ADD，版本号为1情况需排除
+            if (curRoot.getVersion() > 1) {
+                curRoot.setVersion(curRoot.getVersion()-1);
+            }
         }
     }
 }
