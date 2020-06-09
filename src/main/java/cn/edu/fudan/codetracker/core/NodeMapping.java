@@ -3,8 +3,6 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * description: 此类主要负责节点间的映射
@@ -27,53 +25,58 @@ public interface NodeMapping {
      * 设置两个节点的映射状态
      * @param preRoot 前一个版本的根结点
      * @param curRoot 当前版本的根节点
+     * @param commonInfo 公共信息
+     * @param proxyDao  提供入库
      */
     static void setNodeMapped(BaseNode preRoot, BaseNode curRoot, ProxyDao proxyDao, CommonInfo commonInfo) {
         if (preRoot == null && curRoot == null) {
             return;
-        } else if (preRoot == null) {
+        }
+        if (preRoot == null) {
             curRoot.setMapping(true);
             curRoot.setRootUuid(curRoot.getUuid());
-        } else if (curRoot == null) {
+            return;
+        }
+        if (curRoot == null) {
             preRoot.setMapping(true);
             //删除情况
-            TrackerInfo trackerInfo = getTrackerInfo(preRoot,proxyDao,commonInfo);
+            TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, commonInfo);
             if (trackerInfo != null) {
                 preRoot.setRootUuid(trackerInfo.getRootUUID());
                 preRoot.setVersion(trackerInfo.getVersion());
             }
-//            else {
-//                System.out.println("delete null : " + preRoot.getProjectInfoLevel());
-//            }
-        } else {
-            preRoot.setMapping(true);
-            curRoot.setMapping(true);
-            preRoot.setNextMappingBaseNode(curRoot);
-            curRoot.setPreMappingBaseNode(preRoot);
-            TrackerInfo trackerInfo = getTrackerInfo(preRoot,proxyDao,commonInfo);
-            if (trackerInfo != null) {
-                preRoot.setRootUuid(trackerInfo.getRootUUID());
-                preRoot.setVersion(trackerInfo.getVersion());
-                curRoot.setRootUuid(trackerInfo.getRootUUID());
-                curRoot.setVersion(trackerInfo.getVersion()+1);
-            } else {
-//                System.out.println("change null : " + preRoot.getProjectInfoLevel());
-                //追溯不到 处理为ADD
-                curRoot.setRootUuid(curRoot.getUuid());
-                curRoot.setVersion(1);
-                curRoot.setChangeStatus(BaseNode.ChangeStatus.ADD);
-                if (curRoot instanceof StatementNode) {
-                    StatementNode statementNode = (StatementNode)curRoot;
-                    statementNode.setIsLogic(0);
-                }
-            }
+            return;
         }
+        preRoot.setMapping(true);
+        curRoot.setMapping(true);
+        preRoot.setNextMappingBaseNode(curRoot);
+        curRoot.setPreMappingBaseNode(preRoot);
+        TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, commonInfo);
+        if (trackerInfo != null) {
+            preRoot.setRootUuid(trackerInfo.getRootUUID());
+            preRoot.setVersion(trackerInfo.getVersion());
+            curRoot.setRootUuid(trackerInfo.getRootUUID());
+            curRoot.setVersion(trackerInfo.getVersion() + 1);
+            return;
+        }
+        //追溯不到 处理为ADD
+        curRoot.setRootUuid(curRoot.getUuid());
+        curRoot.setVersion(1);
+        curRoot.setChangeStatus(BaseNode.ChangeStatus.ADD);
+        if (curRoot instanceof StatementNode) {
+            ((StatementNode)curRoot).setIsLogic(0);
+        }
+
     }
 
     /**
-     *
+     * 得到某个节点的追溯信息
+     * @param baseNode 节点
+     * @param commonInfo 公共信息
+     * @param proxyDao  提供入库
+     * @return tracker info
      */
-    static TrackerInfo getTrackerInfo(BaseNode baseNode,ProxyDao proxyDao,CommonInfo commonInfo) {
+    static TrackerInfo getTrackerInfo(BaseNode baseNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         TrackerInfo trackerInfo = null;
         if (baseNode instanceof FileNode) {
             FileNode fileNode = (FileNode)baseNode;

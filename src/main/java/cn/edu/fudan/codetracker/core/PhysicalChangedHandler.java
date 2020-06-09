@@ -3,9 +3,7 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.xml.soap.Node;
 import java.util.ArrayDeque;
 import java.util.Queue;
 

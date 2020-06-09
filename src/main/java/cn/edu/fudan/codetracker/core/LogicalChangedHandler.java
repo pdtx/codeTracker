@@ -2,9 +2,9 @@ package cn.edu.fudan.codetracker.core;
 
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
-import cn.edu.fudan.codetracker.domain.diff.CldiffAdapter;
 import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -148,8 +148,23 @@ public class LogicalChangedHandler implements NodeMapping {
     /**
      * todo
      */
-    private StatementNode findMostSimilarStatement(StatementNode cStatement, Set<BaseNode> preSet) {
-        return null;
+    private StatementNode findMostSimilarStatement(StatementNode target, Set<BaseNode> preSet) {
+        StatementNode result = null;
+        double similarity = 0.2;
+
+        for (BaseNode baseNode : preSet) {
+            StatementNode statement = (StatementNode)baseNode;
+            if (statement.getLevel() != target.getLevel()) {
+                continue;
+            }
+            double tmp =  CosineUtil.cosineSimilarity(target.getSelfBodyToken(), statement.getSelfBodyToken());
+            if (tmp > similarity) {
+                similarity = tmp;
+                result = statement;
+            }
+        }
+
+        return result;
     }
 
     private void dealWithoutDiff(Set<BaseNode> preSet, Set<BaseNode> curSet) {
@@ -289,7 +304,7 @@ public class LogicalChangedHandler implements NodeMapping {
     }
 
 
-    public void setMapThreadLocal(Map<String, List<DiffInfo>> map) {
+    void setMapThreadLocal(Map<String, List<DiffInfo>> map) {
         mapThreadLocal.remove();
         mapThreadLocal.set(map);
     }

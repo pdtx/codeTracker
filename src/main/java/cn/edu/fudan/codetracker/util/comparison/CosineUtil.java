@@ -10,6 +10,17 @@ import java.util.*;
  **/
 public class CosineUtil {
 
+
+    public static double codeSimilarity(List<Object> tokens1, String code2, boolean tokenize){
+        try {
+            List<Object> tokens2 = lexer(code2, tokenize);
+            return cosineSimilarity(tokens1, tokens2) ;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     /**
      * 判断两段代码是否相似
      * @param code1 代码段1
@@ -36,7 +47,7 @@ public class CosineUtil {
      * @param tokensY
      * @return
      */
-    private static double cosineSimilarity(List<Object> tokensX, List<Object> tokensY){
+    public static double cosineSimilarity(List<Object> tokensX, List<Object> tokensY){
         List<Object> allTokens = new ArrayList<>();
         allTokens.addAll(tokensX);
         allTokens.addAll(tokensY);
@@ -137,4 +148,73 @@ public class CosineUtil {
             return (byte) (-3 - (h & 0x7f));
         }
     }
+
+//    /**
+//     * 基于token 在父字符串中 删除 子字符串
+//     * @param token1 父token
+//     * @param token2 子token
+//     */
+//    public static List<Object> diff(List<Object> token1, List<Object> token2) {
+//        String delimiter = ",";
+//        StringBuilder s1 = new StringBuilder();
+//        StringBuilder s2 = new StringBuilder();
+//        token1.forEach(s -> s1.append(s).append(delimiter));
+//        token2.forEach(s -> s2.append(s).append(delimiter));
+//
+//        String p = s1.toString();
+//        String c = s2.toString();
+//        String d = p.replace(c,"");
+//
+//        return Arrays.asList(d.split(","));
+//    }
+
+//    public static List<Object> diffToken(String code) {
+//        String delimiter = ",";
+//        List<Object> token1 = lexer(code, true);
+//        StringBuilder s1 = new StringBuilder();
+//        token1.forEach(s -> s1.append(s).append(delimiter));
+//        return Arrays.asList(s1.toString().split(","));
+//    }
+
+    public static String diffBody(String code) {
+        String delimiter = ",";
+        List<Object> token1 = lexer(code, true);
+        StringBuilder s1 = new StringBuilder();
+        token1.forEach(s -> s1.append(s).append(delimiter));
+        return s1.toString();
+    }
+
+    public static String diff(String set, String subset) {
+        return set.replace(subset, "");
+    }
+
+
+    public static void main(String[] args) {
+
+        String parent = "        if (str.length() < 2) {\n" +
+                "            int h = str.toCharArray()[str.length() - 1];\n" +
+                "            h <<= 1;\n" +
+                "            return (byte) (-3 - (h & 0x7f));\n" +
+                "        } else {\n" +
+                "            int h1 = str.toCharArray()[str.length() - 1];\n" +
+                "            int h2 = str.toCharArray()[str.length() - 2];\n" +
+                "            h1 <<= 1;\n" +
+                "            int h = h1 ^ h2;\n" +
+                "            return (byte) (-3 - (h & 0x7f));\n" +
+                "        }";
+        String child1 = "            int h = str.toCharArray()[str.length() - 1];\n" +
+                "            h <<= 1;\n" +
+                "            return (byte) (-3 - (h & 0x7f));";
+
+        String child2 = "            int h1 = str.toCharArray()[str.length() - 1];\n" +
+                "            int h2 = str.toCharArray()[str.length() - 2];\n" +
+                "            h1 <<= 1;\n" +
+                "            int h = h1 ^ h2;\n" +
+                "            return (byte) (-3 - (h & 0x7f));" ;
+
+
+
+    }
+
+
 }

@@ -2,10 +2,15 @@ package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.StatementType;
+import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.eclipse.jgit.util.StringUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,6 +26,11 @@ public class StatementNode extends BaseNode{
     private int sequence;
     private String methodUuid;
     private String description;
+
+    /**
+     * 除去孩子的token
+     */
+    private List<Object> selfBodyToken;
     /**
      * 是否为逻辑修改
      * 1 for true
@@ -57,6 +67,27 @@ public class StatementNode extends BaseNode{
                     this.getLevel() == statementNode.getLevel();
         }
         return false;
+    }
+
+    public List<Object> getSelfBodyToken() {
+        if (selfBodyToken != null) {
+            return selfBodyToken;
+        }
+        String p = CosineUtil.diffBody(body);
+
+        List<? extends BaseNode> children = super.getChildren();
+        if (children == null || children.size() == 0) {
+            selfBodyToken =  Arrays.asList(p.split(","));
+            return selfBodyToken;
+        }
+
+        for (BaseNode b : children) {
+            StatementNode s = (StatementNode)b;
+            String subSet = CosineUtil.diffBody(s.getBody());
+            p = CosineUtil.diff(p, subSet);
+        }
+        selfBodyToken =  Arrays.asList(p.split(","));
+        return selfBodyToken;
     }
 
 }
