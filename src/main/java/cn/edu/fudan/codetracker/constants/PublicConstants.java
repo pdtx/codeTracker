@@ -16,6 +16,14 @@ public interface PublicConstants {
     boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
     DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    String RENAME = "RENAME";
+    String ADD = "ADD";
+    String DELETE = "DELETE";
+    String CHANGE = "CHANGE";
+    String MODIFY = "MODIFY";
+
+    String DELIMITER_RENAME = ":";
+
     /**
      * string 转 Date
      * @param date 2020-01-01 00:00:00

@@ -11,6 +11,9 @@ import org.eclipse.jgit.diff.DiffEntry;
 
 import java.util.*;
 
+/**
+ * @author 汤圆
+ */
 public class MergeHandler implements PublicConstants {
     private MergeHandler(){}
 
@@ -50,7 +53,7 @@ public class MergeHandler implements PublicConstants {
         //构造三棵树
         List<String> fileList = new ArrayList<>();
         for (DiffEntry diffEntry : list) {
-            if ("MODIFY".equals(diffEntry.getChangeType())) {
+            if ("MODIFY".equals(diffEntry.getChangeType().name())) {
                 fileList.add(diffEntry.getNewPath());
             }
         }
