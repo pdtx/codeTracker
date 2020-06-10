@@ -39,7 +39,7 @@ public class DeleteHandler implements NodeMapping {
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(preRoot);
-        if (preRoot instanceof FileNode || curRoot instanceof ClassNode) {
+        if (preRoot instanceof FileNode || preRoot instanceof ClassNode) {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
@@ -50,7 +50,7 @@ public class DeleteHandler implements NodeMapping {
 
         // todo 处理当前节点 不处理子节点
         //singleNodeAddMapping(preRoot, curRoot, commonInfo, proxyDao);
-        curRoot.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+        preRoot.setChangeStatus(BaseNode.ChangeStatus.DELETE);
         NodeMapping.setNodeMapped(preRoot, null, proxyDao, commonInfo);
     }
 

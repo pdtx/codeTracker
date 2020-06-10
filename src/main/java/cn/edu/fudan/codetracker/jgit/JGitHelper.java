@@ -310,13 +310,13 @@ public class JGitHelper implements Closeable {
         List<DiffEntry> parent1 = getDiffEntry(parentCommits[0], currCommit);
         List<DiffEntry> parent2 = getDiffEntry(parentCommits[1], currCommit);
         Map<String, List<DiffEntry>> result = new HashMap<>();
-        String parent = parentCommits[0].getName() + "|" + parentCommits[1].getName();
+        String parent = parentCommits[0].getName() + ":" + parentCommits[1].getName();
         List<DiffEntry> entryList = new ArrayList<>();
         if (isParent2(parentCommits[0], parentCommits[1], currCommit)) {
             List<DiffEntry> tmp = parent1;
             parent1 = parent2;
             parent2 = tmp;
-            parent = parentCommits[1].getName() + "|" + parentCommits[0].getName();
+            parent = parentCommits[1].getName() + ":" + parentCommits[0].getName();
         }
 
         // oldPath 相同

@@ -43,6 +43,10 @@ public class LogicalChangedHandler implements NodeMapping {
         this.commonInfo = commonInfo;
         this.proxyDao = proxyDao;
         Map<String, List<DiffInfo>> diffMap = mapThreadLocal.get();
+        if (diffMap == null) {
+            log.error("lack diff info");
+            return;
+        }
 
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
             curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
@@ -73,9 +77,22 @@ public class LogicalChangedHandler implements NodeMapping {
                     MethodNode preMethodNode = (MethodNode)methodNode.getPreMappingBaseNode();
                     preStatements = getStatementNodeFromMethod(preMethodNode);
                 }
-                mapping(preStatements, statements, statementDiffs, proxyDao);
+                Set<DiffInfo> relatedDiffInfo = getMethodRelatedDiffInfo(methodNode, statementDiffs);
+                mapping(preStatements, statements, relatedDiffInfo, proxyDao);
             }
         }
+    }
+
+    private Set<DiffInfo> getMethodRelatedDiffInfo(MethodNode methodNode, Set<DiffInfo> diffInfoSet) {
+        Set<DiffInfo> resultSet = new HashSet<>();
+        int methodBegin = methodNode.getBegin();
+        int methodEnd = methodNode.getEnd();
+        for (DiffInfo diffInfo : diffInfoSet) {
+            if (diffInfo.isMethodRelated(methodBegin, methodEnd)) {
+                resultSet.add(diffInfo);
+            }
+        }
+        return resultSet;
     }
 
     private Set<BaseNode> getStatementNodeFromMethod(MethodNode methodNode) {
@@ -289,7 +306,7 @@ public class LogicalChangedHandler implements NodeMapping {
             if(baseNode instanceof FieldNode) {
                 continue;
             }
-            if (baseNode.getChildren() != null) {
+            if (baseNode.getChildren() != null && baseNode.getChildren().size() != 0) {
                 ProjectInfoLevel key = baseNode.getChildren().get(0).getProjectInfoLevel();
                 map.get(key).addAll(baseNode.getChildren());
                 queue.addAll(baseNode.getChildren());

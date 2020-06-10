@@ -38,7 +38,7 @@ public class MergeHandler implements PublicConstants {
         }
 
         //获取parent1，parent2；parent1和parent2是通过比对提交者和时间确定的顺序
-        String[] parents = str.split("|");
+        String[] parents = str.split(":");
         String parent1 = parents[0];
         String parent2 = parents[1];
 
@@ -82,6 +82,9 @@ public class MergeHandler implements PublicConstants {
     }
 
     private void compareWithParent2(JavaTree curTree, JavaTree compareTree) {
+        if (curTree == null || compareTree == null) {
+            return;
+        }
         for (ClassNode classNode : curTree.getClassInfos()) {
             if (BaseNode.ChangeStatus.ADD.equals(classNode.getChangeStatus())) {
                 if (findSameNode(classNode,compareTree) != null) {

@@ -161,6 +161,10 @@ public final class DiffInfo {
         return (diffBegin == nodeBegin) && (diffEnd == nodeEnd);
     }
 
+    public boolean isMethodRelated(int methodBegin, int methodEnd) {
+        return (this.location.curBegin >= methodBegin) && (this.location.curEnd <= methodEnd);
+    }
+
 
 
     @Data
