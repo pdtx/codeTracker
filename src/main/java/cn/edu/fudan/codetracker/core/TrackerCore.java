@@ -72,7 +72,7 @@ public class TrackerCore implements PublicConstants {
         List<FileNode> preFileNodes = preRepoInfo.getFileInfos().stream().
                 filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
                 collect(Collectors.toList());
-        List<FileNode> curFileNodes = preRepoInfo.getFileInfos().stream().
+        List<FileNode> curFileNodes = curRepoInfo.getFileInfos().stream().
                 filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
                 collect(Collectors.toList());
 

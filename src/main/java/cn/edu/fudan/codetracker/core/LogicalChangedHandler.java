@@ -228,6 +228,10 @@ public class LogicalChangedHandler implements NodeMapping {
                         if (!isSameLine || !isSameContent) {
                             physicalChangedHandler.subTreeMapping(preNode, node, commonInfo, proxyDao);
                         }
+                        pMethod.setMapping(true);
+                        cMethod.setMapping(true);
+                        pMethod.setNextMappingBaseNode(cMethod);
+                        cMethod.setPreMappingBaseNode(pMethod);
                         preSet.remove(preNode);
                         break;
                     }
@@ -279,7 +283,29 @@ public class LogicalChangedHandler implements NodeMapping {
 
         BaseNode tmp = baseNode;
         backTracing(tmp);
-        nodeSet.remove(baseNode);
+
+        //删除节点
+        removeFromSet(baseNode, nodeSet);
+    }
+
+    private void removeFromSet(BaseNode root, Set<BaseNode> nodeSet) {
+        // fixme 新增删除子节点是否也为新增删除 已被处理
+        Queue<BaseNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (queue.size() != 0) {
+            BaseNode node = queue.poll();
+            nodeSet.remove(node);
+            if (node.getChildren() != null) {
+                for (BaseNode child : node.getChildren()) {
+                    queue.offer(child);
+                }
+            }
+            if (node instanceof ClassNode && ((ClassNode) node).getFieldNodes() != null) {
+                for (BaseNode field : ((ClassNode) node).getFieldNodes()) {
+                    queue.offer(field);
+                }
+            }
+        }
     }
 
     private void backTracing(BaseNode baseNode) {
