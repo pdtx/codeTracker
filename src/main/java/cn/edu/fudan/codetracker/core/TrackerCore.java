@@ -110,7 +110,9 @@ public class TrackerCore implements PublicConstants {
         }
 
         // 处理rename情况
-        FileRenameHandler.dealWithRename(map.get(RENAME), preRepoInfo, curRepoInfo,  preCommonInfo, proxyDao);
+        if (map.get(RENAME) != null && map.get(RENAME).size() != 0) {
+            FileRenameHandler.dealWithRename(map.get(RENAME), preRepoInfo, curRepoInfo,  preCommonInfo, proxyDao);
+        }
 
     }
 

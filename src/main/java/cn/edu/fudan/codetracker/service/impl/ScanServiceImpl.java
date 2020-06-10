@@ -168,7 +168,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         //merge情况直接跳过
         if (fileMap.keySet().size() > 1) {
             //JGitHelper jGitHelper, String commit, String outputPath, String repoUuid, String branch, Map<String,Map<String,String>> logicalChangedFileMap
-            JSONObject result = mergeHandler.dealWithMerge(jGitHelper,commitId,outputPath,repoUuid,branch,logicalChangedFileMap);
+            JSONObject result = mergeHandler.dealWithMerge(jGitHelper,commitId,outputPath,repoUuid,branch,logicalChangedFileMap,repoPath);
             if (result == null) {
                 return;
             }

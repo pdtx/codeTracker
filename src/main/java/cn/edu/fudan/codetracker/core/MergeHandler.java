@@ -6,6 +6,7 @@ import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.core.tree.RepoInfoTree;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
+import cn.edu.fudan.codetracker.util.FileFilter;
 import com.alibaba.fastjson.JSONObject;
 import org.eclipse.jgit.diff.DiffEntry;
 
@@ -25,7 +26,7 @@ public class MergeHandler implements PublicConstants {
         static final MergeHandler MERGE_HANDLER = new MergeHandler();
     }
 
-    public JSONObject dealWithMerge(JGitHelper jGitHelper, String commit, String outputPath, String repoUuid, String branch, Map<String,Map<String,String>> logicalChangedFileMap) {
+    public JSONObject dealWithMerge(JGitHelper jGitHelper, String commit, String outputPath, String repoUuid, String branch, Map<String,Map<String,String>> logicalChangedFileMap, String repoPath) {
         Map<String, List<DiffEntry>> conflictInfo = jGitHelper.getConflictDiffEntryList(commit);
         if (conflictInfo == null || conflictInfo.size() == 0) {
             return null;
@@ -53,18 +54,22 @@ public class MergeHandler implements PublicConstants {
         //构造三棵树
         List<String> fileList = new ArrayList<>();
         for (DiffEntry diffEntry : list) {
-            if ("MODIFY".equals(diffEntry.getChangeType().name())) {
+            if ("MODIFY".equals(diffEntry.getChangeType().name()) && !FileFilter.javaFilenameFilter(diffEntry.getNewPath())) {
                 fileList.add(diffEntry.getNewPath());
             }
         }
+        List<String> filePaths = localizeFilePath(repoPath, fileList);
         Map<String,List<String>> map = new HashMap<>();
-        map.put("CHANGE",fileList);
+        map.put(ADD,new ArrayList<>());
+        map.put(DELETE,new ArrayList<>());
+        map.put(CHANGE,fileList);
         jGitHelper.checkout(parent1);
-        RepoInfoTree preTree = new RepoInfoTree(fileList,preCommonInfo,repoUuid);
-        jGitHelper.checkout(commit);
-        RepoInfoTree curTree = new RepoInfoTree(fileList,curCommonInfo,repoUuid);
+        RepoInfoTree preTree = new RepoInfoTree(filePaths,preCommonInfo,repoUuid);
         jGitHelper.checkout(parent2);
-        RepoInfoTree compareTree = new RepoInfoTree(fileList,compareCommonInfo,repoUuid);
+        RepoInfoTree compareTree = new RepoInfoTree(filePaths,compareCommonInfo,repoUuid);
+        jGitHelper.checkout(commit);
+        RepoInfoTree curTree = new RepoInfoTree(filePaths,curCommonInfo,repoUuid);
+
 
         JavaTree preJavaTree = (JavaTree) preTree.getRepoTree().get(Language.JAVA);
         JavaTree curJavaTree = (JavaTree) curTree.getRepoTree().get(Language.JAVA);
@@ -179,5 +184,16 @@ public class MergeHandler implements PublicConstants {
         String commitMessage = jGitHelper.getMess(commit);
         // String repoUuid, String branch, String commit, Date commitDate, String committer, String commitMessage, String parentCommit
         return new CommonInfo(repoUuid, branch, commit, commitDate, committer, commitMessage, parentCommit);
+    }
+
+    /**
+     *将文件相对路径转成绝对路径
+     */
+    private List<String> localizeFilePath(String repoPath, List<String> filePath) {
+        List<String> res = new ArrayList<>();
+        for (int i = 0; i < filePath.size() ; i++) {
+            res.add(repoPath + "/" + filePath.get(i));
+        }
+        return res;
     }
 }
