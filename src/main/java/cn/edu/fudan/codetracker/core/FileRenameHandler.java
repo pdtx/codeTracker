@@ -11,7 +11,7 @@ import cn.edu.fudan.codetracker.util.FileFilter;
 import java.util.*;
 
 /**
- * description:
+ * description: 处理文件重命名的情况
  *
  * @author fancying
  * create: 2020-06-09 22:22
@@ -20,34 +20,29 @@ public class FileRenameHandler implements PublicConstants {
 
     public static void dealWithRename(List<String> renameList, JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo commonInfo, ProxyDao proxyDao) {
 
-        Set<String> preRenameSet = new HashSet<>();
-        Set<String> curRenameSet = new HashSet<>();
+        // 预处理
+
+        // key: prePath value:curPath
+        Map<String, String> renameMap = new LinkedHashMap<>();
         for (String str: renameList) {
             String[] paths = str.split(DELIMITER_RENAME);
-            preRenameSet.add(paths[0]);
-            curRenameSet.add(paths[1]);
+            renameMap.put(paths[0], paths[1]);
         }
-        int renameInitialCapacity = curRenameSet.size() << 1;
-        Map<String,FileNode> preRenameMap = new HashMap<>(renameInitialCapacity);
-        Map<String,FileNode> curRenameMap = new HashMap<>(renameInitialCapacity);
+        int renameInitialCapacity = renameMap.size() << 1;
+        Map<String, FileNode> preRenameMap = new HashMap<>(renameInitialCapacity);
+        Map<String, FileNode> curRenameMap = new HashMap<>(renameInitialCapacity);
         preRepoInfo.getFileInfos().stream().
-                filter(f -> preRenameSet.contains(f.getFilePath())).
+                filter(f -> renameMap.keySet().contains(f.getFilePath())).
                 forEach(f -> preRenameMap.put(f.getFilePath(), f));
         curRepoInfo.getFileInfos().stream().
-                filter(f -> curRenameSet.contains(f.getFilePath())).
+                filter(f -> renameMap.values().contains(f.getFilePath())).
                 forEach(f -> curRenameMap.put(f.getFilePath(),f));
 
+        // 遍历rename的map
+        for (Map.Entry<String, String> entry : renameMap.entrySet()) {
 
-        for (String str: renameList) {
-            String[] paths = str.split(DELIMITER_RENAME);
-            if (FileFilter.javaFilenameFilter(paths[0]) || FileFilter.javaFilenameFilter(paths[1])) {
-                continue;
-            }
-            FileNode preRenameRoot = preRenameMap.get(paths[0]);
-            FileNode curRenameRoot = curRenameMap.get(paths[1]);
-            curRenameRoot.setChangeStatus(BaseNode.ChangeStatus.SELF_CHANGE);
-            NodeMapping.setNodeMapped(preRenameRoot,curRenameRoot,proxyDao,commonInfo);
         }
+
 
     }
 }

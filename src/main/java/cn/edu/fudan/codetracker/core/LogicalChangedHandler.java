@@ -167,8 +167,9 @@ public class LogicalChangedHandler implements NodeMapping {
      */
     private StatementNode findMostSimilarStatement(StatementNode target, Set<BaseNode> preSet) {
         StatementNode result = null;
-        double similarity = 0.2;
+        double similarity = 0.8;
 
+        List<StatementNode> similarStatementList = new ArrayList<>();
         for (BaseNode baseNode : preSet) {
             StatementNode statement = (StatementNode)baseNode;
             if (statement.getLevel() != target.getLevel()) {
@@ -176,8 +177,16 @@ public class LogicalChangedHandler implements NodeMapping {
             }
             double tmp =  CosineUtil.cosineSimilarity(target.getSelfBodyToken(), statement.getSelfBodyToken());
             if (tmp > similarity) {
-                similarity = tmp;
-                result = statement;
+                similarStatementList.add(statement);
+            }
+        }
+
+        double totalBody = 0.2;
+        for (StatementNode statementNode : similarStatementList) {
+            double tmp = CosineUtil.cosineSimilarity(target.getBody(), statementNode.getBody());
+            if (tmp > totalBody) {
+                totalBody = tmp;
+                result = statementNode;
             }
         }
 

@@ -1,6 +1,5 @@
 package cn.edu.fudan.codetracker.constants;
 
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;

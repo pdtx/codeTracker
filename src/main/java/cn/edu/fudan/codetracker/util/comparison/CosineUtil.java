@@ -25,20 +25,17 @@ public class CosineUtil {
      * 判断两段代码是否相似
      * @param code1 代码段1
      * @param code2 代码段2
-     * @param tokenize 是否token化
-     * @param threshold 相似阈值
-     * @return
+     * @return threshold 相似阈值
      */
-    public static boolean isSimilarCode(String code1, String code2, boolean tokenize, double threshold){
+    public static double cosineSimilarity(String code1, String code2){
         try {
-            List<Object> tokens1 = lexer(code1, tokenize);
-            List<Object> tokens2 = lexer(code2, tokenize);
-            double similarity = cosineSimilarity(tokens1, tokens2);
-            return similarity >= threshold;
+            List<Object> tokens1 = lexer(code1, true);
+            List<Object> tokens2 = lexer(code2, true);
+            return cosineSimilarity(tokens1, tokens2);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return false;
+        return 0;
     }
 
     /**
