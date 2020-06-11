@@ -117,6 +117,8 @@ public final class DiffInfo {
         }
         boolean isFirst = true;
         String type = "";
+        BaseNode res = null;
+        //严格匹配找不到
         for (BaseNode baseNode: set) {
             if (isFirst) {
                 type = baseNode.getProjectInfoLevel().getName();
@@ -150,12 +152,67 @@ public final class DiffInfo {
             }
 
             if (isMatch(begin, end, nodeBegin, nodeEnd)) {
-                return baseNode;
+                if (!(baseNode instanceof StatementNode)) {
+                    return baseNode;
+                }
+                if (res == null || ((StatementNode)res).getLevel() > ((StatementNode)baseNode).getLevel()) {
+                    res = baseNode;
+                }
             }
         }
-        return null;
+        if (res != null) {
+            return res;
+        }
+        //交集最多匹配
+        return findMostSimilarNode(begin, end, set, type);
     }
 
+    private BaseNode findMostSimilarNode(int begin, int end, Set<BaseNode> set, String type) {
+        BaseNode result = null;
+        int similarity = Integer.MAX_VALUE;
+        for (BaseNode baseNode: set) {
+            int nodeBegin = -1,nodeEnd = -1;
+
+            switch (type) {
+                case "class":
+                    ClassNode classNode = (ClassNode)baseNode;
+                    nodeBegin = classNode.getBegin();
+                    nodeEnd = classNode.getEnd();
+                    break;
+                case "method":
+                    MethodNode methodNode = (MethodNode)baseNode;
+                    nodeBegin = methodNode.getBegin();
+                    nodeEnd = methodNode.getEnd();
+                    break;
+                case "field":
+                    FieldNode fieldNode = (FieldNode)baseNode;
+                    nodeBegin = fieldNode.getBegin();
+                    nodeEnd = fieldNode.getEnd();
+                    break;
+                case "statement":
+                    StatementNode statementNode = (StatementNode)baseNode;
+                    nodeBegin = statementNode.getBegin();
+                    nodeEnd = statementNode.getEnd();
+                    break;
+                default:
+                    break;
+            }
+
+            int cal = calSimilarity(begin, end, nodeBegin, nodeEnd);
+            if (cal != -1 && cal < similarity) {
+                result = baseNode;
+                similarity = cal;
+            }
+        }
+        return result;
+    }
+
+    private int calSimilarity(int diffBegin, int diffEnd, int nodeBegin, int nodeEnd) {
+        if (nodeBegin <= diffEnd && nodeEnd >= diffBegin) {
+            return Math.abs(nodeEnd - diffEnd) + Math.abs(nodeBegin - diffBegin);
+        }
+        return -1;
+    }
 
     private boolean isMatch(int diffBegin, int diffEnd, int nodeBegin, int nodeEnd) {
         return (diffBegin == nodeBegin) && (diffEnd == nodeEnd);
