@@ -23,6 +23,7 @@ public class DeleteHandler implements NodeMapping {
         return SingletonEnum.SINGLETON_ENUM.getDeleteHandler();
     }
 
+
     enum SingletonEnum {
         // 创建单例
         SINGLETON_ENUM;
@@ -44,7 +45,7 @@ public class DeleteHandler implements NodeMapping {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
                 NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
-                AddHandler.pushChildrenInto(baseNode, stack);
+                NodeMapping.pushChildrenIntoStack(baseNode, stack);
             }
         }
 

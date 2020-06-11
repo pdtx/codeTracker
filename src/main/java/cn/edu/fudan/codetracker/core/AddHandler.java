@@ -26,7 +26,6 @@ public class AddHandler implements NodeMapping {
         static final AddHandler ADD_HANDLER = new AddHandler();
     }
 
-
     @Override
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
@@ -36,7 +35,7 @@ public class AddHandler implements NodeMapping {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
                 NodeMapping.setNodeMapped(null, baseNode, proxyDao, commonInfo);
-                pushChildrenInto(baseNode, stack);
+                NodeMapping.pushChildrenIntoStack(baseNode, stack);
             }
             return;
         }
@@ -48,36 +47,6 @@ public class AddHandler implements NodeMapping {
         NodeMapping.setNodeMapped(null, curRoot, proxyDao, commonInfo);
     }
 
-    private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
-        Stack<BaseNode> stack = new Stack<>();
-        stack.push(curRoot);
-        while (!stack.empty()) {
-            BaseNode baseNode = stack.pop();
-            baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-            NodeMapping.setNodeMapped(null, baseNode, proxyDao, commonInfo);
-            if (baseNode.getChildren() != null) {
-                for (BaseNode child: baseNode.getChildren()) {
-                    if (isAdd(child)) {
-                        stack.push(child);
-                    } else {
-                        dealWithNotAdd(child);
-                    }
-                }
-            }
-            if (baseNode instanceof ClassNode) {
-                ClassNode classNode = (ClassNode)baseNode;
-                if (classNode.getFieldNodes() != null) {
-                    for (BaseNode field : classNode.getFieldNodes()) {
-                        if (isAdd(field)) {
-                            stack.push(field);
-                        } else {
-                            dealWithNotAdd(field);
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * todo 后续完善，判断非文件节点的子节点是否为真正的ADD
@@ -92,16 +61,5 @@ public class AddHandler implements NodeMapping {
     private void dealWithNotAdd(BaseNode baseNode) {
         //处理非ADD子节点
     }
-    
-    static void pushChildrenInto(BaseNode baseNode, Stack<BaseNode> stack){
-        if (baseNode.getChildren() != null) {
-            baseNode.getChildren().forEach(stack::push);
-        }
-        if (baseNode instanceof ClassNode ) {
-            ClassNode classNode = (ClassNode)baseNode;
-            if (classNode.getFieldNodes() != null) {
-                classNode.getFieldNodes().forEach(stack::push);
-            }
-        }
-    }
+
 }

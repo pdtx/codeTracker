@@ -1,7 +1,6 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -59,4 +58,17 @@ public class FieldNode extends BaseNode{
         return false;
     }
 
+
+    public boolean isSame(FieldNode fieldNode) {
+        if (this == fieldNode) {
+            return true;
+        }
+
+        if(fieldNode == null){
+            return false;
+        }
+        return this.simpleName.equals(fieldNode.getSimpleName()) &&
+                this.modifier.equals(fieldNode.getModifier()) &&
+                this.simpleType.equals(fieldNode.getSimpleType()) ;
+    }
 }

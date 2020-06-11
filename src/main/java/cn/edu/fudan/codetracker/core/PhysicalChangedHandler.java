@@ -99,7 +99,7 @@ public class PhysicalChangedHandler implements NodeMapping{
             NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
             //物理改变版本号不变 如果trackerInfo拿不到，处理为ADD，版本号为1情况需排除
             if (curRoot.getVersion() > 1) {
-                curRoot.setVersion(curRoot.getVersion()-1);
+                curRoot.setVersion(curRoot.getVersion() - 1);
             }
         }
     }
