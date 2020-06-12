@@ -4,6 +4,8 @@ import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 
+import java.util.Stack;
+
 /**
  * description: 此类主要负责节点间的映射
  *
@@ -103,6 +105,50 @@ public interface NodeMapping {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.STATEMENT,statementNode.getMethodUuid(),statementNode.getBody());
         }
         return trackerInfo;
+    }
+
+    /**
+     * 递归匹配以及设置节点
+     * @param root r
+     * @param proxyDao p
+     * @param commonInfo c
+     * @param status s
+     */
+    static void subTreeMappingRecursive(BaseNode root, CommonInfo commonInfo, ProxyDao proxyDao, BaseNode.ChangeStatus status) {
+        Stack<BaseNode> stack = new Stack<>();
+        stack.push(root);
+        while (!stack.empty()) {
+            BaseNode baseNode = stack.pop();
+            baseNode.setChangeStatus(status);
+            BaseNode pre = null;
+            BaseNode cur = null;
+            if (status.equals(BaseNode.ChangeStatus.ADD)) {
+                cur = baseNode;
+            }
+            if (status.equals(BaseNode.ChangeStatus.DELETE)) {
+                pre = baseNode;
+            }
+            baseNode.setChangeStatus(status);
+            NodeMapping.setNodeMapped(pre, cur, proxyDao, commonInfo);
+            pushChildrenIntoStack(baseNode, stack);
+        }
+    }
+
+    /**
+     * 将baseNode的孩子节点放入栈中
+     * @param baseNode b
+     * @param stack s
+     */
+    static void pushChildrenIntoStack(BaseNode baseNode, Stack<BaseNode> stack){
+        if (baseNode.getChildren() != null) {
+            baseNode.getChildren().forEach(stack::push);
+        }
+        if (baseNode instanceof ClassNode ) {
+            ClassNode classNode = (ClassNode)baseNode;
+            if (classNode.getFieldNodes() != null) {
+                classNode.getFieldNodes().forEach(stack::push);
+            }
+        }
     }
 
 }

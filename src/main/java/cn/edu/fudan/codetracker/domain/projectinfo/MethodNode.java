@@ -1,12 +1,17 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
+import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -58,5 +63,18 @@ public class MethodNode extends BaseNode{
         return false;
     }
 
+    public static Map<MethodNode, Double> findMostSimilarMethod(MethodNode target, List<MethodNode> methodNodeList) {
+        Map<MethodNode, Double> map = new HashMap<>(2);
+        double threshold = 0.6;
+        for (MethodNode m : methodNodeList) {
+            double tmp = CosineUtil.cosineSimilarity(target.getContent(), m.getContent());
+            if (tmp > threshold) {
+                map.clear();
+                threshold = tmp;
+                map.put(m, tmp);
+            }
+        }
+        return map;
+    }
 
 }
