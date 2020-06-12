@@ -24,6 +24,10 @@ public  class BaseNode {
      */
     private boolean isMapping = false;
 
+    /**
+     * 在处理statementNode匹配时，可能子语句先匹配上diffInfo,回溯时改父语句为CHANGE，而后处理剩下无diffInfo语句时，会再处理父语句，重写set方法避免父语句再被改成CHANGE_RECORD
+     * @param changeStatus
+     */
     public void setChangeStatus(ChangeStatus changeStatus) {
         if (this.changeStatus.priority > changeStatus.priority) {
             this.changeStatus = changeStatus;

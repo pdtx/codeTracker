@@ -251,7 +251,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             //curTree上搜索add change情况
             handleNode(packageMap, curRepoInfo.getPackageInfos());
             handleNode(fileMap, curRepoInfo.getFileInfos());
-            handleNode(fileMap, curRepoInfo.getFileInfos());
+            handleNode(classMap, curRepoInfo.getClassInfos());
             handleNode(methodMap, curRepoInfo.getMethodInfos());
             handleNode(fieldMap, curRepoInfo.getFieldInfos());
             handleNode(statementMap, curRepoInfo.getStatementInfos());
@@ -283,11 +283,11 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void handleNode(Map<String, Set<T>> nodeMap, List<? extends BaseNode> packageNodeList) {
-        for (BaseNode node : packageNodeList) {
-            if (BaseNode.ChangeStatus.CHANGE.equals(node.getChangeStatus()) && node.getVersion() == 1) {
-                node.setChangeStatus(BaseNode.ChangeStatus.ADD);
-            }
+    private <T> void handleNode(Map<String, Set<T>> nodeMap, List<? extends BaseNode> nodeList) {
+        for (BaseNode node : nodeList) {
+//            if (BaseNode.ChangeStatus.CHANGE.equals(node.getChangeStatus()) && node.getVersion() == 1) {
+//                node.setChangeStatus(BaseNode.ChangeStatus.ADD);
+//            }
             T t = (T)node;
             if (BaseNode.ChangeStatus.ADD.equals(node.getChangeStatus())) {
                 nodeMap.get("ADD").add(t);

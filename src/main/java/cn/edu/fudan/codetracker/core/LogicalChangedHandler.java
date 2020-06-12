@@ -322,6 +322,10 @@ public class LogicalChangedHandler implements NodeMapping {
             BaseNode parent = baseNode.getParent();
             if (parent.getChangeStatus().getPriority() > BaseNode.ChangeStatus.CHANGE.getPriority()) {
                 parent.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
+                //由于method和statement在无对应diffInfo的情况下会被处理成物理改变，version不变，如果其孩子结点逻辑改变，需要将其version加一
+                if (parent instanceof StatementNode || parent instanceof MethodNode) {
+                    parent.setVersion(parent.getVersion()+1);
+                }
             }
             baseNode = parent;
         }
