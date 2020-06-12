@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.eclipse.jgit.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -88,6 +87,24 @@ public class StatementNode extends BaseNode{
         }
         selfBodyToken =  Arrays.asList(p.split(","));
         return selfBodyToken;
+    }
+
+    public static Map<StatementNode, Double>  findMostSimilarStatement(StatementNode target, List<StatementNode> nodeList) {
+        double similarity = 0.6;
+        Map<StatementNode, Double> result = new HashMap<>(2);
+        for (StatementNode statement : nodeList) {
+            if (statement.getLevel() != target.getLevel()) {
+                continue;
+            }
+            double tmp = CosineUtil.cosineSimilarity(target.getBody(), statement.getBody());
+            if (tmp > similarity) {
+                result.clear();
+                similarity = tmp;
+                result.put(statement, similarity);
+            }
+        }
+
+        return result;
     }
 
 }

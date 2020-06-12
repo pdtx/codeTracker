@@ -60,6 +60,7 @@ public class LogicalChangedHandler implements NodeMapping {
             ProjectInfoLevel[] keys = {ProjectInfoLevel.CLASS, ProjectInfoLevel.METHOD, ProjectInfoLevel.FIELD};
 
             //先mapping class、method、field
+            // method change signature[self_change]
             for (ProjectInfoLevel p : keys) {
                 Set<BaseNode> preSet = preMap.get(p);
                 Set<BaseNode> curSet = curMap.get(p);

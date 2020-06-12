@@ -4,11 +4,13 @@ import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 /**
+ * todo 可以根据jgitDiff的行号来进行匹配改进
  * description: 处理文件重命名的情况
  *
  * @author fancying
@@ -75,6 +77,8 @@ class FileRenameHandler implements PublicConstants {
                 }
                 curClassNode = (ClassNode)cbaseNode;
                 if (preClassNode.getClassName().equals(curClassNode.getClassName())) {
+
+                    // fixme 该class 可能没变
                     curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
                     NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
                     method(preClassNode, curClassNode, proxyDao, commonInfo);
@@ -102,13 +106,18 @@ class FileRenameHandler implements PublicConstants {
             }
 
             for (FieldNode cFieldNode : curFieldNodeList) {
-                if ( !cFieldNode.isMapping() &&
-                        cFieldNode.getSimpleName().equals(pFieldNode.getSimpleName()) &&
-                        !cFieldNode.getFullName().equals(pFieldNode.getFullName())) {
+                boolean isSameFullName = cFieldNode.getFullName().equals(pFieldNode.getFullName());
+                if ( !cFieldNode.isMapping() && cFieldNode.getSimpleName().equals(pFieldNode.getSimpleName()) ) {
+                    if (isSameFullName) {
+                        cFieldNode.setMapping(true);
+                        pFieldNode.setMapping(true);
+                        break;
+                    }
                     cFieldNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
                     NodeMapping.setNodeMapped(pFieldNode, cFieldNode, proxyDao, commonInfo);
                     break;
                 }
+
             }
             if (!pFieldNode.isMapping()){
                 NodeMapping.subTreeMappingRecursive(pFieldNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
@@ -145,29 +154,25 @@ class FileRenameHandler implements PublicConstants {
                 cMethodNode.setChangeStatus(status);
                 NodeMapping.setNodeMapped(pMethodNode, cMethodNode, proxyDao, commonInfo);
 
-                // todo 循环识别 语句的物理和变更
-                statement();
+                // todo 循环识别 语句的物理和逻辑变更
+                statement(pMethodNode, cMethodNode, proxyDao, commonInfo);
                 continue;
             }
 
-            // 考虑是否有物理上的变更
+
+            //全部匹配上 考虑是否有物理上的变更
             boolean isSameLine = pMethodNode.getBegin() == cMethodNode.getBegin() &&  pMethodNode.getEnd() == cMethodNode.getEnd();
             boolean isSameContent = pMethodNode.getContent().equals(cMethodNode.getContent());
+            BaseNode.ChangeStatus status = isSameContent ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
             if (!isSameLine || !isSameContent) {
+                cMethodNode.setChangeStatus(status);
                 physicalChangedHandler.subTreeMapping(pMethodNode, cMethodNode, commonInfo, proxyDao);
-
                 // todo 循环识别 语句是否有物理上的变更
+                statement(pMethodNode, cMethodNode, proxyDao, commonInfo);
             }
 
-
-
-
-
-//                BaseNode.ChangeStatus status = cMethodNode.getFullName().equals(pMethodNode.getFullName()) ? BaseNode.ChangeStatus.CHANGE : BaseNode.ChangeStatus.SELF_CHANGE;
-//                cMethodNode.setChangeStatus(status);
-//                NodeMapping.setNodeMapped(pMethodNode, cMethodNode, proxyDao, commonInfo);
-//                statement();
-
+            pMethodNode.setMapping(true);
+            cMethodNode.setMapping(true);
         }
 
         curMethodNodeList.stream().
@@ -176,7 +181,53 @@ class FileRenameHandler implements PublicConstants {
 
     }
 
-    private static void statement() {
+    @SuppressWarnings("unchecked")
+    private static void statement(MethodNode pMethodNode, MethodNode cMethodNode, ProxyDao proxyDao, CommonInfo commonInfo) {
+        List<StatementNode> pStatementNodes = (List<StatementNode>)pMethodNode.getChildren();
+        List<StatementNode> cStatementNodes = (List<StatementNode>)cMethodNode.getChildren();
+
+        for (StatementNode pStatementNode : pStatementNodes) {
+            if (pStatementNode.isMapping()) {
+                continue;
+            }
+            // key StatementNode value similarity
+            Map<StatementNode, Double>  map = StatementNode.findMostSimilarStatement(pStatementNode, cStatementNodes);
+
+            // 找到之后还需要判断是物理上的改变还是逻辑上的改变
+            if (map.isEmpty()) {
+                NodeMapping.subTreeMappingRecursive(pStatementNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                continue;
+            }
+            StatementNode cStatementNode = (StatementNode)map.keySet().toArray()[0];
+            double similarity = map.get(cStatementNode);
+            // 含有逻辑上的变更
+            if (similarity < 1.00) {
+                // 如果有孩子 判断除去body之外的相似度是否为 1.0
+                BaseNode.ChangeStatus status = (pStatementNode.getChildren() != null &&
+                        !((Double)1.00).equals(CosineUtil.cosineSimilarity(pStatementNode.getSelfBodyToken(), cStatementNode.getSelfBodyToken()))) ?
+                BaseNode.ChangeStatus.SELF_CHANGE : BaseNode.ChangeStatus.CHANGE;
+                cStatementNode.setChangeStatus(status);
+                NodeMapping.setNodeMapped(pStatementNode, cStatementNode, proxyDao, commonInfo);
+                continue;
+            }
+
+            //全部匹配上 考虑是否有物理上的变更
+            boolean isSameLine = pStatementNode.getBegin() == cStatementNode.getBegin() &&  pStatementNode.getEnd() == cStatementNode.getEnd();
+            boolean isSameContent = pStatementNode.getBody().equals(cStatementNode.getBody());
+            BaseNode.ChangeStatus status = isSameContent ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
+            if (!isSameLine || !isSameContent) {
+                pStatementNode.setChangeStatus(status);
+                physicalChangedHandler.subTreeMapping(pStatementNode, cStatementNode, commonInfo, proxyDao);
+            }
+
+            pStatementNode.setMapping(true);
+            cStatementNode.setMapping(true);
+        }
+
+        cStatementNodes.stream().
+                filter(c -> !c.isMapping()).
+                forEach(c -> NodeMapping.subTreeMappingRecursive(c, commonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
+
     }
 
 
