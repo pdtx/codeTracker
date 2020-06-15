@@ -4,6 +4,7 @@ import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import cn.edu.fudan.codetracker.util.FileFilter;
 import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +44,9 @@ class FileRenameHandler implements PublicConstants {
 
         // 遍历rename的map 匹配两个fileNode
         for (Map.Entry<String, String> entry : renameMap.entrySet()) {
+            if (FileFilter.javaFilenameFilter(entry.getKey())) {
+                continue;
+            }
             FileNode preFileNode = preRenameMap.get(entry.getKey());
             FileNode curFileNode = curRenameMap.get(entry.getValue());
             curFileNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
