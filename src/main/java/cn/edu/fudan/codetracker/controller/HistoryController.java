@@ -84,7 +84,9 @@ public class HistoryController {
     @GetMapping(value = {"/statistics/committer/temp/focus"})
     public ResponseBean getFocus(@RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch){
         try{
-            List<TempMostInfo> data = historyService.getFocus(committer, beginDate, endDate, repoUuid, branch);
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            List<TempMostInfo> data = historyService.getFocus(committer, begin, end, repoUuid, branch);
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();

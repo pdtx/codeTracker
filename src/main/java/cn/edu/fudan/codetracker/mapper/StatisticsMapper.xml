@@ -61,7 +61,7 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} and isLogic = 1 order by meta_statement_uuid, commit_date;
+        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} and isLogic = 1 order by meta_statement_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -72,7 +72,7 @@
     </resultMap>
 
     <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
-        select meta_method_uuid, committer, commit_date, change_relation from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_method_uuid, commit_date;
+        select meta_method_uuid, committer, commit_date, change_relation from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_method_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -83,7 +83,7 @@
     </resultMap>
 
     <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
-        select meta_field_uuid, committer, commit_date, change_relation from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_field_uuid, commit_date;
+        select meta_field_uuid, committer, commit_date, change_relation from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_field_uuid, commit_date;
     </select>
 
 

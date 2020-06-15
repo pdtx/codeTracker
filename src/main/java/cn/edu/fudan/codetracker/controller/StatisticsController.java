@@ -35,7 +35,9 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/committer/line/valid"})
     public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
         try{
-            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, beginDate, endDate);
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, begin, end);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
             } else {
@@ -55,7 +57,7 @@ public class StatisticsController {
     public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @Param("developer") String developer){
         try{
             String begin = beginDate + " 00:00:00";
-            String end = endDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
             Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
