@@ -20,6 +20,9 @@ public class LogicalChangedHandler implements NodeMapping {
 
     private CommonInfo commonInfo;
     private ProxyDao proxyDao;
+    private Map<ProjectInfoLevel, Set<BaseNode>> preMap;
+    private Map<ProjectInfoLevel, Set<BaseNode>> curMap;
+
 
     private static ThreadLocal< Map<String, List<DiffInfo>> > mapThreadLocal = new ThreadLocal<>();
 
@@ -54,16 +57,16 @@ public class LogicalChangedHandler implements NodeMapping {
 
             //抽取preMap和curMap
             // key: [class method field statement] value:[BaseNode]
-            Map<ProjectInfoLevel, Set<BaseNode>> preMap = extractMapFromNode(preRoot);
-            Map<ProjectInfoLevel, Set<BaseNode>> curMap = extractMapFromNode(curRoot);
+            preMap = extractMapFromNode(preRoot);
+            curMap = extractMapFromNode(curRoot);
 
             ProjectInfoLevel[] keys = {ProjectInfoLevel.CLASS, ProjectInfoLevel.METHOD, ProjectInfoLevel.FIELD};
 
             //先mapping class、method、field
             // method change signature[self_change]
             for (ProjectInfoLevel p : keys) {
-                Set<BaseNode> preSet = preMap.get(p);
-                Set<BaseNode> curSet = curMap.get(p);
+                Set<BaseNode> preSet = new HashSet<>(preMap.get(p));
+                Set<BaseNode> curSet = new HashSet<>(curMap.get(p));
                 Set<DiffInfo> diffSet = new HashSet<>(diffMap.get(p.getName()));
                 mapping(preSet, curSet, diffSet, proxyDao);
             }
@@ -72,24 +75,30 @@ public class LogicalChangedHandler implements NodeMapping {
             Set<DiffInfo> statementDiffs = new HashSet<>(diffMap.get("statement"));
             for (BaseNode node: curMap.get(ProjectInfoLevel.METHOD)) {
                 MethodNode methodNode = (MethodNode)node;
+                MethodNode preMethodNode = null;
                 Set<BaseNode> statements = getStatementNodeFromMethod(methodNode);
                 Set<BaseNode> preStatements = null;
                 if(methodNode.getPreMappingBaseNode() != null) {
-                    MethodNode preMethodNode = (MethodNode)methodNode.getPreMappingBaseNode();
+                    preMethodNode = (MethodNode)methodNode.getPreMappingBaseNode();
                     preStatements = getStatementNodeFromMethod(preMethodNode);
                 }
-                Set<DiffInfo> relatedDiffInfo = getMethodRelatedDiffInfo(methodNode, statementDiffs);
+                Set<DiffInfo> relatedDiffInfo = getMethodRelatedDiffInfo(methodNode, preMethodNode,statementDiffs);
                 mapping(preStatements, statements, relatedDiffInfo, proxyDao);
             }
         }
     }
 
-    private Set<DiffInfo> getMethodRelatedDiffInfo(MethodNode methodNode, Set<DiffInfo> diffInfoSet) {
+    private Set<DiffInfo> getMethodRelatedDiffInfo(MethodNode methodNode, MethodNode preMethodNode, Set<DiffInfo> diffInfoSet) {
         Set<DiffInfo> resultSet = new HashSet<>();
         int methodBegin = methodNode.getBegin();
         int methodEnd = methodNode.getEnd();
+        int preBegin = 0, preEnd = 0;
+        if (preMethodNode != null) {
+            preBegin = preMethodNode.getBegin();
+            preEnd = preMethodNode.getEnd();
+        }
         for (DiffInfo diffInfo : diffInfoSet) {
-            if (diffInfo.isMethodRelated(methodBegin, methodEnd)) {
+            if (diffInfo.isCurMethodRelated(methodBegin, methodEnd) || diffInfo.isPreMethodRelated(preBegin, preEnd)) {
                 resultSet.add(diffInfo);
             }
         }
@@ -126,11 +135,11 @@ public class LogicalChangedHandler implements NodeMapping {
                 continue;
             }
             if (pre == null) {
-                dealWithAddDelete(cur, diffInfo, addHandler, curSet, proxyDao);
+                dealWithAddDelete(cur, diffInfo, addHandler, curSet, proxyDao, true);
                 continue;
             }
             if (cur == null) {
-                dealWithAddDelete(pre, diffInfo, deleteHandler, preSet, proxyDao);
+                dealWithAddDelete(pre, diffInfo, deleteHandler, preSet, proxyDao, false);
                 continue;
             }
 
@@ -278,7 +287,7 @@ public class LogicalChangedHandler implements NodeMapping {
     }
 
 
-    private void dealWithAddDelete(BaseNode baseNode, DiffInfo diffInfo, NodeMapping nodeMapping, Set<BaseNode> nodeSet, ProxyDao proxyDao) {
+    private void dealWithAddDelete(BaseNode baseNode, DiffInfo diffInfo, NodeMapping nodeMapping, Set<BaseNode> nodeSet, ProxyDao proxyDao, boolean isAdd) {
         if (baseNode instanceof StatementNode) {
             ((StatementNode) baseNode).setDescription(diffInfo.getDescription());
         }
@@ -295,16 +304,20 @@ public class LogicalChangedHandler implements NodeMapping {
         backTracing(tmp);
 
         //删除节点
-        removeFromSet(baseNode, nodeSet);
+        removeFromSet(baseNode, nodeSet, isAdd);
     }
 
-    private void removeFromSet(BaseNode root, Set<BaseNode> nodeSet) {
+    private void removeFromSet(BaseNode root, Set<BaseNode> nodeSet, boolean isAdd) {
         // fixme 新增删除子节点是否也为新增删除 已被处理
+        Map<ProjectInfoLevel, Set<BaseNode>> map = isAdd ? curMap : preMap;
         Queue<BaseNode> queue = new ArrayDeque<>();
         queue.offer(root);
         while (queue.size() != 0) {
             BaseNode node = queue.poll();
-            nodeSet.remove(node);
+            if (node == root || root instanceof StatementNode) {
+                nodeSet.remove(node);
+            }
+            map.get(node.getProjectInfoLevel()).remove(node);
             if (node.getChildren() != null) {
                 for (BaseNode child : node.getChildren()) {
                     queue.offer(child);

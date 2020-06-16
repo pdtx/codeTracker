@@ -44,15 +44,18 @@ public class DeleteHandler implements NodeMapping {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-                NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
+                NodeMapping.setNodeMapped(baseNode,null, proxyDao, commonInfo);
                 NodeMapping.pushChildrenIntoStack(baseNode, stack);
             }
         }
 
-        // todo 处理当前节点 不处理子节点
-        //singleNodeAddMapping(preRoot, curRoot, commonInfo, proxyDao);
-        preRoot.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-        NodeMapping.setNodeMapped(preRoot, null, proxyDao, commonInfo);
+        // fixme 处理当前method statement节点 子节点目前也处理为删除，暂不考虑move
+        while (!stack.empty()) {
+            BaseNode baseNode = stack.pop();
+            baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
+            NodeMapping.setNodeMapped(baseNode,null, proxyDao, commonInfo);
+            NodeMapping.pushChildrenIntoStack(baseNode, stack);
+        }
     }
 
     private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {

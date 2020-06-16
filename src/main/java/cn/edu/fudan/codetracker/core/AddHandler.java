@@ -42,9 +42,13 @@ public class AddHandler implements NodeMapping {
 
         //当curRoot是除了文件节点以外其他节点时，判断其孩子是否为move
         // singleNodeAddMapping(preRoot, curRoot, commonInfo, proxyDao);
-        // todo 处理当前节点 不处理子节点
-        curRoot.setChangeStatus(BaseNode.ChangeStatus.ADD);
-        NodeMapping.setNodeMapped(null, curRoot, proxyDao, commonInfo);
+        // fixme 处理当前method statement节点 子节点目前也处理为新增，暂不考虑move
+        while (!stack.empty()) {
+            BaseNode baseNode = stack.pop();
+            baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
+            NodeMapping.setNodeMapped(null, baseNode, proxyDao, commonInfo);
+            NodeMapping.pushChildrenIntoStack(baseNode, stack);
+        }
     }
 
 
