@@ -8,7 +8,6 @@ import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.core.tree.RepoInfoTree;
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.ScanService;
@@ -19,7 +18,6 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.diff.DiffEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -58,12 +56,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-        if (findScanLatest(repoUuid, branch) != null) {
-            log.warn("First Scan: this repo[{}] has already been scanned!", repoUuid);
-            return;
-        }
-
-        repoDao.insertScanRepo(UUID.randomUUID().toString(), repoUuid, branch, ScanStatus.SCANNING);
 //        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
         repoPath.set(getRepoPathByUuid(repoUuid));
 //        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
@@ -71,35 +63,34 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false);
-        repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
+        ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(),ScanStatus.SCANNING,commitList.size(),0,new Date(),repoUuid,branch);
+        repoDao.insertScanRepo(scanInfo);
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false, scanInfo);
+        scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
+        repoDao.saveScanInfo(scanInfo);
 //        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     @Async("taskExecutor")
     @Override
-    public void autoUpdate(String repoUuid, String branch) {
-        String commitId = findScanLatest(repoUuid, branch);
-        if (commitId == null) {
-            log.warn("Update Scan Error: this repo [{}] hasn't been scanned!", repoUuid);
-            return;
-        }
-
-        repoDao.updateScanStatus(repoUuid, branch, ScanStatus.SCANNING);
+    public void autoUpdate(String repoUuid, String branch, String commitId) {
 //        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
         repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true);
-        repoDao.updateScanStatus(repoUuid, branch, isAbort ? ScanStatus.ABORTED : ScanStatus.SCANNED);
+        ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(),ScanStatus.SCANNING,commitList.size(),0,new Date(),repoUuid,branch);
+        repoDao.insertScanRepo(scanInfo);
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true, scanInfo);
+        scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
+        repoDao.saveScanInfo(scanInfo);
 //        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
      * FIXME need @Transactional
      */
-    private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate) {
+    private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate, ScanInfo scanInfo) {
         int num = 0;
         try {
             for (String commit : commitList) {
@@ -118,7 +109,11 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     saveData(javaTree,commonInfo);
                     isUpdate = true;
                 }
-                repoDao.updateLatestCommit(repoUuid, branch, commit);
+                scanInfo.setEndScanTime(new Date());
+                scanInfo.setScanTime((scanInfo.getEndScanTime().getTime() - scanInfo.getStartScanTime().getTime())/1000);
+                scanInfo.setLatestCommit(commit);
+                scanInfo.setScannedCommitCount(scanInfo.getScannedCommitCount()+1);
+                repoDao.updateScanInfo(scanInfo);
             }
             return false;
         } catch (Exception e) {
@@ -422,19 +417,15 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         statementDao.insertStatementRelationList(repoInfo.getStatementInfos(),commonInfo);
     }
 
+
     /**
-     * 返回库里扫描过最新的commitId
-     * @param repoUuid
-     * @param branch
+     * 返回最新扫描信息
+     * @param repoId 代码仓库的 uuid
      * @return
      */
-    private String findScanLatest(String repoUuid, String branch) {
-        return repoDao.getLatestScan(repoUuid, branch);
-    }
-
     @Override
-    public String getScanStatus(String repoId, String branch) {
-        return repoDao.getScanStatus(repoId, branch);
+    public ScanInfo getScanInfo(String repoId) {
+        return repoDao.getScanInfo(repoId);
     }
 
 

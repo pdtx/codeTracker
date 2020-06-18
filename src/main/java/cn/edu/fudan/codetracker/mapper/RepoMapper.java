@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.mapper;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.ScanInfo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
@@ -7,14 +8,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RepoMapper {
 
-    void insertScanRepo(@Param("uuid") String uuid, @Param("repoId") String repoId, @Param("branch") String branch, @Param("status") String status);
+    void insertScanRepo(@Param("scanInfo")ScanInfo scanInfo);
 
-    void updateScanStatus(@Param("repoId") String repoId, @Param("branch") String branch, @Param("status") String status);
+    /**
+     * 扫描过程更新最新commit和已扫commit数量
+     * @param scanInfo
+     */
+    void updateScanInfo(@Param("scanInfo")ScanInfo scanInfo);
 
-    void updateLatestCommit(@Param("repoId") String repoId, @Param("branch") String branch, @Param("latestCommit") String latestCommit);
+    /**
+     * 扫描结束或中止 更新扫描状态
+     * @param scanInfo
+     */
+    void saveScanInfo(@Param("scanInfo")ScanInfo scanInfo);
 
-    String getScanStatus(@Param("repoId") String repoId, @Param("branch") String branch);
-
-    @Select("SELECT latest_commit FROM tracker_repo WHERE repo_id = #{repoId} AND branch = #{branch};")
-    String getLatestScan(@Param("repoId") String repoId, @Param("branch") String branch);
+    ScanInfo getScanInfo(@Param("repoId") String repoId);
 }

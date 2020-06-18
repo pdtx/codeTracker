@@ -3,37 +3,49 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.edu.fudan.codetracker.mapper.RepoMapper">
 
-    <insert id="insertScanRepo" parameterType="String">
+    <insert id="insertScanRepo">
         insert into tracker_repo
         (
         uuid,
-        repo_id,
+        status,
+        total_commit_count,
+        scanned_commit_count,
+        start_scan_time,
         branch,
-        scan_status
+        repo_id
         )
         VALUES
         (
-        #{uuid},
-        #{repoId},
-        #{branch},
-        #{status}
+        #{scanInfo.uuid},
+        #{scanInfo.status},
+        #{scanInfo.totalCommitCount},
+        #{scanInfo.scannedCommitCount},
+        #{scanInfo.startScanTime},
+        #{scanInfo.branch},
+        #{scanInfo.repoId}
         )
     </insert>
 
-    <update id="updateScanStatus" parameterType="String">
-        update tracker_repo set scan_status = #{status} where repo_id = #{repoId} and branch = #{branch};
+    <update id="updateScanInfo">
+        update tracker_repo set scanned_commit_count = #{scanInfo.scannedCommitCount}, latest_commit = #{scanInfo.latestCommit}, end_scan_time = #{scanInfo.endScanTime}, scan_time = #{scanInfo.scanTime} where uuid = #{scanInfo.uuid};
     </update>
 
-    <update id="updateLatestCommit" parameterType="String">
-        update tracker_repo set latest_commit = #{latestCommit} where repo_id = #{repoId} and branch = #{branch};
+    <update id="saveScanInfo">
+        update tracker_repo set status = #{scanInfo.status} where uuid = #{scanInfo.uuid};
     </update>
 
-    <resultMap id="scanStatus" type="String">
-        <id property="status" column="scan_status"/>
+    <resultMap id="scanInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.ScanInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="status" column="status"/>
+        <result property="scannedCommitCount" column="scanned_commit_count"/>
+        <result property="scanTime" column="scan_time"/>
+        <result property="latestCommit" column="latest_commit"/>
+        <result property="startScanTime" column="start_scan_time"/>
+        <result property="endScanTime" column="end_scan_time"/>
     </resultMap>
 
-    <select id="getScanStatus" resultMap="scanStatus" parameterType="String">
-        select scan_status from tracker_repo where repo_id = #{repoId} and branch = #{branch};
+    <select id="getScanInfo" resultMap="scanInfo" parameterType="String">
+        select uuid,status,scanned_commit_count,scan_time,latest_commit,start_scan_time,end_scan_time from tracker_repo where repo_id = #{repoId} order by end_scan_time desc limit 1;
     </select>
 
 </mapper>

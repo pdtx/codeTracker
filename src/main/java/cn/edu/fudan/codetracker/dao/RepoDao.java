@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.ScanInfo;
 import cn.edu.fudan.codetracker.mapper.RepoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -13,23 +14,20 @@ public class RepoDao {
         this.repoMapper = repoMapper;
     }
 
-    public void insertScanRepo(String uuid, String repoId, String branch, String status) {
-        repoMapper.insertScanRepo(uuid, repoId, branch, status);
+    public void insertScanRepo(ScanInfo scanInfo) {
+        repoMapper.insertScanRepo(scanInfo);
     }
 
-    public void updateScanStatus(String repoId, String branch, String status) {
-        repoMapper.updateScanStatus(repoId, branch, status);
+    public void updateScanInfo(ScanInfo scanInfo) {
+        repoMapper.updateScanInfo(scanInfo);
     }
 
-    public void updateLatestCommit(String repoId, String branch, String latestCommit) {
-        repoMapper.updateLatestCommit(repoId, branch, latestCommit);
+    public void saveScanInfo(ScanInfo scanInfo) {
+        repoMapper.saveScanInfo(scanInfo);
     }
 
-    public String getScanStatus(String repoId, String branch) {
-        return repoMapper.getScanStatus(repoId, branch);
+    public ScanInfo getScanInfo(String repoId) {
+        return repoMapper.getScanInfo(repoId);
     }
 
-    public String getLatestScan(String repoId, String branch) {
-        return repoMapper.getLatestScan(repoId, branch);
-    }
 }

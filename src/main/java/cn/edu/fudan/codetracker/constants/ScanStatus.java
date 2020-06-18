@@ -8,8 +8,8 @@ package cn.edu.fudan.codetracker.constants;
  **/
 public final class ScanStatus {
     public static final String SCANNING = "scanning";
-    public static final String ABORTED = "aborted";
-    public static final String SCANNED = "scanned";
+    public static final String COMPLETE = "complete";
+    public static final String FAILED = "failed";
 
     private ScanStatus(){}
 }

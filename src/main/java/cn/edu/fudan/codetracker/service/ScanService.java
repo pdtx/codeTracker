@@ -1,6 +1,8 @@
 package cn.edu.fudan.codetracker.service;
 
 
+import cn.edu.fudan.codetracker.domain.projectinfo.ScanInfo;
+
 /**
  * description 扫描接口
  * @author fancying
@@ -22,16 +24,13 @@ public interface ScanService {
      * @param branch 项目分值
      * @param repoUuid 代码仓库的 uuid
      */
-    void autoUpdate(String repoUuid, String branch);
+    void autoUpdate(String repoUuid, String branch, String commitId);
 
     /**
      * description
      *
-     * @param branch 项目分值
-     * @param repoUuid 代码仓库的 uuid
-     *
-     * @return 当前扫描状态 {@link cn.edu.fudan.codetracker.constants.ScanStatus}
+     * @param repoId 代码仓库的 uuid
      */
-    String getScanStatus(String repoUuid, String branch);
+    ScanInfo getScanInfo(String repoId);
 
 }
