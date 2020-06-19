@@ -1,31 +1,31 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 //临时接口的result
+@Getter
+@Setter
 public class TempMostInfo {
     private String name;
     private int quantity;
     private String uuid;
     private List<TempMostInfo> childInfos;
+    private String committer;
+    private String changeRelation;
+    private double begin;
+    private double height;
+    private String description;
+    private String filePath;
+    private int lineBegin;
+    private int lineEnd;
+    private int LineHeight;
+
 
     public TempMostInfo() {
 
     }
 
-    public String getName() { return name; }
-
-    public int getQuantity() { return quantity; }
-
-    public List<TempMostInfo> getChildInfos() { return childInfos; }
-
-    public String getUuid() { return uuid; }
-
-    public void setName(String name) { this.name = name; }
-
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-
-    public void setChildInfos(List<TempMostInfo> childInfos) { this.childInfos = childInfos; }
-
-    public void setUuid(String uuid) { this.uuid = uuid; }
 }

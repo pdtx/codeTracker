@@ -124,5 +124,54 @@ public class HistoryController {
     }
 
 
+    /**
+     * 获取全部修改的file method信息
+     */
+    @GetMapping(value = {"/history/all"})
+    public ResponseBean getAllChangeInfo(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid){
+        try{
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            List<TempMostInfo> data = historyService.getAllChangeInfo(begin,end,repoUuid);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 获取某次修改信息
+     */
+    @GetMapping(value = {"/history/commit"})
+    public ResponseBean getChangeInfoByCommit(@RequestParam("commitId") String commitId, @RequestParam("repoUuid") String repoUuid){
+        try{
+            List<TempMostInfo> data = historyService.getChangeInfoByCommit(repoUuid, commitId);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
+            // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+
+    /**
+     * 获取语句历史 by uuid
+     */
+    @GetMapping(value = {"/statistics/statement/history/uuid"})
+    public ResponseBean getStatementHistoryByUuid(@RequestParam("methodUuid") String methodUuid, @RequestParam("statementUuid") String statementUuid) {
+        try {
+            List<SurviveStatementInfo> data = historyService.getStatementHistoryByUuid(methodUuid, statementUuid);
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
 
 }

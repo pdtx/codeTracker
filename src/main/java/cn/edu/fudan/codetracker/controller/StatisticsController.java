@@ -84,6 +84,108 @@ public class StatisticsController {
         }
     }
 
+
+    /**
+     * 获取新增删除语句数
+     * @param repoUuid
+     * @param branch
+     * @param beginDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping(value = {"/statistics/statements"})
+    public ResponseBean getAddAndDeleteStatements(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            Map<String,Map<String,Integer>> data = statisticsService.getAddDeleteStatementsNumber(begin,end,repoUuid,branch);
+            if (developer == null) {
+                return new ResponseBean(200, "", data);
+            } else {
+                return new ResponseBean(200, "", data.get(developer));
+            }
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+
+    @GetMapping(value = {"/statistics/delete/info"})
+    public ResponseBean getDeleteInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            JSONObject data = statisticsService.getDeleteInfo(begin,end,repoUuid);
+            if (developer == null) {
+                return new ResponseBean(200,"",data);
+            } else {
+                return new ResponseBean(200,"",data.get(developer));
+            }
+        } catch (Exception e) {
+            return new ResponseBean(401,e.getMessage(),null);
+        }
+    }
+
+    @GetMapping(value = {"/statistics/top"})
+    public ResponseBean getTop5Developer(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            List<JSONObject> data = statisticsService.getTop5LiveStatements(repoUuid, begin, end);
+            return new ResponseBean(200,"",data);
+        } catch (Exception e) {
+            return new ResponseBean(401,e.getMessage(),null);
+        }
+    }
+
+
+    @GetMapping(value = {"/statistics/focus/file/num"})
+    public ResponseBean getFocusFileNum(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            JSONObject data = statisticsService.getFocusFileNum(repoUuid, begin, end);
+            return new ResponseBean(200,"",data);
+        } catch (Exception e) {
+            return new ResponseBean(401,e.getMessage(),null);
+        }
+    }
+
+    @GetMapping(value = {"/statistics/change/info"})
+    public ResponseBean getChangeInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            JSONObject data = statisticsService.getChangeInfo(begin,end,repoUuid);
+            if (developer == null) {
+                return new ResponseBean(200,"",data);
+            } else {
+                return new ResponseBean(200,"",data.get(developer));
+            }
+        } catch (Exception e) {
+            return new ResponseBean(401,e.getMessage(),null);
+        }
+    }
+
+
+    @GetMapping(value = {"/statistics/file/num"})
+    public ResponseBean getFileNum(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+        try {
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            JSONObject data = statisticsService.getFileNum(repoUuid, begin, end);
+            if (developer == null) {
+                return new ResponseBean(200,"",data);
+            } else {
+                return new ResponseBean(200,"",data.getIntValue(developer));
+            }
+        } catch (Exception e) {
+            return new ResponseBean(401,e.getMessage(),null);
+        }
+    }
+
+
+
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;

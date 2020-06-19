@@ -1,0 +1,674 @@
+openapi: 3.0.0
+info:
+  description: ""
+  version: "1.0"
+  title: "codeTracker"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "pyu17@fudan.edu.cn"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: http://10.141.221.85:8000
+    description: 接口测试地址
+
+
+tags:
+  - name: "codeTracker 接口"
+
+
+paths:
+  /project/auto:
+    post:
+      tags:
+        - "codeTracker 扫描接口"
+      summary: "扫描"
+      operationId: "scan"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/scanRequestData'
+      responses:
+        '200':
+          description: "start scan"
+        '401':
+          description: "failed"
+
+  /project/auto/update:
+    post:
+      tags:
+        - "codeTracker 扫描接口"
+      summary: "更新扫描"
+      operationId: "updateScan"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/repoData'
+      responses:
+        '200':
+          description: "start scan"
+        '401':
+          description: "failed"
+
+  /project/scan/status:
+    get:
+      tags:
+        - "codeTracker 扫描接口"
+      summary: "获取扫描状态"
+      operationId: "getScanStatus"
+      parameters:
+        - in: "query"
+          name: "repoId"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                format: map[string,string]
+        '401':
+          description: "failed"
+
+  /delete:
+    get:
+      tags:
+        - "codeTracker 扫描接口"
+      summary: "删除数据"
+      operationId: "delete"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+        '401':
+          description: "failed"
+
+  /statistics/committer/line/valid:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取代码有效行数"
+      operationId: "getValidCodeLines"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "developer"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                format: Map[string, integer]
+        '401':
+          description: "failed"
+
+  /statistics/lifecycle:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取代码存活周期"
+      operationId: "getLifeCycle"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "developer"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                format: Map[string, object]
+        '401':
+          description: "failed"
+
+  /statistics/statement/history:
+    post:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取语句历史"
+      operationId: "getStatementHistory"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/statementHistoryRequestData'
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  format: map[string,object]
+        '401':
+          description: "failed"
+
+  /valid/statement:
+    post:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取可选语句"
+      operationId: "getValidStatements"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/validStatementsRequestData'
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  format: map[string,string]
+        '401':
+          description: "failed"
+
+  /statistics/temp/method/history:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取方法历史"
+      operationId: "getMethodHistory"
+      parameters:
+        - in: "query"
+          name: "methodUuid"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: '#/components/schemas/methodHistory'
+        '401':
+          description: "failed"
+
+  /statistics/committer/temp/focus:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取工作焦点"
+      operationId: "getFocus"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "committer"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: '#/components/schemas/focusData'
+        '401':
+          description: "failed"
+
+
+  /history/issue/method:
+    post:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "根据issue信息获取跳转信息"
+      operationId: "getMethodInfo"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/issueListInfo'
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/jumpInfo'
+        '401':
+          description: "failed"
+
+  /history/issue/method/meta:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取method元信息"
+      operationId: "getMethodMetaInfo"
+      parameters:
+        - in: "query"
+          name: "methodUuid"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/methodMetaInfo'
+        '401':
+          description: "failed"
+
+  /statistics/statements:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取新增删除语句数"
+      operationId: "getAddDeleteInfo"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "branch"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "developer"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                format: map[string,object]
+        '401':
+          description: "failed"
+
+  /statistics/delete/info:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取所删代码年龄信息"
+      operationId: "getDeleteAgeInfo"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "developer"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+        '401':
+          description: "failed"
+
+  /statistics/top:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取存活代码行数排名前五信息"
+      operationId: "getTop5"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: '#/components/schemas/top5Info'
+        '401':
+          description: "failed"
+
+  /statistics/focus/file/num:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取工作焦点文件数"
+      operationId: "getFocusFileNum"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/focusFileNum'
+        '401':
+          description: "failed"
+
+  /statistics/change/info:
+    get:
+      tags:
+        - "codeTracker 统计接口"
+      summary: "获取修改代码年龄"
+      operationId: "getChangeInfo"
+      parameters:
+        - in: "query"
+          name: "repoUuid"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "beginDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "endDate"
+          required: true
+          schema:
+            type: "string"
+        - in: "query"
+          name: "developer"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                format: map[string,object]
+        '401':
+          description: "failed"
+
+
+components:
+  schemas:
+    scanRequestData:
+      type: "object"
+      properties:
+        repoId:
+          type: "string"
+        branch:
+          type: "string"
+        beginCommit:
+          type: "string"
+
+    repoData:
+      type: "object"
+      properties:
+        repoId:
+          type: "string"
+        branch:
+          type: "string"
+
+    statementHistoryRequestData:
+      type: "object"
+      properties:
+        methodUuid:
+          type: "string"
+        statementList:
+          type: "array"
+          items:
+            type: "string"
+
+    validStatementsRequestData:
+      type: "object"
+      properties:
+        methodUuid:
+          type: "string"
+        commitDate:
+          type: "string"
+        body:
+          type: "string"
+
+    methodHistory:
+      type: "object"
+      properties:
+        commit:
+          type: "string"
+        committer:
+          type: "string"
+        commitMessage:
+          type: "string"
+        commitDate:
+          type: "string"
+        content:
+          type: "string"
+        diff:
+          type: "object"
+          format: map[string,array]
+        changeRelation:
+          type: "string"
+        methodBegin:
+          type: "integer"
+        methodEnd:
+          type: "integer"
+        parentCommit:
+          type: "string"
+
+    focusData:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        quantity:
+          type: "integer"
+        uuid:
+          type: "string"
+        childInfos:
+          type: "array"
+          items:
+            type: "object"
+
+    methodMetaInfo:
+      type: "object"
+      properties:
+        packageName:
+          type: "string"
+        className:
+          type: "string"
+        methodName:
+          type: "string"
+
+    issueListInfo:
+      type: "object"
+      properties:
+        repoUuid:
+          type: "string"
+        filePath:
+          type: "string"
+        commitTime:
+          type: "string"
+        methodName:
+          type: "string"
+        code:
+          type: "string"
+
+    jumpInfo:
+      type: "object"
+      properties:
+        methodUuid:
+          type: "string"
+        statementList:
+          type: "array"
+          items:
+            type: "string"
+        commitId:
+          type: "string"
+
+    top5Info:
+      type: "object"
+      properties:
+        counts:
+          type: "integer"
+        developer_name:
+          type: "string"
+
+    focusFileNum:
+      type: "object"
+      properties:
+        total:
+          type: "integer"
+        developer:
+          type: "object"
+          format: map[string,integer]

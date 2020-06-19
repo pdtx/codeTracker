@@ -1,9 +1,6 @@
 package cn.edu.fudan.codetracker.mapper;
 
-import cn.edu.fudan.codetracker.domain.resultmap.MethodHistory;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod;
-import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -59,6 +56,46 @@ public interface HistoryMapper {
     /**
      * 获取bug所在语句
      */
-    String getBugStatement(@Param("methodUuid") String methodUuid, @Param("commitTime") String commitTime, @Param("body") String body);
+    List<ValidLineInfo> getBugStatement(@Param("methodUuid") String methodUuid, @Param("commitTime") String commitTime, @Param("body") String body);
+
+
+    /**
+     * 代码历史重演 某段时间修改过的所有文件
+     */
+    List<MostModifiedInfo> getFileInfo(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid);
+
+    /**
+     * 代码历史重演 某段时间修改过的某个文件的所有方法
+     */
+    List<MostModifiedInfo> getMethodInfoByFile(@Param("filePath") String filePath, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid);
+
+    /**
+     * 获取语句历史切片 statementUuid
+     */
+    List<SurviveStatementInfo> getStatementHistoryById(@Param("statementUuid") String statementUuid);
+
+    /**
+     * 代码历史重演 某次commit修改过的所有文件
+     */
+    List<MostModifiedInfo> getFileInfoByCommit(@Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
+
+    /**
+     * 获取方法上一个版本信息
+     * @param methodUuid
+     * @param commitId
+     * @return
+     */
+    MostModifiedInfo getMethodLastInfo(@Param("methodUuid") String methodUuid, @Param("commitId") String commitId);
+
+    /**
+     * 代码历史重演 某次commit修改过的某个文件的所有方法
+     */
+    List<MostModifiedInfo> getMethodInfoByCommit(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
+
+    /**
+     * 代码历史重演 某次commit修改过的某个文件的某个方法所有代码片段变更
+     */
+    List<MostModifiedInfo> getStatementInfoByCommit(@Param("methodUuid") String methodUuid, @Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
+
 
 }

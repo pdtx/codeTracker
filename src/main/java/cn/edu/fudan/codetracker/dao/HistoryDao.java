@@ -1,17 +1,19 @@
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.HistoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Repository
-public class HistoryDao {
+public class HistoryDao implements PublicConstants {
     private HistoryMapper historyMapper;
 
     @Autowired
@@ -24,12 +26,25 @@ public class HistoryDao {
      */
     public List<SurviveStatementInfo> getStatementHistory(String methodUuid, String body, String commitId) {
         List<SurviveStatementInfo> statementInfoList = historyMapper.getStatementHistory(methodUuid, body, commitId);
-        List<SurviveStatementInfo> addList = new ArrayList<>();
         List<MethodHistory> methodHistoryList = historyMapper.getMethodHistory(methodUuid);
+        return getStatementInfos(statementInfoList, methodHistoryList);
+    }
+
+    /**
+     * 获取语句历史切片
+     */
+    public List<SurviveStatementInfo> getStatementHistoryByUuid(String methodUuid, String statementUuid) {
+        List<SurviveStatementInfo> statementInfoList = historyMapper.getStatementHistoryById(statementUuid);
+        List<MethodHistory> methodHistoryList = historyMapper.getMethodHistory(methodUuid);
+        return getStatementInfos(statementInfoList, methodHistoryList);
+    }
+
+    private List<SurviveStatementInfo> getStatementInfos(List<SurviveStatementInfo> statementInfoList, List<MethodHistory> methodHistoryList) {
+        List<SurviveStatementInfo> addList = new ArrayList<>();
         Map<String,SurviveStatementInfo> map = new HashMap<>();
         Map<String,MethodHistory> mapMethod = new HashMap<>();
         for (SurviveStatementInfo surviveStatementInfo : statementInfoList) {
-            if (surviveStatementInfo.getChangeRelation().equals("DELETE")) {
+            if (surviveStatementInfo.getChangeRelation().equals(DELETE)) {
                 surviveStatementInfo.setBody(null);
                 surviveStatementInfo.setBegin(-1);
                 surviveStatementInfo.setEnd(-1);
@@ -111,7 +126,7 @@ public class HistoryDao {
         String lastStatementUuid = "";
         for (StatementInfoByMethod statementInfoByMethod : statementInfoByMethodList) {
             if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid)) {
-                if(!"DELETE".equals(statementInfoByMethod.getChangeRelation())) {
+                if(!DELETE.equals(statementInfoByMethod.getChangeRelation())) {
                     list.add(statementInfoByMethod.getBody());
                 }
                 lastStatementUuid = statementInfoByMethod.getStatementUuid();
@@ -148,7 +163,7 @@ public class HistoryDao {
     public List<MethodHistory> getMethodHistory(String methodUuid) {
         List<MethodHistory> methodHistoryList = historyMapper.getMethodHistory(methodUuid);
         for (MethodHistory method: methodHistoryList) {
-            if (method.getChangeRelation().equals("DELETE")) {
+            if (method.getChangeRelation().equals(DELETE)) {
                 method.setContent(null);
                 method.setDiff(null);
                 method.setMethodBegin(-1);
@@ -228,8 +243,100 @@ public class HistoryDao {
     /**
      * 获取bug所在statement
      */
-    public String getBugStatement(String methodUuid, String commitTime, String body) {
+    public List<ValidLineInfo> getBugStatement(String methodUuid, String commitTime, String body) {
         return historyMapper.getBugStatement(methodUuid, commitTime, body);
     }
+
+    public List<TempMostInfo> getAllChangeInfo(String repoUuid, String beginDate, String endDate) {
+        List<TempMostInfo> result = new ArrayList<>();
+        List<MostModifiedInfo> fileInfos = historyMapper.getFileInfo(beginDate, endDate, repoUuid);
+        for (MostModifiedInfo file : fileInfos) {
+            TempMostInfo fileInfo = new TempMostInfo();
+            fileInfo.setUuid(file.getUuid());
+            fileInfo.setName(file.getFileName());
+            fileInfo.setFilePath(file.getFilePath());
+            List<MostModifiedInfo> methodInfos = historyMapper.getMethodInfoByFile(file.getFilePath(),beginDate,endDate,repoUuid);
+            List<TempMostInfo> methods = new ArrayList<>();
+            for (MostModifiedInfo method : methodInfos) {
+                TempMostInfo methodInfo = new TempMostInfo();
+                methodInfo.setUuid(method.getUuid());
+                methodInfo.setName(method.getMethodName());
+                methods.add(methodInfo);
+            }
+            fileInfo.setChildInfos(methods);
+            result.add(fileInfo);
+        }
+        return result;
+    }
+
+    public List<TempMostInfo> getChangeInfoByCommit(String repoUuid, String commitId) {
+        List<TempMostInfo> result = new ArrayList<>();
+        List<MostModifiedInfo> fileInfos = historyMapper.getFileInfoByCommit(repoUuid, commitId);
+        for (MostModifiedInfo file : fileInfos) {
+            TempMostInfo fileInfo = new TempMostInfo();
+            fileInfo.setUuid(file.getUuid());
+            fileInfo.setName(file.getFileName());
+            fileInfo.setChangeRelation(file.getChangeRelation());
+            fileInfo.setFilePath(file.getFilePath());
+            List<MostModifiedInfo> methodInfos = historyMapper.getMethodInfoByCommit(file.getFilePath(), repoUuid, commitId);
+            List<TempMostInfo> methods = new ArrayList<>();
+            for (MostModifiedInfo method : methodInfos) {
+                TempMostInfo methodInfo = new TempMostInfo();
+                methodInfo.setUuid(method.getUuid());
+                methodInfo.setName(method.getMethodName());
+                methodInfo.setChangeRelation(method.getChangeRelation());
+                int methodBegin = method.getBegin();
+                int methodHeight = method.getEnd() - methodBegin + 1;
+                //method真实行号、长度信息
+                methodInfo.setLineBegin(method.getBegin());
+                methodInfo.setLineEnd(method.getEnd());
+                methodInfo.setLineHeight(methodHeight);
+                int lastBegin = 0;
+                int lastHeight = 0;
+                List<MostModifiedInfo> statementInfos = historyMapper.getStatementInfoByCommit(method.getUuid(), repoUuid, commitId);
+                List<TempMostInfo> statements = new ArrayList<>();
+                MostModifiedInfo lastStat = null;
+                for (MostModifiedInfo statement : statementInfos) {
+                    if (lastStat != null && statement.getBegin() >= lastStat.getBegin() && statement.getEnd() <= lastStat.getEnd()) {
+                        continue;
+                    }
+                    TempMostInfo statementInfo = new TempMostInfo();
+                    statementInfo.setUuid(statement.getUuid());
+                    statementInfo.setChangeRelation(statement.getChangeRelation());
+                    statementInfo.setDescription(statement.getDescription());
+                    //statement真实行号、长度信息
+                    statementInfo.setLineBegin(statement.getBegin());
+                    statementInfo.setLineEnd(statement.getEnd());
+                    statementInfo.setLineHeight(statement.getEnd()-statement.getBegin()+1);
+                    //statement相对method的起始位置、高度占比
+                    double begin,height;
+                    if (DELETE.equals(statement.getChangeRelation())) {
+                        if (lastBegin == 0 && lastHeight == 0) {
+                            MostModifiedInfo lastMethod = historyMapper.getMethodLastInfo(method.getUuid(),commitId);
+                            if (lastMethod != null) {
+                                lastBegin = lastMethod.getBegin();
+                                lastHeight = lastMethod.getEnd() - lastBegin + 1;
+                            }
+                        }
+                        begin = (statement.getBegin()-lastBegin)*1.0/lastHeight;
+                        height = (statement.getEnd()-statement.getBegin()+1)*1.0/lastHeight;
+                    } else {
+                        begin = (statement.getBegin()-methodBegin)*1.0/methodHeight;
+                        height = (statement.getEnd()-statement.getBegin()+1)*1.0/methodHeight;
+                    }
+                    statementInfo.setBegin(new BigDecimal(begin).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    statementInfo.setHeight(new BigDecimal(height).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    statements.add(statementInfo);
+                    lastStat = statement;
+                }
+                methodInfo.setChildInfos(statements);
+                methods.add(methodInfo);
+            }
+            fileInfo.setChildInfos(methods);
+            result.add(fileInfo);
+        }
+        return result;
+    }
+
 
 }
