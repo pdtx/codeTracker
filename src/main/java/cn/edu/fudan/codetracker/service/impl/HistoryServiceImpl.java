@@ -1,10 +1,8 @@
 package cn.edu.fudan.codetracker.service.impl;
 
+import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.dao.HistoryDao;
-import cn.edu.fudan.codetracker.domain.resultmap.MethodHistory;
-import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
-import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
+import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.service.HistoryService;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +16,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class HistoryServiceImpl implements HistoryService {
+public class HistoryServiceImpl implements HistoryService, PublicConstants {
     private HistoryDao historyDao;
 
     @Autowired
@@ -84,14 +82,45 @@ public class HistoryServiceImpl implements HistoryService {
         String[] strings = code.split("#");
         List<String> list = new ArrayList<>();
         for (String str: strings) {
-            String s = str.trim() + "%";
-            String statement = historyDao.getBugStatement(methodUuid,commitTime,s);
-            list.add(statement);
+            String s = "%" + str.trim() + "%";
+            List<ValidLineInfo> statements = historyDao.getBugStatement(methodUuid,commitTime,s);
+            String statement = null;
+            ValidLineInfo lastLine = null;
+            int min = Integer.MAX_VALUE;
+            for (ValidLineInfo line: statements) {
+                if (lastLine == null || !lastLine.getMetaUuid().equals(line.getMetaUuid())) {
+                    if (!DELETE.equals(line.getChangeRelation())) {
+                        int tmp = line.getEnd()-line.getBegin();
+                        if (tmp < min) {
+                            min = tmp;
+                            statement = line.getBody();
+                        }
+                    }
+                    lastLine = line;
+                }
+            }
+            if (statement != null) {
+                list.add(statement);
+            }
         }
         jsonObject.put("statementList",list);
         return jsonObject;
     }
 
+    @Override
+    public List<TempMostInfo> getAllChangeInfo(String beginDate, String endDate, String repoUuid) {
+        return historyDao.getAllChangeInfo(repoUuid, beginDate, endDate);
+    }
+
+    @Override
+    public List<TempMostInfo> getChangeInfoByCommit(String repoUuid, String commitId) {
+        return historyDao.getChangeInfoByCommit(repoUuid, commitId);
+    }
+
+    @Override
+    public List<SurviveStatementInfo> getStatementHistoryByUuid(String methodUuid, String statementUuid) {
+        return historyDao.getStatementHistoryByUuid(methodUuid, statementUuid);
+    }
 
 
 }

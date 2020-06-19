@@ -46,4 +46,21 @@ public interface HistoryService {
     JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code);
 
 
+    /**
+     * 重演获取所有修改过的file、method
+     */
+    List<TempMostInfo> getAllChangeInfo(String beginDate, String endDate, String repoUuid);
+
+    /**
+     * 获取某次commit修改信息
+     */
+    List<TempMostInfo> getChangeInfoByCommit(String repoUuid, String commitId);
+
+    /**
+     * 获取语句历史 uuid
+     */
+    List<SurviveStatementInfo> getStatementHistoryByUuid(String methodUuid, String statementUuid);
+
+
+
 }

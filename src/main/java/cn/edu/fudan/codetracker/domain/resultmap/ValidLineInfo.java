@@ -12,6 +12,8 @@ public class ValidLineInfo {
     private String changeRelation;
     private String commitDate;
     private String body;
+    private int begin;
+    private int end;
 
     public ValidLineInfo() {
 

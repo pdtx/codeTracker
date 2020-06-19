@@ -23,6 +23,10 @@
         group by commitid order by commit_date desc;
     </select>
 
+    <select id="getStatementHistoryById" parameterType="String" resultMap="StatementHistory">
+        select meta_statement_uuid, commitid, committer, commit_date, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid = #{statementUuid} group by commitid order by commit_date desc;
+    </select>
+
 
     <!--一次性获取有效语句-->
     <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
@@ -121,13 +125,78 @@
     </select>
 
 
-    <resultMap id="BugStatement" type="String">
-        <id property="body" column="body"/>
+    <resultMap id="BugStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="metaUuid" column="meta_statement_uuid"/>
+        <result property="body" column="body"/>
+        <result property="begin" column="statement_begin"/>
+        <result property="end" column="statement_end"/>
+        <result property="changeRelation" column="change_relation"/>
     </resultMap>
 
     <select id="getBugStatement" parameterType="String" resultMap="BugStatement">
-        select body from raw_statement where meta_method_uuid = #{methodUuid} and commit_date &lt;= #{commitTime} and body like #{body} order by commit_date desc limit 1;
+        select uuid,body,meta_statement_uuid,statement_begin,statement_end,change_relation from raw_statement where meta_method_uuid = #{methodUuid} and commit_date &lt;= #{commitTime} and body like #{body} order by meta_statement_uuid,commit_date desc;
     </select>
+
+    <resultMap id="FileInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="meta_file_uuid"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+    </resultMap>
+
+    <select id="getFileInfo" parameterType="String" resultMap="FileInfo">
+        select r.meta_file_uuid, m.file_name, m.file_path from raw_file as r, meta_file as m where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.commitid != (select commitid from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) group by r.meta_file_uuid order by m.file_name;
+    </select>
+
+    <resultMap id="AllMethodInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="meta_method_uuid"/>
+        <result property="methodName" column="signature"/>
+    </resultMap>
+
+    <select id="getMethodInfoByFile" parameterType="String" resultMap="AllMethodInfo">
+        select r.meta_method_uuid, r.signature from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and m.file_path = #{filePath} and r.commitid != (select commitid from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) group by r.meta_method_uuid order by r.signature;
+    </select>
+
+
+    <resultMap id="FileInfoByCommit" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="meta_file_uuid"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="changeRelation" column="change_relation"/>
+    </resultMap>
+
+    <select id="getFileInfoByCommit" parameterType="String" resultMap="FileInfoByCommit">
+        select r.meta_file_uuid, m.file_name, m.file_path, r.change_relation from raw_file as r, meta_file as m where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commitid = #{commitId} order by m.file_name;
+    </select>
+
+    <resultMap id="MethodInfoByCommit" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="meta_method_uuid"/>
+        <result property="methodName" column="signature"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="begin" column="method_begin"/>
+        <result property="end" column="method_end"/>
+    </resultMap>
+
+    <select id="getMethodLastInfo" parameterType="String" resultMap="MethodInfoByCommit">
+        select meta_method_uuid, signature, change_relation, method_begin, method_end from raw_method where meta_method_uuid = #{methodUuid} and commit_date &lt; (select commit_date from raw_method where commitid = #{commitId} limit 1) order by commit_date desc limit 1;
+    </select>
+
+    <select id="getMethodInfoByCommit" parameterType="String" resultMap="MethodInfoByCommit">
+        select r.meta_method_uuid, r.signature, r.change_relation, r.method_begin, r.method_end from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commitid = #{commitId} and m.file_path = #{filePath} order by r.signature;
+    </select>
+
+    <resultMap id="StatementInfoByCommit" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="meta_statement_uuid"/>
+        <result property="changeRelation" column="change_relation"/>
+        <result property="begin" column="statement_begin"/>
+        <result property="end" column="statement_end"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <select id="getStatementInfoByCommit" parameterType="String" resultMap="StatementInfoByCommit">
+        select meta_statement_uuid, change_relation, statement_begin, statement_end, description from raw_statement where repo_uuid = #{repoUuid} and commitid = #{commitId} and meta_method_uuid = #{methodUuid} and change_relation in ("ADD","SELF_CHANGE","DELETE") order by statement_begin,statement_end desc,description desc;
+    </select>
+
 
 
 </mapper>

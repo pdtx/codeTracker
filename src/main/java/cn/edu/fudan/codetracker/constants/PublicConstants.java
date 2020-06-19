@@ -20,6 +20,17 @@ public interface PublicConstants {
     String DELETE = "DELETE";
     String CHANGE = "CHANGE";
     String MODIFY = "MODIFY";
+    String SELF_CHANGE = "SELF_CHANGE";
+
+    String CLASS = "class";
+    String METHOD = "method";
+    String FIELD = "field";
+    String STATEMENT = "statement";
+
+    String MAX = "max";
+    String MIN = "min";
+    String MEDIAN = "median";
+    String AVERAGE = "average";
 
     String DELIMITER_RENAME = ":";
 

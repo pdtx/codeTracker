@@ -58,8 +58,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     public void scan(String repoUuid, String branch, String beginCommit) {
 //        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
         repoPath.set(getRepoPathByUuid(repoUuid));
-//        String repoPath = restInterface.getCodeServiceRepo(repoUuid);
-//        String repoPath = getRepoPathByUuid(repoUuid);
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
