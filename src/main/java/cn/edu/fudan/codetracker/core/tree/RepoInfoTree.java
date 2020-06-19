@@ -1,22 +1,14 @@
 package cn.edu.fudan.codetracker.core.tree;
 
 import cn.edu.fudan.codetracker.component.ApplicationContextGetBeanHelper;
-import cn.edu.fudan.codetracker.core.tree.parser.FileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
-import javafx.application.Application;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.reflections.Reflections;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import sun.reflect.Reflection;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 /**

@@ -1,8 +1,6 @@
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
-import cn.edu.fudan.codetracker.dao.PackageDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

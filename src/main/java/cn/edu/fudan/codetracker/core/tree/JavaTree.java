@@ -1,14 +1,10 @@
 package cn.edu.fudan.codetracker.core.tree;
 
-import cn.edu.fudan.codetracker.core.tree.parser.FileParser;
 import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.FileFilter;
-import cn.edu.fudan.codetracker.util.JavaBaseRepoInfoParser;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

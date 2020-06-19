@@ -1,6 +1,5 @@
 package cn.edu.fudan.codetracker.core.tree.parser;
 
-import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -8,17 +7,21 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
-import java.nio.charset.Charset;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,7 +59,7 @@ public class JavaFileParser implements FileParser {
         this.projectName = projectName;
         try {
             // 根据操作系统修改
-            compilationUnit = JavaParser.parse(Paths.get(path), Charset.forName("UTF-8"));
+            compilationUnit = new JavaParser().parse(Paths.get(path)).getResult().get();
             packageName = parsePackageName();
             String[] singleDir = path.replace('\\','/').split("/");
             fileName = singleDir[singleDir.length - 1];
@@ -109,7 +112,8 @@ public class JavaFileParser implements FileParser {
             // 修饰符
             StringBuilder modifiers = new StringBuilder();
             for (Modifier modifier : classOrInterfaceDeclaration.getModifiers()) {
-                modifiers.append(modifier.asString());
+                // fixme 待验证
+                modifiers.append(modifier.toString());
                 modifiers.append(" ");
             }
             // 扩展的类名
@@ -146,7 +150,7 @@ public class JavaFileParser implements FileParser {
             //modifier
             StringBuilder modifiers = new StringBuilder();
             for (Modifier modifier : fieldDeclaration.getModifiers()) {
-                modifiers.append(modifier.asString());
+                modifiers.append(modifier.toString());
                 modifiers.append(" ");
             }
 
@@ -190,7 +194,7 @@ public class JavaFileParser implements FileParser {
             MethodNode conMethodNode = new MethodNode();
             // modifier
             for (Modifier modifier : constructorDeclaration.getModifiers()) {
-                modifiers.append(modifier.asString());
+                modifiers.append(modifier.toString());
                 modifiers.append(" ");
             }
             //fullname
@@ -227,7 +231,7 @@ public class JavaFileParser implements FileParser {
             StringBuilder m = new StringBuilder();
             // modifier
             for (Modifier modifier : methodDeclaration.getModifiers()) {
-                m.append(modifier.asString());
+                m.append(modifier.toString());
                 m.append(" ");
             }
 

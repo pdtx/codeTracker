@@ -6,11 +6,9 @@
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
-import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.service.StatisticsService;
-import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -255,25 +253,26 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch) {
-        Map<String,Map<String,Integer>> committerLineInfoMap = new HashMap<>();
-        JGitHelper jGitHelper = new JGitHelper(repoPath);
-        jGitHelper.checkout(commit);
-        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
-        List<CommitterLineInfo> committerLineInfoList = statisticsDao.getCommitterLineInfo(repoInfo.getRepoUuid(),repoInfo.getBranch(),FORMATTER.format(repoInfo.getCommitDate()));
-        for (CommitterLineInfo committerLineInfo : committerLineInfoList) {
-            Map<String,Integer> map = new HashMap<>();
-            if (committerLineInfoMap.keySet().contains(committerLineInfo.getCommitter())) {
-                map = committerLineInfoMap.get(committerLineInfo.getCommitter());
-                map.replace("ADD",map.get("ADD") + committerLineInfo.getAddCount());
-                map.replace("DELETE",map.get("DELETE") + committerLineInfo.getDeleteCount());
-                committerLineInfoMap.replace(committerLineInfo.getCommitter(),map);
-            } else {
-                map.put("ADD",committerLineInfo.getAddCount());
-                map.put("DELETE",committerLineInfo.getDeleteCount());
-                committerLineInfoMap.put(committerLineInfo.getCommitter(),map);
-            }
-        }
-        return committerLineInfoMap;
+//        Map<String,Map<String,Integer>> committerLineInfoMap = new HashMap<>();
+//        JGitHelper jGitHelper = new JGitHelper(repoPath);
+//        jGitHelper.checkout(commit);
+//        RepoInfoBuilder repoInfo = new RepoInfoBuilder(repoUuid, commit, repoPath, jGitHelper, branch, null, null);
+//        List<CommitterLineInfo> committerLineInfoList = statisticsDao.getCommitterLineInfo(repoInfo.getRepoUuid(),repoInfo.getBranch(),FORMATTER.format(repoInfo.getCommitDate()));
+//        for (CommitterLineInfo committerLineInfo : committerLineInfoList) {
+//            Map<String,Integer> map = new HashMap<>();
+//            if (committerLineInfoMap.keySet().contains(committerLineInfo.getCommitter())) {
+//                map = committerLineInfoMap.get(committerLineInfo.getCommitter());
+//                map.replace("ADD",map.get("ADD") + committerLineInfo.getAddCount());
+//                map.replace("DELETE",map.get("DELETE") + committerLineInfo.getDeleteCount());
+//                committerLineInfoMap.replace(committerLineInfo.getCommitter(),map);
+//            } else {
+//                map.put("ADD",committerLineInfo.getAddCount());
+//                map.put("DELETE",committerLineInfo.getDeleteCount());
+//                committerLineInfoMap.put(committerLineInfo.getCommitter(),map);
+//            }
+//        }
+//        return committerLineInfoMap;
+        return null;
     }
 
 }

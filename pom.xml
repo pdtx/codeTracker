@@ -24,7 +24,8 @@
         <fastjsonVersion>1.2.47</fastjsonVersion>
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
-        <project.basedir>${pwd}</project.basedir>
+        <javaparser>3.16.1</javaparser>
+        <project.basedir>${project.basedir}</project.basedir>
     </properties>
 
     <repositories>
@@ -107,6 +108,21 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>${javaparser}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-model -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+            <version>3.6.3</version>
+        </dependency>
+
+
+
         <!--fastjson-->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -149,6 +165,26 @@
                     <groupId>org.json</groupId>
                     <artifactId>android-json</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-model</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-symbol-solver-logic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.javaparser</groupId>
+                    <artifactId>javaparser-parent</artifactId>
+                </exclusion>
             </exclusions>
             <systemPath>${project.basedir}/jar/CLDiffCmd.jar</systemPath>
         </dependency>
@@ -175,6 +211,7 @@
             <artifactId>javancss</artifactId>
             <version>33.54</version>
         </dependency>
+
     </dependencies>
 
     <build>

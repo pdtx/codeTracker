@@ -7,7 +7,6 @@ package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
-import cn.edu.fudan.codetracker.util.RepoInfoBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ProxyDao {
 
-    private RepoInfoBuilder repoInfo;
 
     private PackageDao packageDao;
     private FileDao fileDao;
@@ -30,7 +28,7 @@ public class ProxyDao {
     }
 
     public ProxyDao(PackageDao packageDao, FileDao fileDao, ClassDao classDao, FieldDao fieldDao, MethodDao methodDao, StatementDao statementDao) {
-        repoInfo = null;
+        //repoInfo = null;
         this.packageDao = packageDao;
         this.fileDao = fileDao;
         this.classDao = classDao;
@@ -40,9 +38,6 @@ public class ProxyDao {
     }
 
     public TrackerInfo getTrackerInfo(ProjectInfoLevel projectInfoLevel, String... args) {
-        if (repoInfo != null) {
-            return null;
-        }
         switch (projectInfoLevel) {
             case PACKAGE:
                 return packageDao.getTrackerInfo(args[0], args[1], args[2], args[3]);
@@ -78,13 +73,6 @@ public class ProxyDao {
     /**
      *  getter and setter
      */
-    public RepoInfoBuilder getRepoInfo() {
-        return repoInfo;
-    }
-
-    public void setRepoInfo(RepoInfoBuilder repoInfo) {
-        this.repoInfo = repoInfo;
-    }
 
     public PackageDao getPackageDao() {
         return packageDao;
