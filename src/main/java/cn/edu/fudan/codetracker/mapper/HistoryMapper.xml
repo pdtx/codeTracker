@@ -7,6 +7,7 @@
     <resultMap id="StatementHistory" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
         <id property="commit" column="commitid"/>
         <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
         <result property="body" column="body"/>
         <result property="changeRelation" column="change_relation"/>
         <result property="statementUuid" column="meta_statement_uuid"/>
@@ -15,7 +16,7 @@
     </resultMap>
 
     <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select meta_statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid in
+        select meta_statement_uuid, commitid, committer, commit_date, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid in
         (select s.meta_statement_uuid from (select * from raw_statement where meta_method_uuid = #{methodUuid} and body like #{body}
          and commit_date &lt;= (select commit_date from raw_method where commitid = #{commitId} limit 1)
          and change_relation != "DELETE" order by commit_date desc limit 1) as s)
