@@ -208,4 +208,19 @@ public class HistoryDao {
         }
         return packageList;
     }
+
+    /**
+     * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
+     */
+    public String getMethodUuid(MethodHistory methodHistory) {
+        return historyMapper.getMethodUuid(methodHistory);
+    }
+
+    /**
+     * 获取method的package、class等信息
+     */
+    public MostModifiedInfo getMethodMetaInfo(String methodUuid){
+        return historyMapper.getMethodMetaInfo(methodUuid);
+    }
+
 }

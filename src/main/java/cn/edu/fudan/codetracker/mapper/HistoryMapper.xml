@@ -98,4 +98,27 @@
         select r.meta_method_uuid, r.signature, count(distinct(commitid)) as quantity from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_method_uuid order by quantity desc,r.signature;
     </select>
 
+
+    <resultMap id="MethodUuid" type="String">
+        <id property="uuid" column="meta_method_uuid"/>
+    </resultMap>
+
+    <select id="getMethodUuid" parameterType="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory" resultMap="MethodUuid">
+        select r.meta_method_uuid from raw_method as r,meta_method as m where r.meta_method_uuid = m.uuid and r.repo_uuid = #{methodHistory.repoUuid,jdbcType=VARCHAR} and m.file_path = #{methodHistory.filePath,jdbcType=VARCHAR} and r.method_begin &lt;= #{methodHistory.line,jdbcType=INTEGER} and r.method_end &gt;= #{methodHistory.line,jdbcType=INTEGER}
+        and r.commit_date &lt;= (select commit_date from raw_method where commitid = #{methodHistory.commit,jdbcType=VARCHAR} limit 1)
+        order by r.commit_date desc limit 1;
+    </select>
+
+    <resultMap id="MethodMetaInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="packageName" column="package_name"/>
+        <result property="className" column="class_name"/>
+        <result property="methodName" column="signature"/>
+    </resultMap>
+
+    <select id="getMethodMetaInfo" parameterType="String" resultMap="MethodMetaInfo">
+        select uuid,package_name,class_name,signature from meta_method where uuid = #{methodUuid};
+    </select>
+
+
 </mapper>

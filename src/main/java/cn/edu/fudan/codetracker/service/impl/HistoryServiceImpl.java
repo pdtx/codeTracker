@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.HistoryDao;
 import cn.edu.fudan.codetracker.domain.resultmap.MethodHistory;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
 import cn.edu.fudan.codetracker.service.HistoryService;
@@ -56,6 +57,18 @@ public class HistoryServiceImpl implements HistoryService {
     public List<TempMostInfo> getFocus(String committer, String beginDate, String endDate, String repoUuid, String branch) {
         return historyDao.getFocus(committer,beginDate,endDate,repoUuid,branch);
     }
+
+
+    @Override
+    public String getMethodUuid(MethodHistory methodHistory) {
+        return historyDao.getMethodUuid(methodHistory);
+    }
+
+    @Override
+    public MostModifiedInfo getMethodMetaInfo(String methodUuid){
+        return historyDao.getMethodMetaInfo(methodUuid);
+    }
+
 
 
 }

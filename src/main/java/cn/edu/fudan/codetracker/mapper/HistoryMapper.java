@@ -44,4 +44,16 @@ public interface HistoryMapper {
      */
     List<MostModifiedInfo> getMethodInfoMost(@Param("committer") String committer, @Param("filePath") String filePath, @Param("className") String className, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
+
+    /**
+     * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
+     */
+    String getMethodUuid(@Param(value="methodHistory") MethodHistory methodHistory);
+
+    /**
+     * 获取method的package、class等信息
+     */
+    MostModifiedInfo getMethodMetaInfo(@Param("methodUuid") String methodUuid);
+
+
 }
