@@ -6,6 +6,7 @@ import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
 import cn.edu.fudan.codetracker.service.HistoryService;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,14 +61,35 @@ public class HistoryServiceImpl implements HistoryService {
 
 
     @Override
-    public String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName) {
-        return historyDao.getMethodUuid(repoUuid, filePath, commitTime, methodName);
+    public MethodHistory getMethodInfo(String repoUuid, String filePath, String commitTime, String methodName) {
+        return historyDao.getMethodInfo(repoUuid, filePath, commitTime, methodName);
     }
+
 
 
     @Override
     public MostModifiedInfo getMethodMetaInfo(String methodUuid){
         return historyDao.getMethodMetaInfo(methodUuid);
+    }
+
+
+    @Override
+    public JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code) {
+        MethodHistory methodHistory = historyDao.getMethodInfo(repoUuid, filePath, commitTime, methodName);
+        JSONObject jsonObject = new JSONObject();
+        //用repoUuid暂存methodUuid
+        String methodUuid = methodHistory.getRepoUuid();
+        jsonObject.put("methodUuid",methodUuid);
+        jsonObject.put("commitId",methodHistory.getCommit());
+        String[] strings = code.split("#");
+        List<String> list = new ArrayList<>();
+        for (String str: strings) {
+            String s = str.trim() + "%";
+            String statement = historyDao.getBugStatement(methodUuid,commitTime,s);
+            list.add(statement);
+        }
+        jsonObject.put("statementList",list);
+        return jsonObject;
     }
 
 

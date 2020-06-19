@@ -27,7 +27,6 @@ import java.util.Map;
 public class StatisticsController {
 
     private StatisticsService statisticsService;
-    private RestInterfaceManager restInterface;
 
     /**
      * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
@@ -90,8 +89,4 @@ public class StatisticsController {
         this.statisticsService = statisticsService;
     }
 
-    @Autowired
-    public void setRestInterface(RestInterfaceManager restInterface) {
-        this.restInterface = restInterface;
-    }
 }

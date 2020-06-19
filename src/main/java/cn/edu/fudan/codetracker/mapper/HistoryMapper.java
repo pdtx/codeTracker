@@ -48,12 +48,17 @@ public interface HistoryMapper {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    String getMethodUuid(@Param("repoUuid") String repoUuid, @Param("filePath") String filePath, @Param("commitTime") String commitTime, @Param("methodName") String methodName);
+    MethodHistory getMethodInfo(@Param("repoUuid") String repoUuid, @Param("filePath") String filePath, @Param("commitTime") String commitTime, @Param("methodName") String methodName);
 
     /**
      * 获取method的package、class等信息
      */
     MostModifiedInfo getMethodMetaInfo(@Param("methodUuid") String methodUuid);
 
+
+    /**
+     * 获取bug所在语句
+     */
+    String getBugStatement(@Param("methodUuid") String methodUuid, @Param("commitTime") String commitTime, @Param("body") String body);
 
 }

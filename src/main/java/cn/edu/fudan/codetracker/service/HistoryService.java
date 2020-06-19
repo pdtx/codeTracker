@@ -4,6 +4,7 @@ import cn.edu.fudan.codetracker.domain.resultmap.MethodHistory;
 import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
 import java.util.Map;
@@ -32,11 +33,17 @@ public interface HistoryService {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName);
+    MethodHistory getMethodInfo(String repoUuid, String filePath, String commitTime, String methodName);
 
     /**
      * 获取method的package、class等信息
      */
     MostModifiedInfo getMethodMetaInfo(String methodUuid);
+
+    /**
+     * 获取method信息、符合条件最新的commitid、bug所在语句列表
+     */
+    JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code);
+
 
 }

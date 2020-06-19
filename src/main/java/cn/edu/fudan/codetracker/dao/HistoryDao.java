@@ -212,9 +212,9 @@ public class HistoryDao {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    public String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName) {
+    public MethodHistory getMethodInfo(String repoUuid, String filePath, String commitTime, String methodName) {
         methodName = methodName + '%';
-        return historyMapper.getMethodUuid(repoUuid, filePath, commitTime, methodName);
+        return historyMapper.getMethodInfo(repoUuid, filePath, commitTime, methodName);
     }
 
 
@@ -223,6 +223,13 @@ public class HistoryDao {
      */
     public MostModifiedInfo getMethodMetaInfo(String methodUuid){
         return historyMapper.getMethodMetaInfo(methodUuid);
+    }
+
+    /**
+     * 获取bug所在statement
+     */
+    public String getBugStatement(String methodUuid, String commitTime, String body) {
+        return historyMapper.getBugStatement(methodUuid, commitTime, body);
     }
 
 }
