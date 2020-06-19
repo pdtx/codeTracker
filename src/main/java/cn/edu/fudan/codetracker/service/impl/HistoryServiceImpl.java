@@ -60,9 +60,10 @@ public class HistoryServiceImpl implements HistoryService {
 
 
     @Override
-    public String getMethodUuid(MethodHistory methodHistory) {
-        return historyDao.getMethodUuid(methodHistory);
+    public String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName) {
+        return historyDao.getMethodUuid(repoUuid, filePath, commitTime, methodName);
     }
+
 
     @Override
     public MostModifiedInfo getMethodMetaInfo(String methodUuid){

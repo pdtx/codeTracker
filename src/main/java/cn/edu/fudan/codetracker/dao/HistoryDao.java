@@ -212,9 +212,11 @@ public class HistoryDao {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    public String getMethodUuid(MethodHistory methodHistory) {
-        return historyMapper.getMethodUuid(methodHistory);
+    public String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName) {
+        methodName = methodName + '%';
+        return historyMapper.getMethodUuid(repoUuid, filePath, commitTime, methodName);
     }
+
 
     /**
      * 获取method的package、class等信息

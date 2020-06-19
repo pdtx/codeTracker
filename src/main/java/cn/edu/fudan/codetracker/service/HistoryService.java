@@ -32,7 +32,7 @@ public interface HistoryService {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    String getMethodUuid(MethodHistory methodHistory);
+    String getMethodUuid(String repoUuid, String filePath, String commitTime, String methodName);
 
     /**
      * 获取method的package、class等信息

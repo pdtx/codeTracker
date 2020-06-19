@@ -103,11 +103,10 @@
         <id property="uuid" column="meta_method_uuid"/>
     </resultMap>
 
-    <select id="getMethodUuid" parameterType="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory" resultMap="MethodUuid">
-        select r.meta_method_uuid from raw_method as r,meta_method as m where r.meta_method_uuid = m.uuid and r.repo_uuid = #{methodHistory.repoUuid,jdbcType=VARCHAR} and m.file_path = #{methodHistory.filePath,jdbcType=VARCHAR} and r.method_begin &lt;= #{methodHistory.line,jdbcType=INTEGER} and r.method_end &gt;= #{methodHistory.line,jdbcType=INTEGER}
-        and r.commit_date &lt;= (select commit_date from raw_method where commitid = #{methodHistory.commit,jdbcType=VARCHAR} limit 1)
-        order by r.commit_date desc limit 1;
+    <select id="getMethodUuid" parameterType="String" resultMap="MethodUuid">
+        select r.meta_method_uuid from raw_method as r, meta_method as m where r.meta_method_uuid = m.uuid and r.repo_uuid = #{repoUuid} and m.file_path = #{filePath} and r.signature like #{methodName} and r.commit_date &lt;= #{commitTime} order by r.commit_date desc limit 1;
     </select>
+
 
     <resultMap id="MethodMetaInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
         <id property="uuid" column="uuid"/>

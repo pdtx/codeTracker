@@ -100,14 +100,9 @@ public class HistoryController {
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
     @GetMapping(value = {"/history/issue/method"})
-    public ResponseBean getMethodUuid(@RequestParam("repoUuid") String repoUuid, @RequestParam("filePath") String filePath, @RequestParam("commitId") String commitId, @RequestParam("line") int line) {
+    public ResponseBean getMethodUuid(@RequestParam("repoUuid") String repoUuid, @RequestParam("filePath") String filePath, @RequestParam("commitTime") String commitTime, @RequestParam("methodName") String methodName) {
         try {
-            MethodHistory methodHistory = new MethodHistory();
-            methodHistory.setCommit(commitId);
-            methodHistory.setRepoUuid(repoUuid);
-            methodHistory.setFilePath(filePath);
-            methodHistory.setLine(line);
-            String data = historyService.getMethodUuid(methodHistory);
+            String data = historyService.getMethodUuid(repoUuid, filePath, commitTime, methodName);
             return new ResponseBean(200, "", data);
         } catch (Exception e) {
             e.printStackTrace();

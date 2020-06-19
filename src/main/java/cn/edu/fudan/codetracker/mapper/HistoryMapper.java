@@ -48,7 +48,7 @@ public interface HistoryMapper {
     /**
      * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
      */
-    String getMethodUuid(@Param(value="methodHistory") MethodHistory methodHistory);
+    String getMethodUuid(@Param("repoUuid") String repoUuid, @Param("filePath") String filePath, @Param("commitTime") String commitTime, @Param("methodName") String methodName);
 
     /**
      * 获取method的package、class等信息
