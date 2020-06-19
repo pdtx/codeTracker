@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.controller;
 
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.resultmap.MethodHistory;
+import cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo;
 import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
 import cn.edu.fudan.codetracker.service.HistoryService;
@@ -94,6 +95,34 @@ public class HistoryController {
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
+
+    /**
+     * 根据issueList中信息查找对应的methodUuid，有filePath,commitId,issue行号,repoUuid等
+     */
+    @PostMapping(value = {"/history/issue/method"})
+    public ResponseBean getMethodUuid(@RequestBody JSONObject body) {
+        try {
+            JSONObject data = historyService.getBugInfo(body.getString("repoUuid"), body.getString("filePath"), body.getString("commitTime"), body.getString("methodName"), body.getString("code"));
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 获取method的package、class等信息
+     */
+    @GetMapping(value = {"/history/issue/method/meta"})
+    public ResponseBean getMethodMetaInfo(@RequestParam("methodUuid") String methodUuid){
+        try {
+            MostModifiedInfo data = historyService.getMethodMetaInfo(methodUuid);
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
 
 
 }

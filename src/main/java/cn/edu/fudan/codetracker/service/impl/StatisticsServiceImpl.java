@@ -1,8 +1,4 @@
-/**
- * @description:
- * @author: fancying
- * @create: 2019-11-11 21:28
- **/
+
 package cn.edu.fudan.codetracker.service.impl;
 
 import cn.edu.fudan.codetracker.dao.*;
@@ -17,6 +13,11 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * description:
+ * @author fancying
+ * create: 2019-11-11 21:28
+ **/
 @Slf4j
 @Service
 public class StatisticsServiceImpl implements StatisticsService {
@@ -100,58 +101,56 @@ public class StatisticsServiceImpl implements StatisticsService {
 
 
 
-
-
-    //未用到
-    @Override
-    public List<VersionStatistics> getStatistics(String repoUuid, String branch, String type) {
-        return statisticsDao.getStatisticsByType(repoUuid, branch, type);
-    }
-
-    @Override
-    public List<MostModifiedInfo> getMostModifiedInfo(String repoUuid, String branch, String type) {
-        return statisticsDao.getMostModifiedInfo(repoUuid, branch, type);
-    }
-
-    @Override
-    public List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
-        return statisticsDao.getMostDevelopersInvolved(repoUuid, branch, type);
-    }
-
-    @Override
-    public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type, String beginDate, String endDate){
-        return statisticsDao.getMostModifiedByTime(repoUuid, branch, type, beginDate, endDate);
-    }
-
-    @Override
-    public List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch){
-        return statisticsDao.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
-    }
-
-    @Override
-    public List<DeveloperMostFocus> getDeveloperFocusMost(String type, String committer,String beginDate, String endDate){
-        return statisticsDao.getDeveloperFocusMost(type, committer, beginDate, endDate);
-    }
-
-    @Override
-    public List<CommitTimeLine> getCommitTimeLine(String type, String uuid){
-        return statisticsDao.getCommitTimeLine(type, uuid);
-    }
-
-    @Override
-    public List<CommitterHistory> getCommitHistoryByCommitter(String committer){
-        return statisticsDao.getCommitInfoByCommitter(committer);
-    }
-
-    @Override
-    public List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate){
-        return statisticsDao.getDeleteStatementFormerInfoByCommitter(committer, repoUuid, branch, beginDate, endDate);
-    }
-
-    @Override
-    public List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate){
-        return statisticsDao.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
-    }
+//    //未用到
+//    @Override
+//    public List<VersionStatistics> getStatistics(String repoUuid, String branch, String type) {
+//        return statisticsDao.getStatisticsByType(repoUuid, branch, type);
+//    }
+//
+//    @Override
+//    public List<MostModifiedInfo> getMostModifiedInfo(String repoUuid, String branch, String type) {
+//        return statisticsDao.getMostModifiedInfo(repoUuid, branch, type);
+//    }
+//
+//    @Override
+//    public List<MostDevelopersInfo> getMostDevelopersInvolved(String repoUuid, String branch, String type) {
+//        return statisticsDao.getMostDevelopersInvolved(repoUuid, branch, type);
+//    }
+//
+//    @Override
+//    public List<MostDevelopersInfo> getMostModifiedByTime(String repoUuid, String branch, String type, String beginDate, String endDate){
+//        return statisticsDao.getMostModifiedByTime(repoUuid, branch, type, beginDate, endDate);
+//    }
+//
+//    @Override
+//    public List<MostModifiedMethod> getMostModifiedMethodByPackage(String repoUuid, String packageUuid, String branch){
+//        return statisticsDao.getMostModifiedMethodByPackage(repoUuid, packageUuid, branch);
+//    }
+//
+//    @Override
+//    public List<DeveloperMostFocus> getDeveloperFocusMost(String type, String committer,String beginDate, String endDate){
+//        return statisticsDao.getDeveloperFocusMost(type, committer, beginDate, endDate);
+//    }
+//
+//    @Override
+//    public List<CommitTimeLine> getCommitTimeLine(String type, String uuid){
+//        return statisticsDao.getCommitTimeLine(type, uuid);
+//    }
+//
+//    @Override
+//    public List<CommitterHistory> getCommitHistoryByCommitter(String committer){
+//        return statisticsDao.getCommitInfoByCommitter(committer);
+//    }
+//
+//    @Override
+//    public List<DeleteStatementInfo> getDeleteStatementFormerInfoByCommitter(String committer, String repoUuid, String branch, String beginDate, String endDate){
+//        return statisticsDao.getDeleteStatementFormerInfoByCommitter(committer, repoUuid, branch, beginDate, endDate);
+//    }
+//
+//    @Override
+//    public List<StatementInfoByMethod> getStatementInfoByMethod(String committer, String methodUuid, String beginDate, String endDate){
+//        return statisticsDao.getStatementInfoByMethod(committer, methodUuid, beginDate, endDate);
+//    }
 
 
 //    @Override
@@ -251,7 +250,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 //        return statementInfos;
 //    }
 
-    @Override
+    //@Override
     public Map<String,Map<String,Integer>> getCommitterLineInfo(String repoUuid, String commit, String repoPath, String branch) {
 //        Map<String,Map<String,Integer>> committerLineInfoMap = new HashMap<>();
 //        JGitHelper jGitHelper = new JGitHelper(repoPath);

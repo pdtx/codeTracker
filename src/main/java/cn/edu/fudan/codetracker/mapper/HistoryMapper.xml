@@ -7,6 +7,7 @@
     <resultMap id="StatementHistory" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
         <id property="commit" column="commitid"/>
         <result property="committer" column="committer"/>
+        <result property="commitDate" column="commit_date"/>
         <result property="body" column="body"/>
         <result property="changeRelation" column="change_relation"/>
         <result property="statementUuid" column="meta_statement_uuid"/>
@@ -15,7 +16,7 @@
     </resultMap>
 
     <select id="getStatementHistory" parameterType="String" resultMap="StatementHistory">
-        select meta_statement_uuid, commitid, committer, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid in
+        select meta_statement_uuid, commitid, committer, commit_date, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid in
         (select s.meta_statement_uuid from (select * from raw_statement where meta_method_uuid = #{methodUuid} and body like #{body}
          and commit_date &lt;= (select commit_date from raw_method where commitid = #{commitId} limit 1)
          and change_relation != "DELETE" order by commit_date desc limit 1) as s)
@@ -96,5 +97,37 @@
     <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
         select r.meta_method_uuid, r.signature, count(distinct(commitid)) as quantity from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_method_uuid order by quantity desc,r.signature;
     </select>
+
+
+    <resultMap id="MethodInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MethodHistory">
+        <id property="repoUuid" column="meta_method_uuid"/>
+        <result property="commit" column="commitid"/>
+    </resultMap>
+
+    <select id="getMethodInfo" parameterType="String" resultMap="MethodInfo">
+        select r.meta_method_uuid,r.commitid from raw_method as r,meta_method as m where r.meta_method_uuid = m.uuid and r.repo_uuid = #{repoUuid} and m.file_path = #{filePath} and r.signature like #{methodName} and r.commit_date &lt;= #{commitTime} order by r.commit_date desc limit 1;
+    </select>
+
+
+    <resultMap id="MethodMetaInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
+        <id property="uuid" column="uuid"/>
+        <result property="packageName" column="package_name"/>
+        <result property="className" column="class_name"/>
+        <result property="methodName" column="signature"/>
+    </resultMap>
+
+    <select id="getMethodMetaInfo" parameterType="String" resultMap="MethodMetaInfo">
+        select uuid,package_name,class_name,signature from meta_method where uuid = #{methodUuid};
+    </select>
+
+
+    <resultMap id="BugStatement" type="String">
+        <id property="body" column="body"/>
+    </resultMap>
+
+    <select id="getBugStatement" parameterType="String" resultMap="BugStatement">
+        select body from raw_statement where meta_method_uuid = #{methodUuid} and commit_date &lt;= #{commitTime} and body like #{body} order by commit_date desc limit 1;
+    </select>
+
 
 </mapper>
