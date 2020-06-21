@@ -7,12 +7,22 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -299,4 +309,34 @@ public class JavaFileParser implements FileParser {
         return statementInfos;
     }
 
+//    public static void main(String[] args) {
+//      test();
+//    }
+//
+//    @SneakyThrows
+//    private static void test() {
+//
+//        String path = "E:\\Lab\\gitlab\\codeTracker\\src\\main\\java\\cn\\edu\\fudan\\codetracker\\core\\tree\\parser\\JavaFileParser.java";
+//        //path = "E:\\Lab\\RestInvoker.java";
+//        String projectName = "test";
+//
+//
+//        JavaParser javaParser = new JavaParser();
+//        CompilationUnit cu = javaParser.parse(Paths.get(path)).getResult().get();
+//
+//        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+//        combinedTypeSolver.add(new ReflectionTypeSolver());
+//        combinedTypeSolver.add(new JavaParserTypeSolver(new File("E:\\Lab\\gitlab\\codeTracker\\src\\main\\java")));
+//
+//        List<MethodCallExpr> methodCallExprs = cu.findAll(MethodCallExpr.class);
+//        for (MethodCallExpr methodCallExpr : methodCallExprs) {
+//            try {
+//                MethodUsage methodUsage = JavaParserFacade.get(combinedTypeSolver).solveMethodAsUsage(methodCallExpr);
+//                System.out.println("simple name:  " + methodUsage.getName());
+//                System.out.println("QualifiedSignature:  " + methodUsage.getQualifiedSignature());
+//            }catch (UnsolvedSymbolException e) {
+//
+//            }
+//        }
+//    }
 }

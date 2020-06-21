@@ -186,32 +186,4 @@ public class CosineUtil {
     }
 
 
-    public static void main(String[] args) {
-
-        String parent = "        if (str.length() < 2) {\n" +
-                "            int h = str.toCharArray()[str.length() - 1];\n" +
-                "            h <<= 1;\n" +
-                "            return (byte) (-3 - (h & 0x7f));\n" +
-                "        } else {\n" +
-                "            int h1 = str.toCharArray()[str.length() - 1];\n" +
-                "            int h2 = str.toCharArray()[str.length() - 2];\n" +
-                "            h1 <<= 1;\n" +
-                "            int h = h1 ^ h2;\n" +
-                "            return (byte) (-3 - (h & 0x7f));\n" +
-                "        }";
-        String child1 = "            int h = str.toCharArray()[str.length() - 1];\n" +
-                "            h <<= 1;\n" +
-                "            return (byte) (-3 - (h & 0x7f));";
-
-        String child2 = "            int h1 = str.toCharArray()[str.length() - 1];\n" +
-                "            int h2 = str.toCharArray()[str.length() - 2];\n" +
-                "            h1 <<= 1;\n" +
-                "            int h = h1 ^ h2;\n" +
-                "            return (byte) (-3 - (h & 0x7f));" ;
-
-
-
-    }
-
-
 }

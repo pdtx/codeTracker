@@ -186,7 +186,8 @@ public class LogicalChangedHandler implements NodeMapping {
                 continue;
             }
             double tmp =  CosineUtil.cosineSimilarity(target.getSelfBodyToken(), statement.getSelfBodyToken());
-            if (tmp > similarity) {
+
+            if (tmp > similarity || ((Double)Double.NaN).equals(tmp)) {
                 similarStatementList.add(statement);
             }
         }

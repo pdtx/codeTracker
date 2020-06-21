@@ -17,10 +17,9 @@ public class SuffixUtil {
      * 判断两端代码是否相似
      * @param code1 代码段1
      * @param code2 代码段2
-     * @param threshold 相似阈值
      * @return
      */
-    public static boolean isSimilarCode(String code1, String code2, double threshold){
+    public static double suffixSimilarity(String code1, String code2){
         try{
             //token化
             List<Byte> tokens1 = lexer(code1);
@@ -74,11 +73,11 @@ public class SuffixUtil {
             int fragment1Size = fragments.get(0).end - fragments.get(0).start + 1;
             int fragment2Size = fragments.get(1).end - fragments.get(1).start + 1;
             double similarity = overlapping * 1d / Math.max(fragment1Size, fragment2Size);
-            return similarity >= threshold;
+            return similarity;
         }catch (Exception e){
             e.printStackTrace();
         }
-        return false;
+        return 0;
     }
 
     /**
