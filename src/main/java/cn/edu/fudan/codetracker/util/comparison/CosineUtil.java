@@ -39,6 +39,24 @@ public class CosineUtil {
     }
 
     /**
+     * 判断两段代码是否相似
+     * @param code1 代码段1
+     * @param code2 代码段2
+     * @return threshold 相似阈值
+     */
+    public static double cosineSimilarityWithoutTokenize(String code1, String code2){
+        try {
+            List<Object> tokens1 = lexer(code1, false);
+            List<Object> tokens2 = lexer(code2, false);
+            return cosineSimilarity(tokens1, tokens2);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
+    /**
      * 计算token串的余弦相似度
      * @param tokensX
      * @param tokensY
@@ -127,6 +145,7 @@ public class CosineUtil {
 
 
     /**
+     * 模糊匹配 一个标识符后三个字符是一样的，那么这么标识符就会映射到同一个token
      * 哈希函数，将字符串映射到[-128,-3]u[125,127]字节空间
      * @param str
      * @return
@@ -174,6 +193,7 @@ public class CosineUtil {
 //    }
 
     public static String diffBody(String code) {
+        code = removeComment(code);
         String delimiter = ",";
         List<Object> token1 = lexer(code, true);
         StringBuilder s1 = new StringBuilder();
@@ -185,5 +205,13 @@ public class CosineUtil {
         return set.replace(subset, "");
     }
 
+    /**
+     * * 处理注释 groovy代码
+     * @param code
+     * @return String
+     * */
+    static String removeComment(String code) {
+        return code.replaceAll("(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/", "");
+    }
 
 }
