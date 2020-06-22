@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core;
 
+import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.diff.DiffInfo;
@@ -74,6 +75,10 @@ public class LogicalChangedHandler implements NodeMapping {
             //再mapping属于同一method的statement
             Set<DiffInfo> statementDiffs = new HashSet<>(diffMap.get("statement"));
             for (BaseNode node: curMap.get(ProjectInfoLevel.METHOD)) {
+                //方法判定为unchanged，即行号和内容均无变化，其子节点无需再匹配
+                if (BaseNode.ChangeStatus.UNCHANGED.equals(node.getChangeStatus())) {
+                    continue;
+                }
                 MethodNode methodNode = (MethodNode)node;
                 MethodNode preMethodNode = null;
                 Set<BaseNode> statements = getStatementNodeFromMethod(methodNode);

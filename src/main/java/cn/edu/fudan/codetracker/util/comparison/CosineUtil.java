@@ -202,7 +202,7 @@ public class CosineUtil {
     }
 
     public static String diff(String set, String subset) {
-        return set.replace(subset, "");
+        return set.replaceFirst(subset, "");
     }
 
     /**
