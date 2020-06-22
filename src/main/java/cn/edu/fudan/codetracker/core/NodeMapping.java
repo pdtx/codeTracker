@@ -46,7 +46,9 @@ public interface NodeMapping {
             if (trackerInfo != null) {
                 preRoot.setRootUuid(trackerInfo.getRootUUID());
                 preRoot.setVersion(trackerInfo.getVersion());
+                return;
             }
+            System.out.println("delete tracker info is null : " + preRoot.getProjectInfoLevel());
             return;
         }
         preRoot.setMapping(true);
@@ -62,6 +64,7 @@ public interface NodeMapping {
             return;
         }
         //追溯不到 处理为ADD
+        System.out.println("change tracker info is null : " + curRoot.getProjectInfoLevel());
         curRoot.setRootUuid(curRoot.getUuid());
         curRoot.setVersion(1);
         curRoot.setChangeStatus(BaseNode.ChangeStatus.ADD);

@@ -25,7 +25,7 @@
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
         <javaparser>3.16.1</javaparser>
-        <project.basedir>${project.basedir}</project.basedir>
+        <project.basedir>/Users/tangyuan/Documents/Gitlab/codeTracker</project.basedir>
     </properties>
 
     <repositories>
@@ -205,7 +205,8 @@
             <systemPath>${project.basedir}/jar/org.eclipse.jdt.core-3.12.3.jar</systemPath>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.codehaus.javancss/javancss -->
+
+<!--         https://mvnrepository.com/artifact/org.codehaus.javancss/javancss-->
         <dependency>
             <groupId>org.codehaus.javancss</groupId>
             <artifactId>javancss</artifactId>
