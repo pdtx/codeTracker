@@ -198,12 +198,14 @@ public class LogicalChangedHandler implements NodeMapping {
 
         double totalBody1 = 0.0;
         double totalBody2 = 0.0;
+        String targetBody = CosineUtil.removeComment(target.getBody())  ;
         for (StatementNode statementNode : similarStatementList) {
-            double tmp1 = CosineUtil.cosineSimilarity(target.getBody(), statementNode.getBody());
-            double tmp2  = CosineUtil.cosineSimilarityWithoutTokenize(target.getBody(), statementNode.getBody());
+            String sBody = CosineUtil.removeComment(target.getBody())  ;
+            double tmp1 = CosineUtil.cosineSimilarity(targetBody, sBody);
+            double tmp2  = CosineUtil.cosineSimilarityWithoutTokenize(targetBody, sBody);
             if (tmp1 >= totalBody1 && tmp2 >= totalBody2) {
                 totalBody1 = tmp1;
-                totalBody2 = tmp1;
+                totalBody2 = tmp2;
                 result = statementNode;
             }
         }

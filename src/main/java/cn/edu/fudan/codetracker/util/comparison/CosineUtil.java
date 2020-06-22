@@ -210,7 +210,7 @@ public class CosineUtil {
      * @param code
      * @return String
      * */
-    static String removeComment(String code) {
+    public static String removeComment(String code) {
         return code.replaceAll("(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/", "");
     }
 
