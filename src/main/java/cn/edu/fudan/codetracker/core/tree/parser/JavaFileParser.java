@@ -66,7 +66,7 @@ public class JavaFileParser implements FileParser {
             fileName = singleDir[singleDir.length - 1];
             // module name is null
             moduleName = parseModuleName(singleDir);
-            String [] s = path.replace('\\','/').split( moduleName + "/");
+            String [] s = path.replace('\\','/').replaceFirst("/" + moduleName + "/","@").split( "@");
             filePath = moduleName + "/" + s[s.length - 1];
             fileNode = new FileNode(fileName, filePath);
             // analyze import package
