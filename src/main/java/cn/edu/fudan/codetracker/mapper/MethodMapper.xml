@@ -124,6 +124,16 @@
                     when uuid=#{item.rootUuid} then #{item.version}
                 </foreach>
             </trim>
+            <trim prefix="file_path = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.filePath}
+                </foreach>
+            </trim>
+            <trim prefix="class_name = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.parent.className}
+                </foreach>
+            </trim>
         </trim>
         where uuid in
         <foreach collection="methodNodes" index="index" item="item"

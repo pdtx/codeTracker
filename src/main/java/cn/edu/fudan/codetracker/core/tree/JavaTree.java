@@ -50,7 +50,7 @@ public class JavaTree extends BaseLanguageTree {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         statementInfos = new ArrayList<>();
-        analyze(this.getFileList(), this.getRepoUuid());
+        analyze(super.getFileList(), super.getRepoUuid());
     }
 
     private void analyze(List<String> fileList, String repoUuid) {

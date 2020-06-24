@@ -72,6 +72,7 @@ public class StatementNode extends BaseNode{
         if (selfBodyToken != null) {
             return selfBodyToken;
         }
+
         String p = CosineUtil.diffBody(body);
 
         List<? extends BaseNode> children = super.getChildren();

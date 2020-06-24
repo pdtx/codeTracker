@@ -93,6 +93,16 @@
                     when uuid=#{item.rootUuid} then #{item.version}
                 </foreach>
             </trim>
+            <trim prefix="file_name = case" suffix="end,">
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.fileName}
+                </foreach>
+            </trim>
+            <trim prefix="file_path = case" suffix="end,">
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.filePath}
+                </foreach>
+            </trim>
         </trim>
         where uuid in
         <foreach collection="fileNodes" index="index" item="item"

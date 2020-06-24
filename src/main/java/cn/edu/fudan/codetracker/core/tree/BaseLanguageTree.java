@@ -26,7 +26,6 @@ public abstract class BaseLanguageTree {
     BaseLanguageTree(List<String> fileList, String repoUuid) {
         this.fileList = fileList;
         this.repoUuid = repoUuid;
-        parseTree();
     }
 
     /**

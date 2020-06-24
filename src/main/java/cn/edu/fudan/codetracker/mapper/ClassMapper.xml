@@ -97,6 +97,21 @@
                     when uuid=#{item.rootUuid} then #{item.version}
                 </foreach>
             </trim>
+            <trim prefix="fullname = case" suffix="end,">
+                <foreach collection="classNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.fullName}
+                </foreach>
+            </trim>
+            <trim prefix="class_name = case" suffix="end,">
+                <foreach collection="classNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.className}
+                </foreach>
+            </trim>
+            <trim prefix="file_path = case" suffix="end,">
+                <foreach collection="classNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.parent.filePath}
+                </foreach>
+            </trim>
         </trim>
         where uuid in
         <foreach collection="classNodes" index="index" item="item"

@@ -362,7 +362,7 @@ public class JGitHelper implements Closeable {
         tw.setRecursive(true);
         RenameDetector rd = new RenameDetector(repository);
         rd.addAll(DiffEntry.scan(tw));
-        rd.setRenameScore(50);
+        rd.setRenameScore(100);
         return rd.compute();
     }
 
