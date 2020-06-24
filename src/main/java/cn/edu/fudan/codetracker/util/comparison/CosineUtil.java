@@ -206,12 +206,12 @@ public class CosineUtil {
     }
 
     /**
-     * * 处理注释 groovy代码
+     * * 处理注释
      * @param code
      * @return String
      * */
     public static String removeComment(String code) {
-        return code.replaceAll("(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/", "");
+        return code.replaceAll( "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1" );
     }
 
 }
