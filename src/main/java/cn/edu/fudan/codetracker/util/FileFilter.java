@@ -20,6 +20,7 @@ public final class FileFilter {
         String str = strs[strs.length-1];
         return  !str.toLowerCase().endsWith(".java") ||
                 path.toLowerCase().contains("/test/") ||
+                path.toLowerCase().contains("/.mvn/") ||
                 str.toLowerCase().endsWith("test.java") ||
                 str.toLowerCase().endsWith("tests.java") ||
                 str.toLowerCase().startsWith("test") ||
