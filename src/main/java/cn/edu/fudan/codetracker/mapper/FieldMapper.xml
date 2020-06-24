@@ -119,7 +119,7 @@
             </trim>
             <trim prefix="simple_name = case" suffix="end,">
                 <foreach collection="fieldNodes" item="item">
-                    when uuid=#{item.rootUuid} then #{item.parent.simpleName}
+                    when uuid=#{item.rootUuid} then #{item.simpleName}
                 </foreach>
             </trim>
         </trim>

@@ -1,6 +1,7 @@
 
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.FieldNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
@@ -59,6 +60,15 @@ public class FieldDao {
         fieldMapper.updateChangeInfo(fieldInfoList, commonInfo);
         insertRawFieldInfoList(fieldInfoList, commonInfo);
     }
+
+    public void updateMetaInfo(Set<FieldNode> fieldNodes, CommonInfo commonInfo) {
+        if (fieldNodes.size() == 0) {
+            return;
+        }
+        List<FieldNode> fieldInfoList = new ArrayList<>(fieldNodes);
+        fieldMapper.updateChangeInfo(fieldInfoList, commonInfo);
+    }
+
 
     public TrackerInfo getTrackerInfo(String filePath, String className, String simpleName, String repoUuid, String branch) {
         return fieldMapper.getTrackerInfo( filePath, className, simpleName, repoUuid, branch);

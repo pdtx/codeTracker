@@ -58,6 +58,15 @@ public class ClassDao {
         insertRawClassInfoList(classInfosList, commonInfo);
     }
 
+    public void updateMetaInfo(Set<ClassNode> classNodes, CommonInfo commonInfo) {
+        if (classNodes.size() == 0) {
+            return;
+        }
+        List<ClassNode> classInfosList = new ArrayList<>(classNodes);
+        classMapper.updateChangeInfo(classInfosList, commonInfo);
+    }
+
+
     public TrackerInfo getTrackerInfo(String filePath, String className, String repoUuid, String branch) {
         return classMapper.getTrackerInfo(filePath, className, repoUuid, branch);
     }

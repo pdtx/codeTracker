@@ -53,9 +53,95 @@ class FileRenameHandler implements PublicConstants {
             NodeMapping.setNodeMapped(preFileNode, curFileNode, proxyDao, commonInfo);
 
             // 处理file下的class node
-            renameClassMapping(preFileNode, curFileNode, proxyDao, commonInfo);
+//            renameClassMapping(preFileNode, curFileNode, proxyDao, commonInfo);
+            //阈值100 处理file下面节点
+            dealWithOnlyRenameSituation(preFileNode, curFileNode, proxyDao, commonInfo);
         }
 
+    }
+
+    /**
+     * fixme 只考虑rename无内容改变，更新file、class、method、field的meta_info，便于查找trackerInfo
+     * @param preFileNode
+     * @param curFileNode
+     * @param proxyDao
+     * @param commonInfo
+     */
+    private static void dealWithOnlyRenameSituation(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo commonInfo) {
+        // 先完成重命名的匹配
+        ClassNode preClassNode = findClassNode(preFileNode);
+        ClassNode curClassNode = findClassNode(curFileNode);
+        curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
+        NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
+        dealWithUnchangedMethod(preClassNode, curClassNode, proxyDao, commonInfo);
+        dealWithUnchangedField(preClassNode, curClassNode, proxyDao, commonInfo);
+
+        //不变class
+        for (BaseNode baseNode : curFileNode.getChildren()) {
+            if (baseNode.isMapping()) {
+                continue;
+            }
+            ClassNode cClassNode = (ClassNode) baseNode;
+            for (BaseNode pBaseNode : preFileNode.getChildren()) {
+                if (pBaseNode.isMapping()) {
+                    continue;
+                }
+                ClassNode pClassNode = (ClassNode) pBaseNode;
+                if (cClassNode.getClassName().equals(pClassNode.getClassName())) {
+                    NodeMapping.setNodeMapped(pClassNode, cClassNode, proxyDao, commonInfo);
+                    if (cClassNode.getVersion() > 1) {
+                        cClassNode.setVersion(cClassNode.getVersion() - 1);
+                    }
+                    dealWithUnchangedMethod(pClassNode, cClassNode, proxyDao, commonInfo);
+                    dealWithUnchangedField(pClassNode, cClassNode, proxyDao, commonInfo);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void dealWithUnchangedMethod(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
+        for (BaseNode baseNode : curClassNode.getChildren()) {
+            if (baseNode.isMapping()) {
+                continue;
+            }
+            MethodNode curMethodNode = (MethodNode) baseNode;
+            for (BaseNode pBaseNode : preClassNode.getChildren()) {
+                if (pBaseNode.isMapping()) {
+                    continue;
+                }
+                MethodNode preMethodNode = (MethodNode) pBaseNode;
+                if (curMethodNode.getSignature().equals(preMethodNode.getSignature())) {
+                    NodeMapping.setNodeMapped(preMethodNode, curMethodNode, proxyDao, commonInfo);
+                    if (curMethodNode.getVersion() > 1) {
+                        curMethodNode.setVersion(curMethodNode.getVersion() - 1);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void dealWithUnchangedField(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
+        for (BaseNode baseNode : curClassNode.getFieldNodes()) {
+            if (baseNode.isMapping()) {
+                continue;
+            }
+            FieldNode curFieldNode = (FieldNode) baseNode;
+            for (BaseNode pBaseNode : preClassNode.getFieldNodes()) {
+                if (pBaseNode.isMapping()) {
+                    continue;
+                }
+                FieldNode preFieldNode = (FieldNode) pBaseNode;
+                if (curFieldNode.isSame(preFieldNode)) {
+                    NodeMapping.setNodeMapped(preFieldNode, curFieldNode, proxyDao, commonInfo);
+                    if (curFieldNode.getVersion() > 1) {
+                        curFieldNode.setVersion(curFieldNode.getVersion() - 1);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private static void renameClassMapping(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo commonInfo) {

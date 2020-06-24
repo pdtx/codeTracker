@@ -5,6 +5,7 @@
  **/
 package cn.edu.fudan.codetracker.dao;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.ClassNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.CommonInfo;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo;
@@ -58,6 +59,14 @@ public class MethodDao {
         List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
         methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
         insertRawMethodInfoList(methodInfoArrayList, commonInfo);
+    }
+
+    public void updateMetaInfo(Set<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.size() == 0) {
+            return;
+        }
+        List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
+        methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
     }
 
     public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String repoUuid, String branch) {
