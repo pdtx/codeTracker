@@ -25,7 +25,7 @@
         <JDTVersion>3.12.3</JDTVersion>
         <httpClientVersion>4.5.2</httpClientVersion>
         <javaparser>3.16.1</javaparser>
-        <project.basedir>/Users/tangyuan/Documents/Gitlab/codeTracker</project.basedir>
+        <project.basedir>${project.basedir}</project.basedir>
     </properties>
 
     <repositories>
