@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface HistoryMapper {
@@ -67,7 +68,7 @@ public interface HistoryMapper {
     /**
      * 代码历史重演 某段时间修改过的某个文件的所有方法
      */
-    List<MostModifiedInfo> getMethodInfoByFile(@Param("filePath") String filePath, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid);
+    List<MostModifiedInfo> getMethodInfoByFile(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid);
 
     /**
      * 获取语句历史切片 statementUuid
@@ -81,21 +82,21 @@ public interface HistoryMapper {
 
     /**
      * 获取方法上一个版本信息
-     * @param methodUuid
+     * @param methodUuidList
      * @param commitId
      * @return
      */
-    MostModifiedInfo getMethodLastInfo(@Param("methodUuid") String methodUuid, @Param("commitId") String commitId);
+    List<MostModifiedInfo> getMethodLastInfo(@Param("methodUuidList") Set<String> methodUuidList, @Param("commitId") String commitId);
 
     /**
      * 代码历史重演 某次commit修改过的某个文件的所有方法
      */
-    List<MostModifiedInfo> getMethodInfoByCommit(@Param("filePath") String filePath, @Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
+    List<MostModifiedInfo> getMethodInfoByCommit(@Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
 
     /**
      * 代码历史重演 某次commit修改过的某个文件的某个方法所有代码片段变更
      */
-    List<MostModifiedInfo> getStatementInfoByCommit(@Param("methodUuid") String methodUuid, @Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
+    List<MostModifiedInfo> getStatementInfoByCommit(@Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
 
 
 }

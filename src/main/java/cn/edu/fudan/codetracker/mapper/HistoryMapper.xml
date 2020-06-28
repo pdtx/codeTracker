@@ -151,10 +151,11 @@
     <resultMap id="AllMethodInfo" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
         <id property="uuid" column="meta_method_uuid"/>
         <result property="methodName" column="signature"/>
+        <result property="filePath" column="file_path"/>
     </resultMap>
 
     <select id="getMethodInfoByFile" parameterType="String" resultMap="AllMethodInfo">
-        select r.meta_method_uuid, r.signature from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and m.file_path = #{filePath} and r.commitid != (select commitid from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) group by r.meta_method_uuid order by r.signature;
+        select r.meta_method_uuid, r.signature, m.file_path from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.commitid != (select commitid from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and r.change_relation in ("ADD","DELETE","CHANGE","SELF_CHANGE") group by r.meta_method_uuid order by r.signature;
     </select>
 
 
@@ -175,14 +176,19 @@
         <result property="changeRelation" column="change_relation"/>
         <result property="begin" column="method_begin"/>
         <result property="end" column="method_end"/>
+        <result property="filePath" column="file_path"/>
     </resultMap>
 
     <select id="getMethodLastInfo" parameterType="String" resultMap="MethodInfoByCommit">
-        select meta_method_uuid, signature, change_relation, method_begin, method_end from raw_method where meta_method_uuid = #{methodUuid} and commit_date &lt; (select commit_date from raw_method where commitid = #{commitId} limit 1) order by commit_date desc limit 1;
+        select r.meta_method_uuid, r.signature, r.change_relation, r.method_begin, r.method_end, m.file_path from raw_method as r, meta_method as m where r.meta_method_uuid = m.uuid and r.commit_date &lt; (select commit_date from raw_method where commitid = #{commitId} limit 1) and r.meta_method_uuid in
+        <foreach collection="methodUuidList" item="uuid" index="index" open="(" close=")" separator=",">
+            #{uuid}
+        </foreach>
+        order by r.meta_method_uuid, r.commit_date desc;
     </select>
 
     <select id="getMethodInfoByCommit" parameterType="String" resultMap="MethodInfoByCommit">
-        select r.meta_method_uuid, r.signature, r.change_relation, r.method_begin, r.method_end from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.commitid = #{commitId} and m.file_path = #{filePath} order by r.signature;
+        select r.meta_method_uuid, r.signature, r.change_relation, r.method_begin, r.method_end, m.file_path from raw_method as r, meta_method as m where r.meta_method_uuid = m.uuid and r.repo_uuid = #{repoUuid} and r.commitid = #{commitId} and r.change_relation in ("ADD","DELETE","CHANGE","SELF_CHANGE") order by r.signature;
     </select>
 
     <resultMap id="StatementInfoByCommit" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -191,10 +197,11 @@
         <result property="begin" column="statement_begin"/>
         <result property="end" column="statement_end"/>
         <result property="description" column="description"/>
+        <result property="methodUuid" column="meta_method_uuid"/>
     </resultMap>
 
     <select id="getStatementInfoByCommit" parameterType="String" resultMap="StatementInfoByCommit">
-        select meta_statement_uuid, change_relation, statement_begin, statement_end, description from raw_statement where repo_uuid = #{repoUuid} and commitid = #{commitId} and meta_method_uuid = #{methodUuid} and change_relation in ("ADD","SELF_CHANGE","DELETE") order by statement_begin,statement_end desc,description desc;
+        select meta_statement_uuid, change_relation, statement_begin, statement_end, description, meta_method_uuid from raw_statement where repo_uuid = #{repoUuid} and commitid = #{commitId} and change_relation in ("ADD","SELF_CHANGE","DELETE") order by statement_begin,statement_end desc,description desc;
     </select>
 
 

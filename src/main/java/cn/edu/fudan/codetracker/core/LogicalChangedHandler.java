@@ -136,7 +136,7 @@ public class LogicalChangedHandler implements NodeMapping {
             BaseNode pre = diffInfo.findChangeNode(preSet,false);
             BaseNode cur = diffInfo.findChangeNode(curSet,true);
             if (pre == null && cur == null) {
-                log.warn("useless diff info:[{}]", diffInfo.toString());
+                log.warn("useless diff info");
                 continue;
             }
             if (pre == null) {

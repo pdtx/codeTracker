@@ -212,8 +212,62 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
             //Java入库
             extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
+
+            //rename情况入库，更新meta表
+            if (map.get(RENAME).size() > 0) {
+                updateRenameInfo(curJavaTree, curCommonInfo, map.get(RENAME));
+            }
         }
 
+    }
+
+    /**
+     * fixme 只抽取未改变的更新meta表，有改变的extractAndSaveInfo已入库
+     * @param javaTree
+     * @param commonInfo
+     * @param renameList
+     */
+    private void updateRenameInfo(JavaTree javaTree, CommonInfo commonInfo, List<String> renameList) {
+        Set<ClassNode> classNodeSet = new HashSet<>();
+        Set<MethodNode> methodNodeSet = new HashSet<>();
+        Set<FieldNode> fieldNodeSet = new HashSet<>();
+        for (String str: renameList) {
+            String[] renamePaths = str.split(":");
+            String filePath = renamePaths[1];
+            for (FileNode fileNode : javaTree.getFileInfos()) {
+                if (filePath.equals(fileNode.getFilePath())) {
+                    for (BaseNode baseNode : fileNode.getChildren()) {
+                        ClassNode classNode = (ClassNode) baseNode;
+                        if (BaseNode.ChangeStatus.UNCHANGED.equals(classNode.getChangeStatus())) {
+                            classNodeSet.add(classNode);
+                        }
+                        //method
+                        for (BaseNode mNode : classNode.getChildren()) {
+                            if (BaseNode.ChangeStatus.UNCHANGED.equals(mNode.getChangeStatus())) {
+                                methodNodeSet.add((MethodNode) mNode);
+                            }
+                        }
+                        //field
+                        for (BaseNode fNode : classNode.getFieldNodes()) {
+                            if (BaseNode.ChangeStatus.UNCHANGED.equals(fNode.getChangeStatus())) {
+                                fieldNodeSet.add((FieldNode) fNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        saveMetaInfo(classNodeSet, methodNodeSet, fieldNodeSet, commonInfo);
+    }
+
+    private void saveMetaInfo(Set<ClassNode> classNodeSet, Set<MethodNode> methodNodeSet, Set<FieldNode> fieldNodeSet, CommonInfo commonInfo) {
+        try {
+            classDao.updateMetaInfo(classNodeSet, commonInfo);
+            methodDao.updateMetaInfo(methodNodeSet, commonInfo);
+            fieldDao.updateMetaInfo(fieldNodeSet, commonInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -438,12 +492,13 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
         if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
-            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+//            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
 //            return "E:\\Lab\\scanProject\\IssueTracker-Master";
-//            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
-        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
+        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+//        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 
     public static void main(String[] args) {
