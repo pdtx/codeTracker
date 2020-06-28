@@ -297,7 +297,10 @@ public class HistoryDao implements PublicConstants {
             }
             methodUuidList.add(method.getUuid());
         }
-        List<MostModifiedInfo> lastMethodInfos = historyMapper.getMethodLastInfo(methodUuidList, commitId);
+        List<MostModifiedInfo> lastMethodInfos = new ArrayList<>();
+        if (methodUuidList.size() > 0) {
+            lastMethodInfos = historyMapper.getMethodLastInfo(methodUuidList, commitId);
+        }
         for (MostModifiedInfo lastMethod : lastMethodInfos) {
             if (!lastMethodMap.keySet().contains(lastMethod.getUuid())) {
                 lastMethodMap.put(lastMethod.getUuid(), lastMethod);
