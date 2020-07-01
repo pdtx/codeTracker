@@ -24,7 +24,7 @@ public class PomAnalysisUtil {
      */
     public static Set<String> getAllGroupId(String repoPath) {
         Set<String> result = new HashSet<>(4);
-        new DirExplorer(((level, path, file) -> path.endsWith("pom.xml")),
+        new DirExplorer(((level, path, file) -> path.endsWith("pom.xml") && getGroupId(file.getAbsolutePath()) != null),
                 (level, path, file) -> result.add(getGroupId(file.getAbsolutePath()))).explore(new File(repoPath));
         return result;
     }

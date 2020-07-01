@@ -15,6 +15,9 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -28,10 +31,17 @@ import java.util.Set;
  * @author fancying
  * create: 2020-06-18 15:30
  **/
+@Component
 public class DependencyAnalysis {
 
 
-    private static final String DEPENDENCY_PATH = "C:\\Users\\fancying\\.m2\\repository";
+    private static String DEPENDENCY_PATH;
+//    private static String DEPENDENCY_PATH = "/Users/tangyuan/Documents/codeTrackerRepo";
+
+    @Value("${mavenRepoDir}")
+    public void setDependencyPath(String dependencyPath) {
+        DEPENDENCY_PATH = dependencyPath;
+    }
 
     /**
      *每个线程对应的 依赖项目地址路径是固定的
@@ -46,12 +56,15 @@ public class DependencyAnalysis {
 
     @SneakyThrows
     private static void test() {
-        String path = "E:\\Lab\\gitlab\\codeTracker\\src\\main\\java\\cn\\edu\\fudan\\codetracker\\core\\tree\\parser\\DependencyAnalysis.java";
-        String repoPath = "E:\\Lab\\gitlab\\codeTracker";
+//        String path = "E:\\Lab\\gitlab\\codeTracker\\src\\main\\java\\cn\\edu\\fudan\\codetracker\\core\\tree\\parser\\DependencyAnalysis.java";
+        String path = "/Users/tangyuan/Documents/Git/IssueTracker-Master/account-service/src/main/java/cn/edu/fudan/accountservice/controller/AccountController.java";
+//        String repoPath = "E:\\Lab\\gitlab\\codeTracker";
+        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         setRepoPathT(repoPath);
         CompilationUnit cu = new JavaParser().parse(Paths.get(path)).getResult().get();
         List<MethodCallExpr> methodCallExprs = cu.findAll(MethodCallExpr.class);
         getMethodCallRelationship(methodCallExprs).forEach(System.out::println);
+        System.out.println(getMethodCallRelationship(methodCallExprs).size());
     }
 
     /**
@@ -74,7 +87,7 @@ public class DependencyAnalysis {
      * @return List<MethodCallRelationship>
      */
     @SneakyThrows
-    private static List<MethodCallRelationship> getMethodCallRelationship(List<MethodCallExpr> methodCallExprs) {
+    public static List<MethodCallRelationship> getMethodCallRelationship(List<MethodCallExpr> methodCallExprs) {
         CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
         Set<String> allGroupId = allGroupIdT.get();
 
@@ -95,6 +108,7 @@ public class DependencyAnalysis {
                 result.add(new MethodCallRelationship(packageName, className, signature));
             }catch (Exception e) {
                 // todo 后续优化 目前无需做处理
+                //e.printStackTrace();
             }
         }
 

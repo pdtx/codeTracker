@@ -17,6 +17,28 @@ public class MethodCallRelationship {
     private String className;
     private String signature;
 
+    @Override
+    public int hashCode() {
+        return (className + packageName + signature).hashCode();
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if(o == null){
+            return false;
+        }
+
+        if(o instanceof MethodCallRelationship){
+            MethodCallRelationship methodCallRelationship = (MethodCallRelationship)o;
+            return this.signature.equals(methodCallRelationship.getSignature()) &&
+                    this.packageName.equals(methodCallRelationship.getPackageName()) &&
+                    this.className.equals(methodCallRelationship.getClassName());
+        }
+        return false;
+    }
 
 }

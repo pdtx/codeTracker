@@ -34,6 +34,7 @@ public class JavaTree extends BaseLanguageTree {
     private List<FieldNode> fieldInfos;
     private List<MethodNode> methodInfos;
     private List<StatementNode> statementInfos;
+    private Map<String, List<MethodCall>> methodCallMap;
 
     public JavaTree(List<String> fileList, String repoUuid) {
         super(fileList, repoUuid);
@@ -50,6 +51,7 @@ public class JavaTree extends BaseLanguageTree {
         fieldInfos = new ArrayList<>();
         methodInfos = new ArrayList<>();
         statementInfos = new ArrayList<>();
+        methodCallMap = new HashMap<>(4);
         analyze(super.getFileList(), super.getRepoUuid());
     }
 
@@ -89,6 +91,9 @@ public class JavaTree extends BaseLanguageTree {
             packageNode.getFileNodes().add(javaFileParser.getFileNode());
             // 设置子节点
             packageNode.setChildren(packageNode.getFileNodes());
+
+            //添加调用关系
+            methodCallMap.putAll(javaFileParser.getMethodCallMap());
         }
         travelRepoInfo();
     }

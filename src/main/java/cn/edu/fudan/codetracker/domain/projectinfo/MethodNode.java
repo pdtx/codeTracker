@@ -39,6 +39,11 @@ public class MethodNode extends BaseNode{
         return classNode.getClassName();
     }
 
+    public String getPackageName() {
+        ClassNode classNode = (ClassNode) super.getParent();
+        return classNode.getPackageName();
+    }
+
     @Override
     public int hashCode() {
         return (filePath + getClassName() + signature).hashCode();
@@ -77,4 +82,10 @@ public class MethodNode extends BaseNode{
         return map;
     }
 
+    public boolean isChangeCalledMethod() {
+        return ChangeStatus.ADD.equals(this.getChangeStatus())
+                || ChangeStatus.DELETE.equals(this.getChangeStatus())
+                || ChangeStatus.SELF_CHANGE.equals(this.getChangeStatus())
+                || ChangeStatus.CHANGE.equals(this.getChangeStatus());
+    }
 }

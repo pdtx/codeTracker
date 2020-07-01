@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.fudan.codetracker.mapper.MethodCallMapper">
+
+    <insert id="insertMethodCallList">
+        insert into method_call
+        (
+        uuid,
+        start_commit_id,
+        body_type,
+        body_uuid,
+        package_name,
+        class_name,
+        signature,
+        raw_method_uuid,
+        repo_uuid
+        )
+        VALUES
+        <foreach collection="methodCalls" item="item" index="index" separator=",">
+            (
+            #{item.uuid},
+            #{commonInfo.commit},
+            #{item.bodyType},
+            #{item.bodyUuid},
+            #{item.packageName},
+            #{item.className},
+            #{item.signature},
+            #{item.rawMethodUuid},
+            #{commonInfo.repoUuid}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

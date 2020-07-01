@@ -7,6 +7,7 @@ import cn.edu.fudan.codetracker.core.*;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.core.tree.RepoInfoTree;
+import cn.edu.fudan.codetracker.core.tree.parser.DependencyAnalysis;
 import cn.edu.fudan.codetracker.dao.*;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
@@ -47,6 +48,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private MethodDao methodDao;
     private StatementDao statementDao;
     private RepoDao repoDao;
+    private MethodCallDao methodCallDao;
 
     private RestInterfaceManager restInterface;
 
@@ -98,6 +100,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                 } else {
                     jGitHelper.checkout(branch);
                     jGitHelper.checkout(commit);
+                    DependencyAnalysis.setRepoPathT(repoPath);
                     CommonInfo commonInfo = constructCommonInfo(repoUuid,branch,commit,null,jGitHelper);
                     File file = new File(repoPath);
                     //List<String> fileList, CommonInfo commonInfo, String repoUuid
@@ -105,6 +108,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
                     travelAndSetChangeRelation(javaTree.getPackageInfos());
                     saveData(javaTree,commonInfo);
+                    dealWithMethodCalls(javaTree, commonInfo);
                     isUpdate = true;
                 }
                 scanInfo.setEndScanTime(new Date());
@@ -118,6 +122,77 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             e.printStackTrace();
             return true;
         }
+    }
+
+    private void dealWithMethodCalls(JavaTree curJavaTree, CommonInfo commonInfo) {
+        if (curJavaTree == null || curJavaTree.getMethodCallMap() == null || curJavaTree.getMethodCallMap().size() == 0) {
+            return;
+        }
+        Map<String, List<MethodCall>> methodCallMap = curJavaTree.getMethodCallMap();
+        List<MethodNode> methodNodes = curJavaTree.getMethodInfos();
+        List<MethodCall> methodCalls = new ArrayList<>();
+        //处理field add的方法调用
+        for (FieldNode fieldNode : curJavaTree.getFieldInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus()) && methodCallMap.keySet().contains(fieldNode.getUuid())) {
+                List<MethodCall> list = methodCallMap.get(fieldNode.getUuid());
+                for (MethodCall methodCall : list) {
+                    String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
+                    if (rawMethodUuid != null) {
+                        methodCall.setRawMethodUuid(rawMethodUuid);
+                        methodCalls.add(methodCall);
+                    }
+                }
+            }
+        }
+
+        //处理statement add的方法调用
+        for (StatementNode statementNode : curJavaTree.getStatementInfos()) {
+            if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus()) && methodCallMap.keySet().contains(statementNode.getUuid())) {
+                List<MethodCall> list = methodCallMap.get(statementNode.getUuid());
+                for (MethodCall methodCall : list) {
+                    String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
+                    if (rawMethodUuid != null) {
+                        methodCall.setRawMethodUuid(rawMethodUuid);
+                        methodCalls.add(methodCall);
+                    }
+                }
+            }
+        }
+
+        //fixme field,statement change情况新增调用识别待处理
+
+        //save入库
+        saveMethodCallList(methodCalls, commonInfo);
+    }
+
+    private void saveMethodCallList(List<MethodCall> methodCallList, CommonInfo commonInfo) {
+        try {
+            methodCallDao.insertMethodCallList(methodCallList, commonInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String findCalledMethod(MethodCall methodCall, List<MethodNode> methodNodes) {
+        if (methodNodes == null) {
+            return null;
+        }
+        for (MethodNode methodNode : methodNodes) {
+            boolean isMatch = methodCall.getPackageName().equals(methodNode.getPackageName())
+                    && methodCall.getClassName().equals(methodNode.getClassName())
+                    && methodCall.getSignature().equals(methodNode.getSignature());
+            if (isMatch && methodNode.isChangeCalledMethod()) {
+                return methodNode.getUuid();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * fixme 当field statement为change时，判断哪些调用是新增
+     */
+    private void dealWithChangeMethodCalls() {
+
     }
 
     private List<String> listFiles(File projectDir) {
@@ -203,6 +278,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             jGitHelper.checkout(preCommit);
             RepoInfoTree preRepoInfoTree = new RepoInfoTree(preFileList,preCommonInfo,repoUuid);
             jGitHelper.checkout(commitId);
+            DependencyAnalysis.setRepoPathT(repoPath);
             RepoInfoTree curRepoInfoTree = new RepoInfoTree(curFileList,curCommonInfo,repoUuid);
 
             //Java语言mapping
@@ -212,6 +288,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
             //Java入库
             extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
+
+            //处理调用关系
+            dealWithMethodCalls(curJavaTree, curCommonInfo);
 
             //rename情况入库，更新meta表
             if (map.get(RENAME).size() > 0) {
@@ -550,5 +629,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         this.repoDao = repoDao;
     }
 
-
+    @Autowired
+    public void setMethodCallDao(MethodCallDao methodCallDao) {
+        this.methodCallDao = methodCallDao;
+    }
 }

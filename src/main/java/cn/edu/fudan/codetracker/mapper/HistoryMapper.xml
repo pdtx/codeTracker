@@ -20,11 +20,12 @@
         (select s.meta_statement_uuid from (select * from raw_statement where meta_method_uuid = #{methodUuid} and body like #{body}
          and commit_date &lt;= (select commit_date from raw_method where commitid = #{commitId} limit 1)
          and change_relation != "DELETE" order by commit_date desc limit 1) as s)
+         and change_relation != "CHANGE_LINE"
         group by commitid order by commit_date desc;
     </select>
 
     <select id="getStatementHistoryById" parameterType="String" resultMap="StatementHistory">
-        select meta_statement_uuid, commitid, committer, commit_date, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid = #{statementUuid} group by commitid order by commit_date desc;
+        select meta_statement_uuid, commitid, committer, commit_date, body, change_relation, statement_begin, statement_end from raw_statement where meta_statement_uuid = #{statementUuid} and change_relation != "CHANGE_LINE" group by commitid order by commit_date desc;
     </select>
 
 

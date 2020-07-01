@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.core.tree.parser;
 
+import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -24,10 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * description: java 语言解析
@@ -50,9 +48,11 @@ public class JavaFileParser implements FileParser {
     private ClassOrInterfaceDeclaration classOrInterfaceDeclaration;
     private BlockStmt blockStmt;
     private Statement parentStmt;
+    private Map<String, List<MethodCall>> methodCallMap;
 
     public JavaFileParser() {
         importNames = new HashSet<>();
+        methodCallMap = new HashMap<>(4);
     }
 
     @Override
@@ -183,6 +183,12 @@ public class JavaFileParser implements FileParser {
             // field statement
             /*fieldInfo.setChildren(parseLevelOneStmt());*/
             fieldInfos.add(fieldNode);
+
+            //抽取调用关系
+            List<MethodCallExpr> methodCallExprs = fieldDeclaration.findAll(MethodCallExpr.class);
+            List<MethodCallRelationship> methodCallRelationships = DependencyAnalysis.getMethodCallRelationship(methodCallExprs);
+            saveStatementMethodCall(methodCallRelationships, fieldNode);
+
         }
         return fieldInfos;
     }
@@ -281,6 +287,11 @@ public class JavaFileParser implements FileParser {
                 parentStmt = statement;
                 statementNode.setChildren(parseLevelTwoStmt(methodNode, statementNode));
                 statementInfos.add(statementNode);
+
+                //抽取调用关系
+                List<MethodCallExpr> methodCallExprs = statement.findAll(MethodCallExpr.class);
+                List<MethodCallRelationship> methodCallRelationships = DependencyAnalysis.getMethodCallRelationship(methodCallExprs);
+                saveStatementMethodCall(methodCallRelationships, statementNode);
             }
         }
         return statementInfos;
@@ -303,10 +314,28 @@ public class JavaFileParser implements FileParser {
                     this.parentStmt = statement;
                     statementNode.setChildren(parseLevelTwoStmt(methodNode, statementNode));
                     statementInfos.add(statementNode);
+
+                    //抽取调用关系
+                    List<MethodCallExpr> methodCallExprs = statement.findAll(MethodCallExpr.class);
+                    List<MethodCallRelationship> methodCallRelationships = DependencyAnalysis.getMethodCallRelationship(methodCallExprs);
+                    saveStatementMethodCall(methodCallRelationships, statementNode);
                 }
             }
         }
         return statementInfos;
+    }
+
+    public void saveStatementMethodCall(List<MethodCallRelationship> methodCallRelationships, BaseNode baseNode) {
+        List<MethodCall> methodCalls = new ArrayList<>();
+        String type = baseNode instanceof FieldNode ? ProjectInfoLevel.FIELD.getName() : ProjectInfoLevel.STATEMENT.getName();
+        for (MethodCallRelationship methodCallRelationship : methodCallRelationships) {
+            //String uuid, String bodyType, String bodyUuid, String packageName, String className, String signature
+            MethodCall methodCall = new MethodCall(UUID.randomUUID().toString(), type, baseNode.getUuid(), methodCallRelationship.getPackageName(), methodCallRelationship.getClassName(), methodCallRelationship.getSignature());
+            methodCalls.add(methodCall);
+        }
+        if (methodCalls.size() > 0) {
+            methodCallMap.put(baseNode.getUuid(), methodCalls);
+        }
     }
 
 //    public static void main(String[] args) {
