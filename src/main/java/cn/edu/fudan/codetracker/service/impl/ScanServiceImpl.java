@@ -58,8 +58,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-        repoPath.set(getRepoPathByUuid(repoUuid));
+        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+//        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
@@ -68,14 +68,14 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-//        restInterface.freeRepo(repoUuid, repoPath.get());
+        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     @Async("taskExecutor")
     @Override
     public void autoUpdate(String repoUuid, String branch, String commitId) {
-//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-        repoPath.set(getRepoPathByUuid(repoUuid));
+        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+//        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
@@ -84,7 +84,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-//        restInterface.freeRepo(repoUuid, repoPath.get());
+        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
@@ -567,15 +567,16 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
         if("iec-wepm-develop".equals(repoUuid)) {
-            return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" :"/Users/tangyuan/Documents/Git/iec-wepm-develop";
+            return IS_WINDOWS  ? "E:\\Lab\\iec-wepm-develop" : "/Users/tangyuan/Documents/Git/iec-wepm-develop";
         }
 
         if ("94eb2fd8-89de-11ea-801e-1b2730e40821".equals(repoUuid)) {
-//            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+            return "/home/fdse/codewisdom/repo/IssueTracker-Master";
 //            return "E:\\Lab\\scanProject\\IssueTracker-Master";
-            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+//            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
+//        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
         return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
