@@ -55,7 +55,7 @@ public interface StatisticsMapper {
     void deleteFromRawStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
     void deleteFromRelationStatement(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
     void deleteFromTrackerRepo(@Param("repoUuid") String repoUuid, @Param("branch") String branch);
-
+    void deleteFromMethodCall(@Param("repoUuid") String repoUuid);
 
     /**
      * 获取删除代码信息 用于计算所删除代码年代

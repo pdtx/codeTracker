@@ -22,6 +22,8 @@ public class TempMostInfo {
     private int lineBegin;
     private int lineEnd;
     private int LineHeight;
+    private String rawUuid;
+    private List<String> calledMethodUuid;
 
 
     public TempMostInfo() {

@@ -1,6 +1,7 @@
 package cn.edu.fudan.codetracker.dao;
 
 import cn.edu.fudan.codetracker.constants.PublicConstants;
+import cn.edu.fudan.codetracker.domain.projectinfo.MethodCall;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.HistoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -286,7 +287,20 @@ public class HistoryDao implements PublicConstants {
         List<MostModifiedInfo> fileInfos = historyMapper.getFileInfoByCommit(repoUuid, commitId);
         List<MostModifiedInfo> methodInfos = historyMapper.getMethodInfoByCommit(repoUuid, commitId);
         List<MostModifiedInfo> statementInfos = historyMapper.getStatementInfoByCommit(repoUuid, commitId);
+        List<MethodCall> methodCalls = historyMapper.getMethodCallsByCommit(repoUuid, commitId);
         Set<String> methodUuidList = new HashSet<>();
+        Map<String,Set<String>> methodCallMap = new HashMap<>(4);
+        if (methodCalls != null) {
+            for (MethodCall methodCall : methodCalls) {
+                if (methodCallMap.keySet().contains(methodCall.getBodyUuid())) {
+                    methodCallMap.get(methodCall.getBodyUuid()).add(methodCall.getRawMethodUuid());
+                } else {
+                    Set<String> set = new HashSet<>();
+                    set.add(methodCall.getRawMethodUuid());
+                    methodCallMap.put(methodCall.getBodyUuid(), set);
+                }
+            }
+        }
         for (MostModifiedInfo method : methodInfos) {
             if (methodMap.keySet().contains(method.getFilePath())) {
                 methodMap.get(method.getFilePath()).add(method);
@@ -328,6 +342,7 @@ public class HistoryDao implements PublicConstants {
                     methodInfo.setUuid(method.getUuid());
                     methodInfo.setName(method.getMethodName());
                     methodInfo.setChangeRelation(method.getChangeRelation());
+                    methodInfo.setRawUuid(method.getRawUuid());
                     int methodBegin = method.getBegin();
                     int methodHeight = method.getEnd() - methodBegin + 1;
                     //method真实行号、长度信息
@@ -347,6 +362,10 @@ public class HistoryDao implements PublicConstants {
                             statementInfo.setUuid(statement.getUuid());
                             statementInfo.setChangeRelation(statement.getChangeRelation());
                             statementInfo.setDescription(statement.getDescription());
+                            statementInfo.setRawUuid(statement.getRawUuid());
+                            if (methodCallMap.get(statement.getRawUuid()) != null) {
+                                statementInfo.setCalledMethodUuid(new ArrayList<>(methodCallMap.get(statement.getRawUuid())));
+                            }
                             //statement真实行号、长度信息
                             statementInfo.setLineBegin(statement.getBegin());
                             statementInfo.setLineEnd(statement.getEnd());

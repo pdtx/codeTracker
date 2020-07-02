@@ -144,6 +144,7 @@ public class StatisticsDao implements PublicConstants {
         statisticsMapper.deleteFromRawStatement(repoUuid, branch);
         statisticsMapper.deleteFromRelationStatement(repoUuid, branch);
         statisticsMapper.deleteFromTrackerRepo(repoUuid, branch);
+        statisticsMapper.deleteFromMethodCall(repoUuid);
     }
 
 

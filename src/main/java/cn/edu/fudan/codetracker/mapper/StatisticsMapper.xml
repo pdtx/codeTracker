@@ -156,6 +156,10 @@
         delete from tracker_repo where repo_id=#{repoUuid} and branch=#{branch};
     </delete>
 
+    <delete id="deleteFromMethodCall" parameterType="String">
+        delete from method_call where repo_id=#{repoUuid};
+    </delete>
+
 
     <!--获取删除代码信息-->
     <resultMap id="DeleteStatements" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">

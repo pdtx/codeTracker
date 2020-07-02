@@ -23,6 +23,7 @@ public class MostModifiedInfo {
     private String changeRelation;
     private String description;
     private String methodUuid;
+    private String rawUuid;
 
     private int version;
 

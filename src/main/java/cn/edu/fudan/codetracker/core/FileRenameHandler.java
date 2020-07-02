@@ -71,6 +71,9 @@ class FileRenameHandler implements PublicConstants {
         // 先完成重命名的匹配
         ClassNode preClassNode = findClassNode(preFileNode);
         ClassNode curClassNode = findClassNode(curFileNode);
+        if (curClassNode == null || preClassNode == null) {
+            return;
+        }
         curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
         NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
         dealWithUnchangedMethod(preClassNode, curClassNode, proxyDao, commonInfo);
@@ -373,6 +376,9 @@ class FileRenameHandler implements PublicConstants {
             }
         }
         log.warn("can not find rename class");
+        if (fileNode.getChildren().size() == 0) {
+            return null;
+        }
         return (ClassNode)fileNode.getChildren().get(0);
     }
 

@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.mapper;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.MethodCall;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -98,5 +99,6 @@ public interface HistoryMapper {
      */
     List<MostModifiedInfo> getStatementInfoByCommit(@Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
 
+    List<MethodCall> getMethodCallsByCommit(@Param("repoUuid") String repoUuid, @Param("commitId") String commitId);
 
 }
