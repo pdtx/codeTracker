@@ -8,23 +8,29 @@ package cn.edu.fudan.codetracker.util.cldiff;
 import edu.fdu.se.global.Constants;
 import edu.fdu.se.global.Global;
 import edu.fdu.se.API.CLDiffLocal;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.logging.Level;
 
+@Slf4j
 public class ClDiffHelper {
 
 
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
     public synchronized static void executeDiff(String repoPath, String commitId, String outputDir) {
-        repoPath = IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
-        Global.runningMode = Constants.COMMAND_LINE;
-        Global.granularity = Constants.GRANULARITY.STATEMENT;
-        Global.initLangAndLogger(Constants.RUNNING_LANG.JAVA, Level.WARNING);
-        Global.isMethodRangeContainsJavaDoc = false;
-        Global.isLink = false;
-        CLDiffLocal clDiffLocal = new CLDiffLocal(repoPath);
-        clDiffLocal.run(commitId, repoPath, outputDir);
+        try {
+            repoPath = IS_WINDOWS ? repoPath + "\\.git" : repoPath + "/.git";
+            Global.runningMode = Constants.COMMAND_LINE;
+            Global.granularity = Constants.GRANULARITY.STATEMENT;
+            Global.initLangAndLogger(Constants.RUNNING_LANG.JAVA, Level.WARNING);
+            Global.isMethodRangeContainsJavaDoc = false;
+            Global.isLink = false;
+            CLDiffLocal clDiffLocal = new CLDiffLocal(repoPath);
+            clDiffLocal.run(commitId, repoPath, outputDir);
+        } catch (Exception e) {
+            log.error("CLDiff error: {}", e.getMessage());
+        }
     }
 
     public static void main(String[] args) {

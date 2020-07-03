@@ -94,7 +94,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         int num = 0;
         try {
             for (String commit : commitList) {
-                log.info("start commit：{} {}" , ++num, commit);
+                log.info("{} start commit：{} {}" , repoUuid, ++num, commit);
                 if (isUpdate) {
                     scan(repoUuid , commit, branch, jGitHelper, repoPath);
                 } else {
@@ -106,9 +106,13 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     //List<String> fileList, CommonInfo commonInfo, String repoUuid
                     RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid);
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
-                    travelAndSetChangeRelation(javaTree.getPackageInfos());
-                    saveData(javaTree,commonInfo);
-                    dealWithMethodCalls(javaTree, commonInfo);
+                    if (javaTree != null) {
+                        travelAndSetChangeRelation(javaTree.getPackageInfos());
+                        saveData(javaTree,commonInfo);
+                        dealWithMethodCalls(javaTree, commonInfo);
+                    } else {
+                        log.error("javaTree null");
+                    }
                     isUpdate = true;
                 }
                 scanInfo.setEndScanTime(new Date());
@@ -307,6 +311,10 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
      * @param renameList
      */
     private void updateRenameInfo(JavaTree javaTree, CommonInfo commonInfo, List<String> renameList) {
+        if (javaTree == null) {
+            log.error("java tree null");
+            return;
+        }
         Set<ClassNode> classNodeSet = new HashSet<>();
         Set<MethodNode> methodNodeSet = new HashSet<>();
         Set<FieldNode> fieldNodeSet = new HashSet<>();
@@ -434,6 +442,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
         //入库
         try {
+            log.info("statement add : {}",statementMap.get("ADD").size());
+            log.info("statement delete : {}",statementMap.get("DELETE").size());
+            log.info("statement change : {}",statementMap.get("CHANGE").size());
             //add
             packageDao.setAddInfo(packageMap.get("ADD"),commonInfo);
             fileDao.setAddInfo(fileMap.get("ADD"),commonInfo);
@@ -528,6 +539,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 
     @SneakyThrows
     private void saveData(JavaTree repoInfo,CommonInfo commonInfo) {
+        log.info("statement first add : {}",repoInfo.getStatementInfos().size());
         packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
 
@@ -577,7 +589,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
 //        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        return "/Users/tangyuan/Documents/Git/DataX";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 

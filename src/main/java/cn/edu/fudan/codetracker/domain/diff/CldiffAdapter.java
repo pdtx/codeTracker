@@ -50,6 +50,7 @@ public class CldiffAdapter {
             list.add(diffInfo);
             map.put(diffInfo.getType(), list);
         }
+        log.info("statement diffInfo num : {}",map.get("statement").size());
         return map;
     }
 }

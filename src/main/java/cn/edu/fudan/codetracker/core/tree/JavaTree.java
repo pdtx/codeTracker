@@ -68,6 +68,7 @@ public class JavaTree extends BaseLanguageTree {
             String packageName = javaFileParser.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {
+                log.error("packageName is null");
                 continue;
             }
             String moduleName = javaFileParser.getModuleName();
