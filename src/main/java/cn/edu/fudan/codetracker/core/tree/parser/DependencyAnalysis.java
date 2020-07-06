@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,23 +30,37 @@ import java.util.Set;
 @Component
 public class DependencyAnalysis {
 
-
     private static String DEPENDENCY_PATH;
-//    private static String DEPENDENCY_PATH = "/Users/tangyuan/Documents/codeTrackerRepo";
 
     @Value("${mavenRepoDir}")
     public void setDependencyPath(String dependencyPath) {
         DEPENDENCY_PATH = dependencyPath;
-        initJarTypeSolver();
+        initCombinedTypeSolver();
     }
 
     /**
-     *每个线程对应的 依赖项目地址路径是固定的
+     * todo 后续需要周期更新库中的依赖
+     */
+    private void initCombinedTypeSolver() {
+        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+        combinedTypeSolver.add(new ReflectionTypeSolver());
+        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
+                (level, path, file) -> {
+                    try {
+                        combinedTypeSolver.add(new JarTypeSolver(file));
+                    } catch (Exception e){
+                        // nothing to do
+                    }
+                }).explore(new File(DEPENDENCY_PATH));
+    }
+
+    /**
+     * 每个线程对应的 依赖项目地址路径是固定的
      */
     private static ThreadLocal<String> repoPathT = new ThreadLocal<>();
-    private static ThreadLocal<CombinedTypeSolver> combinedTypeSolverT = new ThreadLocal<>();
     private static ThreadLocal<Set<String>> allGroupIdT = new ThreadLocal<>();
-    private static Set<JarTypeSolver> jarTypeSolverList = new LinkedHashSet<>(2048);
+    private static ThreadLocal<List<JavaParserTypeSolver>> javaParserTypeSolverT = new ThreadLocal<>();
+    private static CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
 
 
     /**
@@ -71,9 +84,7 @@ public class DependencyAnalysis {
      */
     @SneakyThrows
     public static List<MethodCallRelationship> getMethodCallRelationship(List<MethodCallExpr> methodCallExprs) {
-        CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
         Set<String> allGroupId = allGroupIdT.get();
-
         List<MethodCallRelationship> result = new ArrayList<>(4);
         for (MethodCallExpr methodCallExpr : methodCallExprs) {
             try {
@@ -101,35 +112,18 @@ public class DependencyAnalysis {
     @SneakyThrows
     public static void setRepoPathT(String repoPath) {
         repoPathT.remove();
-        combinedTypeSolverT.remove();
         allGroupIdT.remove();
+        javaParserTypeSolverT.remove();
         repoPathT.set(repoPath);
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
+        List<JavaParserTypeSolver> javaParserTypeSolvers = javaParserTypeSolverT.get();
 
         // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
-                (level, path, file) -> combinedTypeSolver.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
+                (level, path, file) -> javaParserTypeSolvers.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
+        // fixme 项目扫描的太多会导致OOM
+        javaParserTypeSolvers.forEach(combinedTypeSolver::add);
         // 指定该项目所依赖的每一个jar   (level, path, file) -> combinedTypeSolver.add(new JarTypeSolver(file))
-        jarTypeSolverList.forEach(combinedTypeSolver::add);
-
-        combinedTypeSolverT.set(combinedTypeSolver);
         allGroupIdT.set(PomAnalysisUtil.getAllGroupId(repoPath));
     }
-
-    /**
-     * todo 后续需要周期更新库中的依赖
-     */
-    private static void initJarTypeSolver() {
-        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
-                (level, path, file) -> {
-                    try {
-                        jarTypeSolverList.add(new JarTypeSolver(file));
-                    } catch (Exception e){
-                        // nothing to do
-                    }
-                }).explore(new File(DEPENDENCY_PATH));
-    }
-
 
 }
