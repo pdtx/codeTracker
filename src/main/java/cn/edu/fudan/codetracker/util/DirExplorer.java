@@ -58,4 +58,11 @@ public class DirExplorer {
         }
 
     }
+
+    public static void main(String[] args) {
+        String repoPath = "";
+        // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
+        new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("target"),
+                (level, path, file) -> file.delete()).exploreDir(new File(repoPath));
+    }
 }
