@@ -55,6 +55,7 @@ public class LogicalChangedHandler implements NodeMapping {
         }
 
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
+            log.info("file logical map : {}",((FileNode) curRoot).getFilePath());
             curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
             NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
 
@@ -62,6 +63,9 @@ public class LogicalChangedHandler implements NodeMapping {
             // key: [class method field statement] value:[BaseNode]
             preMap = extractMapFromNode(preRoot);
             curMap = extractMapFromNode(curRoot);
+            log.info("method size : {}",curMap.get(ProjectInfoLevel.METHOD).size());
+            log.info("preMap statement : {}",preMap.get(ProjectInfoLevel.STATEMENT).size());
+            log.info("curMap statement : {}",curMap.get(ProjectInfoLevel.STATEMENT).size());
 
             ProjectInfoLevel[] keys = {ProjectInfoLevel.CLASS, ProjectInfoLevel.METHOD, ProjectInfoLevel.FIELD};
 
@@ -76,9 +80,13 @@ public class LogicalChangedHandler implements NodeMapping {
 
             //再mapping属于同一method的statement
             Set<DiffInfo> statementDiffs = new HashSet<>(diffMap.get("statement"));
+            for (DiffInfo diffInfo : statementDiffs) {
+                log.info(diffInfo.toString());
+            }
             for (BaseNode node: curMap.get(ProjectInfoLevel.METHOD)) {
                 //方法判定为unchanged，即行号和内容均无变化，其子节点无需再匹配
                 if (BaseNode.ChangeStatus.UNCHANGED.equals(node.getChangeStatus())) {
+                    log.info("unchanged method");
                     continue;
                 }
                 MethodNode methodNode = (MethodNode)node;
@@ -134,6 +142,7 @@ public class LogicalChangedHandler implements NodeMapping {
 
     private void mapping(Set<BaseNode> preSet, Set<BaseNode> curSet, Set<DiffInfo> diffSet, ProxyDao proxyDao) {
         // 遍历diffInfo 处理有diff信息的节点
+        log.info("start diff info mapping");
         for (DiffInfo diffInfo : diffSet) {
             BaseNode pre = diffInfo.findChangeNode(preSet,false);
             BaseNode cur = diffInfo.findChangeNode(curSet,true);
@@ -164,6 +173,7 @@ public class LogicalChangedHandler implements NodeMapping {
             }
             cur.setChangeStatus(status);
             BaseNode tmp = cur;
+            log.info("status : {}",cur.getChangeStatus());
             backTracing(tmp);
 
             NodeMapping.setNodeMapped(pre, cur, proxyDao, commonInfo);
@@ -221,6 +231,7 @@ public class LogicalChangedHandler implements NodeMapping {
     }
 
     private void dealWithoutDiff(Set<BaseNode> preSet, Set<BaseNode> curSet) {
+        log.info("start no diff mapping");
         if (preSet == null) {
             curSet.forEach(node -> addHandler.subTreeMapping(null, node, commonInfo, proxyDao));
             return;
