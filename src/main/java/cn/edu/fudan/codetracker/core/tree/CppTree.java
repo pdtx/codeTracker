@@ -19,8 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 public class CppTree extends BaseLanguageTree{
 
-    public CppTree(List<String> fileList, String repoUuid) {
-        super(fileList, repoUuid);
+    public CppTree(List<String> fileList, String repoUuid, String repoPath) {
+        super(fileList, repoUuid, repoPath);
     }
 
     @Override

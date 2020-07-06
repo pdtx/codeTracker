@@ -36,8 +36,8 @@ public class JavaTree extends BaseLanguageTree {
     private List<StatementNode> statementInfos;
     private Map<String, List<MethodCall>> methodCallMap;
 
-    public JavaTree(List<String> fileList, String repoUuid) {
-        super(fileList, repoUuid);
+    public JavaTree(List<String> fileList, String repoUuid, String repoPath) {
+        super(fileList, repoUuid, repoPath);
         parseTree();
     }
 
@@ -64,7 +64,7 @@ public class JavaTree extends BaseLanguageTree {
                 continue;
             }
             JavaFileParser javaFileParser = new JavaFileParser();
-            javaFileParser.parse(path, repoUuid);
+            javaFileParser.parse(path, repoUuid, super.getRepoPath());
             String packageName = javaFileParser.getPackageName();
             // special situation ： end with .java but empty
             if (packageName == null) {

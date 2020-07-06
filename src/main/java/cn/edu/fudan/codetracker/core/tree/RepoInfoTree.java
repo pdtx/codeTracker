@@ -40,12 +40,12 @@ public class RepoInfoTree {
     /**
      * @param fileList 路径地址
      */
-    public RepoInfoTree(List<String> fileList, CommonInfo commonInfo, String repoUuid) {
+    public RepoInfoTree(List<String> fileList, CommonInfo commonInfo, String repoUuid, String repoPath) {
         repoTree = new HashMap<>();
-        construct(fileList, commonInfo, repoUuid);
+        construct(fileList, commonInfo, repoUuid, repoPath);
     }
 
-    private void construct(List<String> fileList, CommonInfo commonInfo, String repoUuid) {
+    private void construct(List<String> fileList, CommonInfo commonInfo, String repoUuid, String repoPath) {
         // 根据文件类型对文件进行分类
         Map<Language, List<String>> classifiedMap = classification(fileList);
         // 根据分类结果 调用不同的parser
@@ -55,17 +55,17 @@ public class RepoInfoTree {
         for (Map.Entry<Language, List<String>> entry : classifiedMap.entrySet()) {
             Language language = entry.getKey();
             BaseLanguageTree baseLanguageTree = (BaseLanguageTree) ApplicationContextGetBeanHelper.getBean(language.getName());
-            repoTree.put(language, constructTree(entry.getValue(), baseLanguageTree, repoUuid));
+            repoTree.put(language, constructTree(entry.getValue(), baseLanguageTree, repoUuid, repoPath));
         }
         this.commonInfo = commonInfo ;
     }
 
     // 根据 parser 构造出
-    private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree, String repoUuid) {
+    private BaseLanguageTree constructTree(List<String> value, BaseLanguageTree baseLanguageTree, String repoUuid, String repoPath) {
         if (baseLanguageTree instanceof JavaTree) {
-            return new JavaTree(value,repoUuid);
+            return new JavaTree(value, repoUuid, repoPath);
         } else if (baseLanguageTree instanceof CppTree) {
-            return new CppTree(value,repoUuid);
+            return new CppTree(value, repoUuid, repoPath);
         }
         return null;
     }

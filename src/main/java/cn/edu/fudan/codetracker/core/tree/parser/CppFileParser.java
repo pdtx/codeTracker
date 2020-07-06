@@ -16,7 +16,7 @@ public class CppFileParser implements FileParser {
     }
 
     @Override
-    public void parse(String path, String projectName) {
+    public void parse(String path, String projectName, String repoPath) {
 
     }
 }

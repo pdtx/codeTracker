@@ -49,6 +49,7 @@ public class JavaFileParser implements FileParser {
     private BlockStmt blockStmt;
     private Statement parentStmt;
     private Map<String, List<MethodCall>> methodCallMap;
+    private String repoPath;
 
     public JavaFileParser() {
         importNames = new HashSet<>();
@@ -56,18 +57,19 @@ public class JavaFileParser implements FileParser {
     }
 
     @Override
-    public void parse(String path, String projectName) {
+    public void parse(String path, String projectName, String repoPath) {
         this.projectName = projectName;
         try {
             // 根据操作系统修改
             compilationUnit = new JavaParser().parse(Paths.get(path)).getResult().get();
             packageName = parsePackageName();
-            String[] singleDir = path.replace('\\','/').split("/");
-            fileName = singleDir[singleDir.length - 1];
+            path = path.replace('\\','/');
+            this.repoPath = repoPath.replace('\\','/');
+            filePath = path.replaceFirst(this.repoPath + '/',"");
+            String[] dirs = filePath.split("/");
+            fileName = dirs[dirs.length-1];
             // module name is null
-            moduleName = parseModuleName(singleDir);
-            String [] s = path.replace('\\','/').replaceFirst("/" + moduleName + "/","@").split( "@");
-            filePath = moduleName + "/" + s[s.length - 1];
+            moduleName = parseModuleName(dirs);
             fileNode = new FileNode(fileName, filePath);
             // analyze import package
             List<ImportDeclaration> importDeclarations = compilationUnit.findAll(ImportDeclaration.class);
@@ -80,18 +82,24 @@ public class JavaFileParser implements FileParser {
         }
     }
 
-    public String parseModuleName(String[] singleDir) {
-        for (int i = 1; i < singleDir.length; i++) {
-            if ("src".equals(singleDir[i]) || "main".equals(singleDir[i]) ||  "java".equals(singleDir[i])) {
-                return singleDir[i - 1];
+    public String parseModuleName(String[] dirs) {
+        int loc = -1;
+        for (int i = 0; i < dirs.length ; i++) {
+            if ("src".equals(dirs[i]) || "main".equals(dirs[i]) ||  "java".equals(dirs[i])) {
+                loc = i-1;
+                break;
             }
         }
-        for (int i = 0; i < singleDir.length - 1; i++) {
-            if (projectName.equals(singleDir[i])) {
-                return singleDir[i + 1];
+        if (loc != -1) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i <= loc ; i++) {
+                sb.append(dirs).append("-");
             }
+            sb.deleteCharAt(sb.length()-1);
+            return sb.toString();
         }
-        return projectName;
+        String[] singleDirs = this.repoPath.split("/");
+        return singleDirs[singleDirs.length-1];
     }
 
     public String parsePackageName() {

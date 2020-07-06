@@ -20,12 +20,12 @@ public abstract class BaseLanguageTree {
 
     private List<String> fileList;
     private String repoUuid;
-    private FileParser parser;
-    private BaseNode root;
+    private String repoPath;
 
-    BaseLanguageTree(List<String> fileList, String repoUuid) {
+    BaseLanguageTree(List<String> fileList, String repoUuid, String repoPath) {
         this.fileList = fileList;
         this.repoUuid = repoUuid;
+        this.repoPath = repoPath;
     }
 
     /**

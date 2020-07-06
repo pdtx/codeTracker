@@ -64,11 +64,11 @@ public class MergeHandler implements PublicConstants {
         map.put(DELETE,new ArrayList<>());
         map.put(CHANGE,fileList);
         jGitHelper.checkout(parent1);
-        RepoInfoTree preTree = new RepoInfoTree(filePaths,preCommonInfo,repoUuid);
+        RepoInfoTree preTree = new RepoInfoTree(filePaths,preCommonInfo,repoUuid,repoPath);
         jGitHelper.checkout(parent2);
-        RepoInfoTree compareTree = new RepoInfoTree(filePaths,compareCommonInfo,repoUuid);
+        RepoInfoTree compareTree = new RepoInfoTree(filePaths,compareCommonInfo,repoUuid,repoPath);
         jGitHelper.checkout(commit);
-        RepoInfoTree curTree = new RepoInfoTree(filePaths,curCommonInfo,repoUuid);
+        RepoInfoTree curTree = new RepoInfoTree(filePaths,curCommonInfo,repoUuid,repoPath);
 
 
         JavaTree preJavaTree = (JavaTree) preTree.getRepoTree().get(Language.JAVA);

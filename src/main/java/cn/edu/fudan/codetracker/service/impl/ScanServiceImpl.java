@@ -104,7 +104,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     CommonInfo commonInfo = constructCommonInfo(repoUuid,branch,commit,null,jGitHelper);
                     File file = new File(repoPath);
                     //List<String> fileList, CommonInfo commonInfo, String repoUuid
-                    RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid);
+                    RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid,repoPath);
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
                     if (javaTree != null) {
                         travelAndSetChangeRelation(javaTree.getPackageInfos());
@@ -228,6 +228,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
         //通过jgit拿到file列表
         jGitHelper.checkout(commitId);
+
+        //fixme 若该commit没有parent，调用dealWithNoParentCommit处理方法
+
         // key parentCommit value Map <key ADD CHANGE RENAME DELETE value >
         Map<String,Map<String, List<String>>> fileMap = jGitHelper.getFileList(commitId);
 
@@ -280,10 +283,10 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 
             //List<String> fileList, CommonInfo commonInfo, String repoUuid
             jGitHelper.checkout(preCommit);
-            RepoInfoTree preRepoInfoTree = new RepoInfoTree(preFileList,preCommonInfo,repoUuid);
+            RepoInfoTree preRepoInfoTree = new RepoInfoTree(preFileList,preCommonInfo,repoUuid,repoPath);
             jGitHelper.checkout(commitId);
             DependencyAnalysis.setRepoPathT(repoPath);
-            RepoInfoTree curRepoInfoTree = new RepoInfoTree(curFileList,curCommonInfo,repoUuid);
+            RepoInfoTree curRepoInfoTree = new RepoInfoTree(curFileList,curCommonInfo,repoUuid,repoPath);
 
             //Java语言mapping
             JavaTree preJavaTree = (JavaTree) preRepoInfoTree.getRepoTree().get(Language.JAVA);
@@ -301,6 +304,14 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                 updateRenameInfo(curJavaTree, curCommonInfo, map.get(RENAME));
             }
         }
+
+    }
+
+    /**
+     * fixme 若commit没有parent 全部处理为ADD
+     * 举例：版本1，2均没有parent，merge成3
+     */
+    private void dealWithNoParentCommit() {
 
     }
 
@@ -589,7 +600,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
 //        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-        return "/Users/tangyuan/Documents/Git/DataX";
+        return "/Users/tangyuan/Documents/Git/WebMagicForBlog";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 

@@ -115,7 +115,7 @@ public class DependencyAnalysis {
         allGroupIdT.remove();
         javaParserTypeSolverT.remove();
         repoPathT.set(repoPath);
-        List<JavaParserTypeSolver> javaParserTypeSolvers = javaParserTypeSolverT.get();
+        List<JavaParserTypeSolver> javaParserTypeSolvers = new ArrayList<>();
 
         // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
