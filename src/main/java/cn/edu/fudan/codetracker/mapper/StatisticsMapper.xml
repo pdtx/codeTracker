@@ -157,7 +157,7 @@
     </delete>
 
     <delete id="deleteFromMethodCall" parameterType="String">
-        delete from method_call where repo_id=#{repoUuid};
+        delete from method_call where repo_uuid=#{repoUuid};
     </delete>
 
 

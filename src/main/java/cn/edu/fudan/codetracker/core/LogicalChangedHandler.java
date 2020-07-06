@@ -44,9 +44,11 @@ public class LogicalChangedHandler implements NodeMapping {
 
     @Override
     public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+        log.info("start logic handle");
         this.commonInfo = commonInfo;
         this.proxyDao = proxyDao;
         Map<String, List<DiffInfo>> diffMap = mapThreadLocal.get();
+        log.info("logic handle statement diff size : {}",diffMap.get("statement").size());
         if (diffMap == null) {
             log.error("lack diff info");
             return;
