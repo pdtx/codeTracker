@@ -3,8 +3,6 @@ package cn.edu.fudan.codetracker.core.tree.parser;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodCallRelationship;
 import cn.edu.fudan.codetracker.util.DirExplorer;
 import cn.edu.fudan.codetracker.util.PomAnalysisUtil;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.MethodUsage;
@@ -16,12 +14,11 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +38,7 @@ public class DependencyAnalysis {
     @Value("${mavenRepoDir}")
     public void setDependencyPath(String dependencyPath) {
         DEPENDENCY_PATH = dependencyPath;
+        initJarTypeSolver();
     }
 
     /**
@@ -49,23 +47,8 @@ public class DependencyAnalysis {
     private static ThreadLocal<String> repoPathT = new ThreadLocal<>();
     private static ThreadLocal<CombinedTypeSolver> combinedTypeSolverT = new ThreadLocal<>();
     private static ThreadLocal<Set<String>> allGroupIdT = new ThreadLocal<>();
+    private static Set<JarTypeSolver> jarTypeSolverList = new LinkedHashSet<>(2048);
 
-    public static void main(String[] args) {
-        test();
-    }
-
-    @SneakyThrows
-    private static void test() {
-//        String path = "E:\\Lab\\gitlab\\codeTracker\\src\\main\\java\\cn\\edu\\fudan\\codetracker\\core\\tree\\parser\\DependencyAnalysis.java";
-        String path = "/Users/tangyuan/Documents/Git/IssueTracker-Master/account-service/src/main/java/cn/edu/fudan/accountservice/controller/AccountController.java";
-//        String repoPath = "E:\\Lab\\gitlab\\codeTracker";
-        String repoPath = "/Users/tangyuan/Documents/Git/IssueTracker-Master";
-        setRepoPathT(repoPath);
-        CompilationUnit cu = new JavaParser().parse(Paths.get(path)).getResult().get();
-        List<MethodCallExpr> methodCallExprs = cu.findAll(MethodCallExpr.class);
-        getMethodCallRelationship(methodCallExprs).forEach(System.out::println);
-        System.out.println(getMethodCallRelationship(methodCallExprs).size());
-    }
 
     /**
      * 判断是否属于本项目的依赖
@@ -127,22 +110,26 @@ public class DependencyAnalysis {
         // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
                 (level, path, file) -> combinedTypeSolver.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
-
         // 指定该项目所依赖的每一个jar   (level, path, file) -> combinedTypeSolver.add(new JarTypeSolver(file))
-        // todo 后续可以根据 pom 文件缩小范围 或者全仓公用一个CombinedTypeSolver
-        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
-                (level, path, file) -> {
-                    try {
-                        combinedTypeSolver.add(new JarTypeSolver(file));
-                    } catch (Exception e){
-                      // nothing to do
-                    }
-                }).explore(new File(DEPENDENCY_PATH));
+        jarTypeSolverList.forEach(combinedTypeSolver::add);
 
         combinedTypeSolverT.set(combinedTypeSolver);
         allGroupIdT.set(PomAnalysisUtil.getAllGroupId(repoPath));
     }
 
+    /**
+     * todo 后续需要周期更新库中的依赖
+     */
+    private static void initJarTypeSolver() {
+        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
+                (level, path, file) -> {
+                    try {
+                        jarTypeSolverList.add(new JarTypeSolver(file));
+                    } catch (Exception e){
+                        // nothing to do
+                    }
+                }).explore(new File(DEPENDENCY_PATH));
+    }
 
 
 }
