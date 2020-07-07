@@ -2,6 +2,7 @@ package cn.edu.fudan.codetracker.core.tree.parser;
 
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
+import cn.edu.fudan.codetracker.util.FilePathExtractor;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -63,9 +64,8 @@ public class JavaFileParser implements FileParser {
             // 根据操作系统修改
             compilationUnit = new JavaParser().parse(Paths.get(path)).getResult().get();
             packageName = parsePackageName();
-            path = path.replace('\\','/');
             this.repoPath = repoPath.replace('\\','/');
-            filePath = path.replaceFirst(this.repoPath + '/',"");
+            filePath = FilePathExtractor.extractFilePath(repoPath, path);
             String[] dirs = filePath.split("/");
             fileName = dirs[dirs.length-1];
             // module name is null
@@ -93,7 +93,7 @@ public class JavaFileParser implements FileParser {
         if (loc != -1) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i <= loc ; i++) {
-                sb.append(dirs).append("-");
+                sb.append(dirs[i]).append("-");
             }
             sb.deleteCharAt(sb.length()-1);
             return sb.toString();
