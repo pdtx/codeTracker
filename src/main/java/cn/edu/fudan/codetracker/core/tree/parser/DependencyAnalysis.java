@@ -35,23 +35,6 @@ public class DependencyAnalysis {
     @Value("${mavenRepoDir}")
     public void setDependencyPath(String dependencyPath) {
         DEPENDENCY_PATH = dependencyPath;
-        initCombinedTypeSolver();
-    }
-
-    /**
-     * todo 后续需要周期更新库中的依赖
-     */
-    private void initCombinedTypeSolver() {
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
-        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
-                (level, path, file) -> {
-                    try {
-                        combinedTypeSolver.add(new JarTypeSolver(file));
-                    } catch (Exception e){
-                        // nothing to do
-                    }
-                }).explore(new File(DEPENDENCY_PATH));
     }
 
     /**
@@ -59,9 +42,7 @@ public class DependencyAnalysis {
      */
     private static ThreadLocal<String> repoPathT = new ThreadLocal<>();
     private static ThreadLocal<Set<String>> allGroupIdT = new ThreadLocal<>();
-    private static ThreadLocal<List<JavaParserTypeSolver>> javaParserTypeSolverT = new ThreadLocal<>();
-    private static CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-
+    private static ThreadLocal<CombinedTypeSolver> combinedTypeSolverT = new ThreadLocal<>();
 
     /**
      * 判断是否属于本项目的依赖
@@ -85,6 +66,8 @@ public class DependencyAnalysis {
     @SneakyThrows
     public static List<MethodCallRelationship> getMethodCallRelationship(List<MethodCallExpr> methodCallExprs) {
         Set<String> allGroupId = allGroupIdT.get();
+        CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
+
         List<MethodCallRelationship> result = new ArrayList<>(4);
         for (MethodCallExpr methodCallExpr : methodCallExprs) {
             try {
@@ -111,19 +94,40 @@ public class DependencyAnalysis {
 
     @SneakyThrows
     public static void setRepoPathT(String repoPath) {
-        repoPathT.remove();
-        allGroupIdT.remove();
-        javaParserTypeSolverT.remove();
-        repoPathT.set(repoPath);
-        List<JavaParserTypeSolver> javaParserTypeSolvers = new ArrayList<>();
+        removeAll();
 
+        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+        combinedTypeSolver.add(new ReflectionTypeSolver());
         // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
-                (level, path, file) -> javaParserTypeSolvers.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
-        // fixme 项目扫描的太多会导致OOM
-        javaParserTypeSolvers.forEach(combinedTypeSolver::add);
-        // 指定该项目所依赖的每一个jar   (level, path, file) -> combinedTypeSolver.add(new JarTypeSolver(file))
+                (level, path, file) -> combinedTypeSolver.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
+
+        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
+                (level, path, file) -> {
+                    try {
+                        combinedTypeSolver.add(new JarTypeSolver(file));
+                    } catch (Exception e){
+                        // nothing to do
+                    }
+                }).explore(new File(DEPENDENCY_PATH));
+
+
+
+        // 指定该项目所依赖的每一个jar
+        repoPathT.set(repoPath);
         allGroupIdT.set(PomAnalysisUtil.getAllGroupId(repoPath));
+        combinedTypeSolverT.set(combinedTypeSolver);
+    }
+
+    private static void removeAll() {
+        repoPathT.remove();
+        allGroupIdT.remove();
+        CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
+        combinedTypeSolverT.remove();
+        if (combinedTypeSolver != null) {
+            // 方便GC
+            combinedTypeSolver = null;
+        }
     }
 
 }
