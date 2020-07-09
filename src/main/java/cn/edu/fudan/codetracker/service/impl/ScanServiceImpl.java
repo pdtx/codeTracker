@@ -58,8 +58,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-//        repoPath.set(getRepoPathByUuid(repoUuid));
+//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
         log.info("commit size : " +  commitList.size());
@@ -68,14 +68,14 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-        restInterface.freeRepo(repoUuid, repoPath.get());
+//        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     @Async("taskExecutor")
     @Override
     public void autoUpdate(String repoUuid, String branch, String commitId) {
-        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-//        repoPath.set(getRepoPathByUuid(repoUuid));
+//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
         log.info("commit size : " +  commitList.size());
@@ -84,7 +84,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-        restInterface.freeRepo(repoUuid, repoPath.get());
+//        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
@@ -93,6 +93,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate, ScanInfo scanInfo) {
         int num = 0;
         try {
+            log.info("repoPath : {}", repoPath);
             for (String commit : commitList) {
                 log.info("{} start commit：{} {}" , repoUuid, ++num, commit);
                 if (isUpdate) {
@@ -453,9 +454,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
         //入库
         try {
-            log.info("statement add : {}",statementMap.get("ADD").size());
-            log.info("statement delete : {}",statementMap.get("DELETE").size());
-            log.info("statement change : {}",statementMap.get("CHANGE").size());
             //add
             packageDao.setAddInfo(packageMap.get("ADD"),commonInfo);
             fileDao.setAddInfo(fileMap.get("ADD"),commonInfo);
@@ -550,7 +548,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 
     @SneakyThrows
     private void saveData(JavaTree repoInfo,CommonInfo commonInfo) {
-        log.info("statement first add : {}",repoInfo.getStatementInfos().size());
         packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
 
@@ -600,7 +597,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
 //        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-        return "/Users/tangyuan/Documents/Git/WebMagicForBlog";
+        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 

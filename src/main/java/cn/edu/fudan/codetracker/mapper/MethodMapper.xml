@@ -153,9 +153,8 @@
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
         select version,uuid from meta_method where uuid =
         (select meta_method_uuid from raw_method where signature = #{signature} and meta_method_uuid in
-        (select uuid from meta_method
-        where file_path = #{filePath} and class_name = #{className}
-          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)
+        (select uuid from meta_method where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch})
+        and change_relation != "DELETE" order by commit_date desc limit 1)
     </select>
 
 </mapper>
