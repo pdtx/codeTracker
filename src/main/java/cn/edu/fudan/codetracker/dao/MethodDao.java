@@ -69,7 +69,7 @@ public class MethodDao {
         methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
     }
 
-    public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String repoUuid, String branch) {
-        return methodMapper.getTrackerInfo( filePath, className, signature, repoUuid, branch);
+    public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String content, String repoUuid, String branch) {
+        return methodMapper.getTrackerInfo( filePath, className, signature, content, repoUuid, branch);
     }
 }

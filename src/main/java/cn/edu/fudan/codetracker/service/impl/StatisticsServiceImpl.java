@@ -66,7 +66,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
         Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
         for (String key : temp.keySet()) {
             List<Long> list = temp.get(key);
-            list.sort(Comparator.comparingLong(Long::longValue));
+            list.sort((o1, o2) -> o1.compareTo(o2));
             Map<String,Double> newMap = new HashMap<>();
             newMap.put(MIN,(double)list.get(0));
             newMap.put(MAX,(double)list.get(list.size()-1));

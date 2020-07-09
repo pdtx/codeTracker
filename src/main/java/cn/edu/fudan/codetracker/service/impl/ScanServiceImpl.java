@@ -93,6 +93,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private boolean scanCommitList(String repoUuid, String branch, String repoPath, JGitHelper jGitHelper, List<String> commitList, boolean isUpdate, ScanInfo scanInfo) {
         int num = 0;
         try {
+            log.info("repoPath : {}", repoPath);
             for (String commit : commitList) {
                 log.info("{} start commit：{} {}" , repoUuid, ++num, commit);
                 if (isUpdate) {
@@ -107,7 +108,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid,repoPath);
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
                     if (javaTree != null) {
-                        travelAndSetChangeRelation(javaTree.getPackageInfos());
+                        travelAndSetChangeRelation(javaTree.getPackageInfos(), commonInfo);
                         saveData(javaTree,commonInfo);
                         dealWithMethodCalls(javaTree, commonInfo);
                     } else {
@@ -207,16 +208,22 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     }
 
 
-    private void travelAndSetChangeRelation(List<? extends BaseNode> baseNodes){
+    private void travelAndSetChangeRelation(List<? extends BaseNode> baseNodes, CommonInfo commonInfo){
         if (baseNodes == null) {
             return;
         }
         for (BaseNode baseNode : baseNodes) {
             baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-            travelAndSetChangeRelation(baseNode.getChildren());
+            if (baseNode instanceof MethodNode) {
+                ((MethodNode) baseNode).setLastChangeCommit(commonInfo.getCommit());
+            }
+            if (baseNode instanceof StatementNode) {
+                ((StatementNode) baseNode).setLastChangeCommit(commonInfo.getCommit());
+            }
+            travelAndSetChangeRelation(baseNode.getChildren(), commonInfo);
             if (baseNode instanceof ClassNode) {
                 ClassNode classNode = (ClassNode)baseNode;
-                travelAndSetChangeRelation(classNode.getFieldNodes());
+                travelAndSetChangeRelation(classNode.getFieldNodes(), commonInfo);
             }
         }
     }
@@ -292,7 +299,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             JavaTree preJavaTree = (JavaTree) preRepoInfoTree.getRepoTree().get(Language.JAVA);
             JavaTree curJavaTree = (JavaTree) curRepoInfoTree.getRepoTree().get(Language.JAVA);
 
-            TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
+            TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,curCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
             //Java入库
             extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
 
@@ -453,9 +460,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private void save(Map<String,Set<PackageNode>> packageMap,Map<String,Set<FileNode>> fileMap,Map<String,Set<ClassNode>> classMap,Map<String,Set<MethodNode>> methodMap,Map<String,Set<FieldNode>> fieldMap,Map<String,Set<StatementNode>> statementMap,CommonInfo commonInfo) {
         //入库
         try {
-            log.info("statement add : {}",statementMap.get("ADD").size());
-            log.info("statement delete : {}",statementMap.get("DELETE").size());
-            log.info("statement change : {}",statementMap.get("CHANGE").size());
             //add
             packageDao.setAddInfo(packageMap.get("ADD"),commonInfo);
             fileDao.setAddInfo(fileMap.get("ADD"),commonInfo);
@@ -550,7 +554,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 
     @SneakyThrows
     private void saveData(JavaTree repoInfo,CommonInfo commonInfo) {
-        log.info("statement first add : {}",repoInfo.getStatementInfos().size());
         packageDao.insertPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
         packageDao.insertRawPackageInfoList(repoInfo.getPackageInfos(),commonInfo);
 
@@ -600,7 +603,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         }
 
 //        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-        return "/Users/tangyuan/Documents/Git/WebMagicForBlog";
+        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 

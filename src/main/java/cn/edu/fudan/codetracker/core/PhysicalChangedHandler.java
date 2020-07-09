@@ -26,7 +26,7 @@ public class PhysicalChangedHandler implements NodeMapping{
         private static final PhysicalChangedHandler PHYSICAL_CHANGED_HANDLER = new PhysicalChangedHandler();
     }
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao) {
         if (preRoot == null || curRoot == null) {
             log.error("root node  is null");
             return;
@@ -71,7 +71,7 @@ public class PhysicalChangedHandler implements NodeMapping{
                 }
                 // fixme 物理上的改变是否需要 version + 1 ？
                 // todo 只有行号变的话 version应该不变
-                NodeMapping.setNodeMapped(preNode, curNode, proxyDao, commonInfo);
+                NodeMapping.setNodeMapped(preNode, curNode, proxyDao, preCommonInfo, curCommonInfo);
                 //物理改变版本号不变 如果trackerInfo拿不到，处理为ADD，版本号为1情况需排除
                 if (curNode.getVersion() > 1) {
                     curNode.setVersion(curNode.getVersion()-1);
@@ -96,7 +96,7 @@ public class PhysicalChangedHandler implements NodeMapping{
                 curRoot.setChangeStatus(changeStatus);
                 curStatement.setIsLogic(0);
             }
-            NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
+            NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, preCommonInfo, curCommonInfo);
             //物理改变版本号不变 如果trackerInfo拿不到，处理为ADD，版本号为1情况需排除
             if (curRoot.getVersion() > 1) {
                 curRoot.setVersion(curRoot.getVersion() - 1);

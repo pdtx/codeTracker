@@ -5,6 +5,11 @@
  **/
 package cn.edu.fudan.codetracker.domain.projectinfo;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class TrackerInfo {
 
 
@@ -15,6 +20,7 @@ public class TrackerInfo {
     private String changeRelation;
     private String rootUUID;
     private String description;
+    private String lastChangeParent;
 
     public TrackerInfo() {
 
@@ -36,35 +42,4 @@ public class TrackerInfo {
         this.changeRelation = uuid;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public void setRootUUID(String rootUUID) {
-        this.rootUUID = rootUUID;
-    }
-
-    public String getChangeRelation() {
-        return changeRelation;
-    }
-
-    public String getRootUUID() {
-        return rootUUID;
-    }
-
-    public void setChangeRelation(String changeRelation) {
-        this.changeRelation = changeRelation;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }

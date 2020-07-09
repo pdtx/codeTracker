@@ -79,7 +79,7 @@
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
-            #{commonInfo.parentCommit},
+            #{item.lastChangeCommit},
             #{item.changeStatus},
             #{item.content},
             #{item.begin},
@@ -147,15 +147,15 @@
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
         <id property="rootUUID" column="uuid"/>
+        <id property="lastChangeParent" column="commitid"/>
     </resultMap>
 
     <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,uuid from meta_method where uuid =
-        (select meta_method_uuid from raw_method where signature = #{signature} and meta_method_uuid in
+        select m.uuid, m.version, r.commitid from raw_method as r, meta_method as m where r.meta_method_uuid = m.uuid and r.signature = #{signature} and r.content = #{content} and r.meta_method_uuid in
         (select uuid from meta_method
         where file_path = #{filePath} and class_name = #{className}
-          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and change_relation != "DELETE" order by commit_date desc limit 1)
+          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and r.change_relation != "DELETE" order by r.commit_date desc limit 1;
     </select>
 
 </mapper>

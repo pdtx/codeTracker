@@ -37,14 +37,14 @@ public class DeleteHandler implements NodeMapping {
     }
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(preRoot);
         if (preRoot instanceof FileNode || preRoot instanceof ClassNode) {
             while (!stack.empty()) {
                 BaseNode baseNode = stack.pop();
                 baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-                NodeMapping.setNodeMapped(baseNode,null, proxyDao, commonInfo);
+                NodeMapping.setNodeMapped(baseNode,null, proxyDao, preCommonInfo, curCommonInfo);
                 NodeMapping.pushChildrenIntoStack(baseNode, stack);
             }
         }
@@ -53,18 +53,18 @@ public class DeleteHandler implements NodeMapping {
         while (!stack.empty()) {
             BaseNode baseNode = stack.pop();
             baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-            NodeMapping.setNodeMapped(baseNode,null, proxyDao, commonInfo);
+            NodeMapping.setNodeMapped(baseNode,null, proxyDao, preCommonInfo, curCommonInfo);
             NodeMapping.pushChildrenIntoStack(baseNode, stack);
         }
     }
 
-    private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+    private void singleNodeAddMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(preRoot);
         while (!stack.empty()) {
             BaseNode baseNode = stack.pop();
             baseNode.setChangeStatus(BaseNode.ChangeStatus.DELETE);
-            NodeMapping.setNodeMapped(preRoot,null, proxyDao, commonInfo);
+            NodeMapping.setNodeMapped(preRoot,null, proxyDao, preCommonInfo, curCommonInfo);
             if (baseNode.getChildren() != null) {
                 for (BaseNode child : baseNode.getChildren()) {
                     if (isDelete(child)) {
