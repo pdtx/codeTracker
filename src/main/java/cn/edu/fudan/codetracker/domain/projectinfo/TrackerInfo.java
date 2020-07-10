@@ -21,6 +21,7 @@ public class TrackerInfo {
     private String rootUUID;
     private String description;
     private String lastChangeParent;
+    private String content;
 
     public TrackerInfo() {
 
