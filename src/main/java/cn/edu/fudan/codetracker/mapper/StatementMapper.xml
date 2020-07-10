@@ -71,7 +71,7 @@
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
-            #{item.lastChangeCommit},
+            #{commonInfo.parentCommit},
             #{item.changeStatus},
             #{item.begin},
             #{item.end},
@@ -173,11 +173,10 @@
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
         <id property="rootUUID" column="meta_statement_uuid"/>
-        <id property="lastChangeParent" column="commitid"/>
     </resultMap>
 
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select version,meta_statement_uuid,commitid from raw_statement where meta_method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
+        select version,meta_statement_uuid from raw_statement where meta_method_uuid = #{methodUuid} and body = #{body} and change_relation != "DELETE" order by commit_date desc limit 1;
     </select>
 
     <select id="getTrackerInfoWithBodyUsingSplice" resultMap="trackerInfo" parameterType="String">

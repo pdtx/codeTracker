@@ -19,8 +19,7 @@ import java.util.*;
 @Slf4j
 public class LogicalChangedHandler implements NodeMapping {
 
-    private CommonInfo preCommonInfo;
-    private CommonInfo curCommonInfo;
+    private CommonInfo commonInfo;
     private ProxyDao proxyDao;
     private Map<ProjectInfoLevel, Set<BaseNode>> preMap;
     private Map<ProjectInfoLevel, Set<BaseNode>> curMap;
@@ -44,9 +43,8 @@ public class LogicalChangedHandler implements NodeMapping {
 
 
     @Override
-    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao) {
-        this.preCommonInfo = preCommonInfo;
-        this.curCommonInfo = curCommonInfo;
+    public void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao) {
+        this.commonInfo = commonInfo;
         this.proxyDao = proxyDao;
         Map<String, List<DiffInfo>> diffMap = mapThreadLocal.get();
         if (diffMap == null) {
@@ -56,7 +54,7 @@ public class LogicalChangedHandler implements NodeMapping {
 
         if (preRoot instanceof FileNode && curRoot instanceof FileNode) {
             curRoot.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-            NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, preCommonInfo, curCommonInfo);
+            NodeMapping.setNodeMapped(preRoot, curRoot, proxyDao, commonInfo);
 
             //抽取preMap和curMap
             // key: [class method field statement] value:[BaseNode]
@@ -167,7 +165,7 @@ public class LogicalChangedHandler implements NodeMapping {
             BaseNode tmp = cur;
             backTracing(tmp);
 
-            NodeMapping.setNodeMapped(pre, cur, proxyDao, preCommonInfo, curCommonInfo);
+            NodeMapping.setNodeMapped(pre, cur, proxyDao, commonInfo);
             preSet.remove(pre);
             curSet.remove(cur);
         }
@@ -223,12 +221,12 @@ public class LogicalChangedHandler implements NodeMapping {
 
     private void dealWithoutDiff(Set<BaseNode> preSet, Set<BaseNode> curSet) {
         if (preSet == null) {
-            curSet.forEach(node -> addHandler.subTreeMapping(null, node, preCommonInfo, curCommonInfo, proxyDao));
+            curSet.forEach(node -> addHandler.subTreeMapping(null, node, commonInfo, proxyDao));
             return;
         }
 
         if (curSet == null) {
-            preSet.forEach(node -> deleteHandler.subTreeMapping(node, null, preCommonInfo, curCommonInfo, proxyDao));
+            preSet.forEach(node -> deleteHandler.subTreeMapping(node, null, commonInfo, proxyDao));
             return;
         }
 
@@ -248,7 +246,7 @@ public class LogicalChangedHandler implements NodeMapping {
                 boolean isSameLine = cStatement.getBegin() == pStatement.getBegin() && cStatement.getEnd() == pStatement.getEnd();
                 boolean isSameContent =  cStatement.getBody().equals(pStatement.getBody());
                 if (!isSameContent || !isSameLine) {
-                    physicalChangedHandler.subTreeMapping(pStatement, cStatement, preCommonInfo, curCommonInfo, proxyDao);
+                    physicalChangedHandler.subTreeMapping(pStatement, cStatement, commonInfo, proxyDao);
                 }
                 preSet.remove(pStatement);
                 continue;
@@ -263,7 +261,7 @@ public class LogicalChangedHandler implements NodeMapping {
                         boolean isSameLine = pMethod.getBegin() == cMethod.getBegin() &&  pMethod.getEnd() == cMethod.getEnd();
                         boolean isSameContent = pMethod.getContent().equals(cMethod.getContent());
                         if (!isSameLine || !isSameContent) {
-                            physicalChangedHandler.subTreeMapping(preNode, node, preCommonInfo, curCommonInfo, proxyDao);
+                            physicalChangedHandler.subTreeMapping(preNode, node, commonInfo, proxyDao);
                         }
                         pMethod.setMapping(true);
                         cMethod.setMapping(true);
@@ -281,7 +279,7 @@ public class LogicalChangedHandler implements NodeMapping {
                     ClassNode pClass = (ClassNode)preNode;
                     ClassNode cClass = (ClassNode)node;
                     if (pClass.equals(cClass)) {
-                        NodeMapping.setNodeMapped(preNode, node, proxyDao, preCommonInfo, curCommonInfo);
+                        NodeMapping.setNodeMapped(preNode, node, proxyDao, commonInfo);
                         preSet.remove(preNode);
                         break;
                     }
@@ -294,7 +292,7 @@ public class LogicalChangedHandler implements NodeMapping {
                     FieldNode pField = (FieldNode)preNode;
                     FieldNode cField = (FieldNode)node;
                     if (pField.equals(cField)) {
-                        NodeMapping.setNodeMapped(preNode,node,proxyDao,preCommonInfo, curCommonInfo);
+                        NodeMapping.setNodeMapped(preNode,node,proxyDao,commonInfo);
                         preSet.remove(preNode);
                         break;
                     }
@@ -313,9 +311,9 @@ public class LogicalChangedHandler implements NodeMapping {
             ((MethodNode) baseNode).setDiff(diffInfo.getJsonObject());
         }
         if (nodeMapping instanceof AddHandler) {
-            nodeMapping.subTreeMapping(null, baseNode,preCommonInfo, curCommonInfo,proxyDao);
+            nodeMapping.subTreeMapping(null, baseNode,commonInfo,proxyDao);
         }else {
-            nodeMapping.subTreeMapping(baseNode, null,preCommonInfo, curCommonInfo,proxyDao);
+            nodeMapping.subTreeMapping(baseNode, null,commonInfo,proxyDao);
         }
 
         BaseNode tmp = baseNode;

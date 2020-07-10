@@ -3,7 +3,6 @@ package cn.edu.fudan.codetracker.core;
 import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
-import com.fasterxml.jackson.databind.ser.Serializers;
 
 import java.util.Stack;
 
@@ -19,36 +18,34 @@ public interface NodeMapping {
      * 两个节点树的映射
      * @param preRoot 前一个版本的根结点
      * @param curRoot 当前版本的根节点
-     * @param preCommonInfo 公共信息
+     * @param commonInfo 公共信息
      * @param proxyDao  提供入库
      */
-    void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao);
+    void subTreeMapping(BaseNode preRoot, BaseNode curRoot, CommonInfo commonInfo, ProxyDao proxyDao);
 
     /**
      * 设置两个节点的映射状态
      * @param preRoot 前一个版本的根结点
      * @param curRoot 当前版本的根节点
-     * @param preCommonInfo 公共信息
+     * @param commonInfo 公共信息
      * @param proxyDao  提供入库
      */
-    static void setNodeMapped(BaseNode preRoot, BaseNode curRoot, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    static void setNodeMapped(BaseNode preRoot, BaseNode curRoot, ProxyDao proxyDao, CommonInfo commonInfo) {
         if (preRoot == null && curRoot == null) {
             return;
         }
         if (preRoot == null) {
             curRoot.setMapping(true);
             curRoot.setRootUuid(curRoot.getUuid());
-            setLastChangeParent(curRoot, curCommonInfo.getCommit());
             return;
         }
         if (curRoot == null) {
             preRoot.setMapping(true);
             //删除情况
-            TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, preCommonInfo);
+            TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, commonInfo);
             if (trackerInfo != null) {
                 preRoot.setRootUuid(trackerInfo.getRootUUID());
                 preRoot.setVersion(trackerInfo.getVersion());
-                setLastChangeParent(preRoot, trackerInfo.getLastChangeParent());
                 return;
             }
             System.out.println("delete tracker info is null : " + preRoot.getProjectInfoLevel());
@@ -58,13 +55,12 @@ public interface NodeMapping {
         curRoot.setMapping(true);
         preRoot.setNextMappingBaseNode(curRoot);
         curRoot.setPreMappingBaseNode(preRoot);
-        TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, preCommonInfo);
+        TrackerInfo trackerInfo = getTrackerInfo(preRoot, proxyDao, commonInfo);
         if (trackerInfo != null) {
             preRoot.setRootUuid(trackerInfo.getRootUUID());
             preRoot.setVersion(trackerInfo.getVersion());
             curRoot.setRootUuid(trackerInfo.getRootUUID());
             curRoot.setVersion(trackerInfo.getVersion() + 1);
-            setLastChangeParent(curRoot, trackerInfo.getLastChangeParent());
             return;
         }
         //追溯不到 处理为ADD
@@ -72,20 +68,10 @@ public interface NodeMapping {
         curRoot.setRootUuid(curRoot.getUuid());
         curRoot.setVersion(1);
         curRoot.setChangeStatus(BaseNode.ChangeStatus.ADD);
-        setLastChangeParent(curRoot, curCommonInfo.getCommit());
         if (curRoot instanceof StatementNode) {
             ((StatementNode)curRoot).setIsLogic(0);
         }
 
-    }
-
-    static void setLastChangeParent(BaseNode baseNode, String lastChangeParent) {
-        if (baseNode instanceof StatementNode) {
-            ((StatementNode) baseNode).setLastChangeCommit(lastChangeParent);
-        }
-        if (baseNode instanceof MethodNode) {
-            ((MethodNode) baseNode).setLastChangeCommit(lastChangeParent);
-        }
     }
 
     /**
@@ -108,7 +94,7 @@ public interface NodeMapping {
             trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.FIELD,fieldNode.getFilePath(),fieldNode.getClassName(),fieldNode.getSimpleName(),commonInfo.getRepoUuid(),commonInfo.getBranch());
         } else if (baseNode instanceof MethodNode) {
             MethodNode methodNode = (MethodNode)baseNode;
-            trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD,methodNode.getFilePath(),methodNode.getClassName(),methodNode.getSignature(),methodNode.getContent(),commonInfo.getRepoUuid(),commonInfo.getBranch());
+            trackerInfo = proxyDao.getTrackerInfo(ProjectInfoLevel.METHOD,methodNode.getFilePath(),methodNode.getClassName(),methodNode.getSignature(),commonInfo.getRepoUuid(),commonInfo.getBranch());
         } else if (baseNode instanceof StatementNode) {
             StatementNode statementNode = (StatementNode)baseNode;
             //将statement的methodUuid设成meta methodUuid
@@ -128,10 +114,10 @@ public interface NodeMapping {
      * 递归匹配以及设置节点
      * @param root r
      * @param proxyDao p
-     * @param preCommonInfo c
+     * @param commonInfo c
      * @param status s
      */
-    static void subTreeMappingRecursive(BaseNode root, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao, BaseNode.ChangeStatus status) {
+    static void subTreeMappingRecursive(BaseNode root, CommonInfo commonInfo, ProxyDao proxyDao, BaseNode.ChangeStatus status) {
         Stack<BaseNode> stack = new Stack<>();
         stack.push(root);
         while (!stack.empty()) {
@@ -146,7 +132,7 @@ public interface NodeMapping {
                 pre = baseNode;
             }
             baseNode.setChangeStatus(status);
-            NodeMapping.setNodeMapped(pre, cur, proxyDao, preCommonInfo, curCommonInfo);
+            NodeMapping.setNodeMapped(pre, cur, proxyDao, commonInfo);
             pushChildrenIntoStack(baseNode, stack);
         }
     }

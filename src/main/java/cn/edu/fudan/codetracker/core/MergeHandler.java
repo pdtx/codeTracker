@@ -75,7 +75,7 @@ public class MergeHandler implements PublicConstants {
         JavaTree curJavaTree = (JavaTree) curTree.getRepoTree().get(Language.JAVA);
         JavaTree compareJavaTree = (JavaTree) compareTree.getRepoTree().get(Language.JAVA);
 
-        TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,curCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,parent1);
+        TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,parent1);
 
         //与第三棵树对比ADD情况
         compareWithParent2(curJavaTree,compareJavaTree);
