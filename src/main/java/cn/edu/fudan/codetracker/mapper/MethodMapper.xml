@@ -79,7 +79,7 @@
             #{commonInfo.committer},
             #{commonInfo.commitDate},
             #{commonInfo.commitMessage},
-            #{commonInfo.parentCommit},
+            #{item.lastChangeCommit},
             #{item.changeStatus},
             #{item.content},
             #{item.begin},

@@ -27,6 +27,7 @@ public class MethodNode extends BaseNode{
     private JSONObject diff;
     private String packageName;
     private String filePath;
+    private String lastChangeCommit;
 
     public MethodNode() {
         super.setProjectInfoLevel(ProjectInfoLevel.METHOD);
