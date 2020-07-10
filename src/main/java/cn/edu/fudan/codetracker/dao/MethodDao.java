@@ -69,6 +69,7 @@ public class MethodDao {
         methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
     }
 
+
     public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String content, String repoUuid, String branch) {
         List<TrackerInfo> trackerInfos = methodMapper.getTrackerInfo(filePath, className, signature, repoUuid, branch);
         for (TrackerInfo trackerInfo : trackerInfos) {

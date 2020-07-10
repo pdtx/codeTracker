@@ -25,7 +25,6 @@ public class StatementNode extends BaseNode{
     private int sequence;
     private String methodUuid;
     private String description;
-    private String lastChangeCommit;
 
     /**
      * 除去孩子的token

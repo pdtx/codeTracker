@@ -108,7 +108,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                     RepoInfoTree repoInfoTree = new RepoInfoTree(listFiles(file),commonInfo,repoUuid,repoPath);
                     JavaTree javaTree = (JavaTree) repoInfoTree.getRepoTree().get(Language.JAVA);
                     if (javaTree != null) {
-                        travelAndSetChangeRelation(javaTree.getPackageInfos(), commonInfo);
+                        travelAndSetChangeRelation(javaTree.getPackageInfos());
                         saveData(javaTree,commonInfo);
                         dealWithMethodCalls(javaTree, commonInfo);
                     } else {
@@ -208,22 +208,16 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     }
 
 
-    private void travelAndSetChangeRelation(List<? extends BaseNode> baseNodes, CommonInfo commonInfo){
+    private void travelAndSetChangeRelation(List<? extends BaseNode> baseNodes){
         if (baseNodes == null) {
             return;
         }
         for (BaseNode baseNode : baseNodes) {
             baseNode.setChangeStatus(BaseNode.ChangeStatus.ADD);
-            if (baseNode instanceof MethodNode) {
-                ((MethodNode) baseNode).setLastChangeCommit(commonInfo.getCommit());
-            }
-            if (baseNode instanceof StatementNode) {
-                ((StatementNode) baseNode).setLastChangeCommit(commonInfo.getCommit());
-            }
-            travelAndSetChangeRelation(baseNode.getChildren(), commonInfo);
+            travelAndSetChangeRelation(baseNode.getChildren());
             if (baseNode instanceof ClassNode) {
                 ClassNode classNode = (ClassNode)baseNode;
-                travelAndSetChangeRelation(classNode.getFieldNodes(), commonInfo);
+                travelAndSetChangeRelation(classNode.getFieldNodes());
             }
         }
     }
@@ -299,7 +293,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             JavaTree preJavaTree = (JavaTree) preRepoInfoTree.getRepoTree().get(Language.JAVA);
             JavaTree curJavaTree = (JavaTree) curRepoInfoTree.getRepoTree().get(Language.JAVA);
 
-            TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,curCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
+            TrackerCore.mapping(preJavaTree,curJavaTree,preCommonInfo,repoUuid,branch,map,logicalChangedFileMap,outputPath,preCommit);
             //Java入库
             extractAndSaveInfo(preJavaTree,curJavaTree,curCommonInfo);
 
@@ -602,8 +596,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 //            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
-//        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
-        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
+        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+//        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 

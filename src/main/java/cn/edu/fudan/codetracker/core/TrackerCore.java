@@ -52,12 +52,12 @@ public class TrackerCore implements PublicConstants {
 
     }
 
-    public static void mapping(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, CommonInfo curCommonInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
+    public static void mapping(JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, String repoUuid, String branch, Map<String, List<String>> map, Map<String,Map<String,String>> logicalChangedFileMap, String outputPath, String preCommit) {
         if (preRepoInfo == null && curRepoInfo == null) {
             return;
         }
         // package 处理
-        if (packageHandler(preRepoInfo, curRepoInfo, repoUuid, branch, preCommonInfo, curCommonInfo)){
+        if (packageHandler(preRepoInfo, curRepoInfo, repoUuid, branch, preCommonInfo)){
             return;
         }
 
@@ -79,14 +79,14 @@ public class TrackerCore implements PublicConstants {
         // 归类 add、delete、change，并处理add 、delete 情况
         preFileNodes.stream().
                 filter(f -> deleteSet.contains(f.getFilePath())).
-                forEach(f -> deleteHandler.subTreeMapping(f, null, preCommonInfo, curCommonInfo, proxyDao));
+                forEach(f -> deleteHandler.subTreeMapping(f, null, preCommonInfo, proxyDao));
         preFileNodes.stream().
                 filter(f -> changeSet.contains(f.getFilePath())).
                 forEach(f -> preChangedFileMap.put(f.getFilePath(), f));
 
         curFileNodes.stream().
                 filter(f -> addSet.contains(f.getFilePath())).
-                forEach(f -> addHandler.subTreeMapping(null, f, preCommonInfo, curCommonInfo, proxyDao));
+                forEach(f -> addHandler.subTreeMapping(null, f, preCommonInfo, proxyDao));
         curFileNodes.stream().
                 filter(f -> changeSet.contains(f.getFilePath())).
                 forEach(f -> curChangedFileMap.put(f.getFilePath(), f));
@@ -103,27 +103,27 @@ public class TrackerCore implements PublicConstants {
             if(logicalFileMap.keySet().contains(path)) {
                 String diffPath = outputPath + (IS_WINDOWS ? "\\" : "/") + logicalFileMap.get(path);
                 logicalChangedHandler.setMapThreadLocal(CldiffAdapter.extractFromDiff(diffPath));
-                logicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, curCommonInfo, proxyDao);
+                logicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
                 continue;
             }
-            physicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, curCommonInfo, proxyDao);
+            physicalChangedHandler.subTreeMapping(preRoot, curRoot, preCommonInfo, proxyDao);
         }
 
         // 处理rename情况
         if (map.get(RENAME) != null && map.get(RENAME).size() != 0) {
-            FileRenameHandler.dealWithRename(map.get(RENAME), preRepoInfo, curRepoInfo,  preCommonInfo, curCommonInfo, proxyDao);
+            FileRenameHandler.dealWithRename(map.get(RENAME), preRepoInfo, curRepoInfo,  preCommonInfo, proxyDao);
         }
 
     }
 
-    private static boolean packageHandler(JavaTree preRepoInfo, JavaTree curRepoInfo, String repoUuid, String branch, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static boolean packageHandler(JavaTree preRepoInfo, JavaTree curRepoInfo, String repoUuid, String branch, CommonInfo preCommonInfo) {
         Set<PackageNode> packageNodeSet;
         if (preRepoInfo == null) {
             packageNodeSet = new HashSet<>(curRepoInfo.getPackageInfos());
             mappingPackageNode(packageNodeSet, repoUuid, branch);
             curRepoInfo.getFileInfos().stream().
                     filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
-                    forEach(f -> addHandler.subTreeMapping(null, f, preCommonInfo, curCommonInfo, proxyDao));
+                    forEach(f -> addHandler.subTreeMapping(null, f, preCommonInfo, proxyDao));
             return true;
         }
         if (curRepoInfo == null) {
@@ -131,7 +131,7 @@ public class TrackerCore implements PublicConstants {
             mappingPackageNode(packageNodeSet, repoUuid, branch);
             preRepoInfo.getFileInfos().stream().
                     filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
-                    forEach(f -> deleteHandler.subTreeMapping(f,null, preCommonInfo, curCommonInfo, proxyDao));
+                    forEach(f -> deleteHandler.subTreeMapping(f,null, preCommonInfo, proxyDao));
             return true;
         }
         //处理packageNode

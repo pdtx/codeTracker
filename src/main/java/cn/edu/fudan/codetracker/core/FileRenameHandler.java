@@ -22,7 +22,7 @@ class FileRenameHandler implements PublicConstants {
 
     private static PhysicalChangedHandler physicalChangedHandler = PhysicalChangedHandler.getInstance();
 
-    static void dealWithRename(List<String> renameList, JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo preCommonInfo, CommonInfo curCommonInfo, ProxyDao proxyDao) {
+    static void dealWithRename(List<String> renameList, JavaTree preRepoInfo, JavaTree curRepoInfo, CommonInfo commonInfo, ProxyDao proxyDao) {
 
         // 预处理
         // key: prePath value:curPath
@@ -54,12 +54,12 @@ class FileRenameHandler implements PublicConstants {
                 continue;
             }
             curFileNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-            NodeMapping.setNodeMapped(preFileNode, curFileNode, proxyDao, preCommonInfo, curCommonInfo);
+            NodeMapping.setNodeMapped(preFileNode, curFileNode, proxyDao, commonInfo);
 
             // 处理file下的class node
 //            renameClassMapping(preFileNode, curFileNode, proxyDao, commonInfo);
             //阈值100 处理file下面节点
-            dealWithOnlyRenameSituation(preFileNode, curFileNode, proxyDao, preCommonInfo, curCommonInfo);
+            dealWithOnlyRenameSituation(preFileNode, curFileNode, proxyDao, commonInfo);
         }
 
     }
@@ -69,9 +69,9 @@ class FileRenameHandler implements PublicConstants {
      * @param preFileNode
      * @param curFileNode
      * @param proxyDao
-     * @param preCommonInfo
+     * @param commonInfo
      */
-    private static void dealWithOnlyRenameSituation(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void dealWithOnlyRenameSituation(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         // 先完成重命名的匹配
         ClassNode preClassNode = findClassNode(preFileNode);
         ClassNode curClassNode = findClassNode(curFileNode);
@@ -80,9 +80,9 @@ class FileRenameHandler implements PublicConstants {
             return;
         }
         curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-        NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
-        dealWithUnchangedMethod(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
-        dealWithUnchangedField(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
+        NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
+        dealWithUnchangedMethod(preClassNode, curClassNode, proxyDao, commonInfo);
+        dealWithUnchangedField(preClassNode, curClassNode, proxyDao, commonInfo);
 
         //不变class
         for (BaseNode baseNode : curFileNode.getChildren()) {
@@ -96,19 +96,19 @@ class FileRenameHandler implements PublicConstants {
                 }
                 ClassNode pClassNode = (ClassNode) pBaseNode;
                 if (cClassNode.getClassName().equals(pClassNode.getClassName())) {
-                    NodeMapping.setNodeMapped(pClassNode, cClassNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(pClassNode, cClassNode, proxyDao, commonInfo);
                     if (cClassNode.getVersion() > 1) {
                         cClassNode.setVersion(cClassNode.getVersion() - 1);
                     }
-                    dealWithUnchangedMethod(pClassNode, cClassNode, proxyDao, preCommonInfo, curCommonInfo);
-                    dealWithUnchangedField(pClassNode, cClassNode, proxyDao, preCommonInfo, curCommonInfo);
+                    dealWithUnchangedMethod(pClassNode, cClassNode, proxyDao, commonInfo);
+                    dealWithUnchangedField(pClassNode, cClassNode, proxyDao, commonInfo);
                     break;
                 }
             }
         }
     }
 
-    private static void dealWithUnchangedMethod(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void dealWithUnchangedMethod(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         for (BaseNode baseNode : curClassNode.getChildren()) {
             if (baseNode.isMapping()) {
                 continue;
@@ -120,7 +120,7 @@ class FileRenameHandler implements PublicConstants {
                 }
                 MethodNode preMethodNode = (MethodNode) pBaseNode;
                 if (curMethodNode.getSignature().equals(preMethodNode.getSignature())) {
-                    NodeMapping.setNodeMapped(preMethodNode, curMethodNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(preMethodNode, curMethodNode, proxyDao, commonInfo);
                     if (curMethodNode.getVersion() > 1) {
                         curMethodNode.setVersion(curMethodNode.getVersion() - 1);
                     }
@@ -130,7 +130,7 @@ class FileRenameHandler implements PublicConstants {
         }
     }
 
-    private static void dealWithUnchangedField(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void dealWithUnchangedField(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         for (BaseNode baseNode : curClassNode.getFieldNodes()) {
             if (baseNode.isMapping()) {
                 continue;
@@ -142,7 +142,7 @@ class FileRenameHandler implements PublicConstants {
                 }
                 FieldNode preFieldNode = (FieldNode) pBaseNode;
                 if (curFieldNode.isSame(preFieldNode)) {
-                    NodeMapping.setNodeMapped(preFieldNode, curFieldNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(preFieldNode, curFieldNode, proxyDao, commonInfo);
                     if (curFieldNode.getVersion() > 1) {
                         curFieldNode.setVersion(curFieldNode.getVersion() - 1);
                     }
@@ -152,15 +152,15 @@ class FileRenameHandler implements PublicConstants {
         }
     }
 
-    private static void renameClassMapping(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void renameClassMapping(FileNode preFileNode, FileNode curFileNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         // 先完成重命名的匹配
         ClassNode preClassNode = findClassNode(preFileNode);
         ClassNode curClassNode = findClassNode(curFileNode);
         curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-        NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
+        NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
         
-        method(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
-        field(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
+        method(preClassNode, curClassNode, proxyDao, commonInfo);
+        field(preClassNode, curClassNode, proxyDao, commonInfo);
         
         
         //接下来的非重命名的匹配  遍历该文件下的所有class做mapping
@@ -178,24 +178,24 @@ class FileRenameHandler implements PublicConstants {
 
                     // fixme 该class 可能没变
                     curClassNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-                    NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
-                    method(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
-                    field(preClassNode, curClassNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(preClassNode, curClassNode, proxyDao, commonInfo);
+                    method(preClassNode, curClassNode, proxyDao, commonInfo);
+                    field(preClassNode, curClassNode, proxyDao, commonInfo);
                     break;
                 }
             }
             if (! baseNode.isMapping()){
-                NodeMapping.subTreeMappingRecursive(preClassNode, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                NodeMapping.subTreeMappingRecursive(preClassNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
             }
         }
 
         curFileNode.getChildren().stream().
                 filter(c -> !c.isMapping()).
-                forEach(c -> NodeMapping.subTreeMappingRecursive(c, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
+                forEach(c -> NodeMapping.subTreeMappingRecursive(c, commonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
 
     }
 
-    private static void field(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void field(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         List<FieldNode> preFieldNodeList = preClassNode.getFieldNodes();
         List<FieldNode> curFieldNodeList = curClassNode.getFieldNodes();
         for (FieldNode pFieldNode : preFieldNodeList) {
@@ -212,25 +212,25 @@ class FileRenameHandler implements PublicConstants {
                         break;
                     }
                     cFieldNode.setChangeStatus(BaseNode.ChangeStatus.CHANGE);
-                    NodeMapping.setNodeMapped(pFieldNode, cFieldNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(pFieldNode, cFieldNode, proxyDao, commonInfo);
                     break;
                 }
 
             }
             if (!pFieldNode.isMapping()){
-                NodeMapping.subTreeMappingRecursive(pFieldNode, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                NodeMapping.subTreeMappingRecursive(pFieldNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
             }
 
         }
         // 处理没匹配上的为add
         curFieldNodeList.stream().
                 filter(c -> !c.isMapping()).
-                forEach(c -> NodeMapping.subTreeMappingRecursive(c, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
+                forEach(c -> NodeMapping.subTreeMappingRecursive(c, commonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
 
     }
 
     @SuppressWarnings("unchecked")
-    private static void method(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void method(ClassNode preClassNode, ClassNode curClassNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         List<MethodNode> preMethodNodeList = (List<MethodNode>) preClassNode.getChildren();
         List<MethodNode> curMethodNodeList = (List<MethodNode>) curClassNode.getChildren();
         for (MethodNode pMethodNode : preMethodNodeList) {
@@ -241,7 +241,7 @@ class FileRenameHandler implements PublicConstants {
             Map<MethodNode, Double> cMethodMap = MethodNode.findMostSimilarMethod(pMethodNode, curMethodNodeList);
             // 找到之后还需要判断是物理上的改变还是逻辑上的改变
             if (cMethodMap.isEmpty()) {
-                NodeMapping.subTreeMappingRecursive(pMethodNode, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                NodeMapping.subTreeMappingRecursive(pMethodNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
                 continue;
             }
             MethodNode cMethodNode = (MethodNode)cMethodMap.keySet().toArray()[0];
@@ -250,10 +250,10 @@ class FileRenameHandler implements PublicConstants {
             if (similarity < 1.00) {
                 BaseNode.ChangeStatus status = cMethodNode.getFullName().equals(pMethodNode.getFullName())  ? BaseNode.ChangeStatus.CHANGE : BaseNode.ChangeStatus.SELF_CHANGE;
                 cMethodNode.setChangeStatus(status);
-                NodeMapping.setNodeMapped(pMethodNode, cMethodNode, proxyDao, preCommonInfo, curCommonInfo);
+                NodeMapping.setNodeMapped(pMethodNode, cMethodNode, proxyDao, commonInfo);
 
                 // todo 循环识别 语句的物理和逻辑变更
-                statement(pMethodNode, cMethodNode, proxyDao, preCommonInfo, curCommonInfo);
+                statement(pMethodNode, cMethodNode, proxyDao, commonInfo);
                 continue;
             }
 
@@ -264,9 +264,9 @@ class FileRenameHandler implements PublicConstants {
             BaseNode.ChangeStatus status = isSameContent ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
             if (!isSameLine || !isSameContent) {
                 cMethodNode.setChangeStatus(status);
-                physicalChangedHandler.subTreeMapping(pMethodNode, cMethodNode, preCommonInfo, curCommonInfo, proxyDao);
+                physicalChangedHandler.subTreeMapping(pMethodNode, cMethodNode, commonInfo, proxyDao);
                 // todo 循环识别 语句是否有物理上的变更
-                statement(pMethodNode, cMethodNode, proxyDao, preCommonInfo, curCommonInfo);
+                statement(pMethodNode, cMethodNode, proxyDao, commonInfo);
             }
 
             pMethodNode.setMapping(true);
@@ -275,12 +275,12 @@ class FileRenameHandler implements PublicConstants {
 
         curMethodNodeList.stream().
                 filter(c -> !c.isMapping()).
-                forEach(c -> NodeMapping.subTreeMappingRecursive(c, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
+                forEach(c -> NodeMapping.subTreeMappingRecursive(c, commonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
 
     }
 
     @SuppressWarnings("unchecked")
-    private static void statement(MethodNode pMethodNode, MethodNode cMethodNode, ProxyDao proxyDao, CommonInfo preCommonInfo, CommonInfo curCommonInfo) {
+    private static void statement(MethodNode pMethodNode, MethodNode cMethodNode, ProxyDao proxyDao, CommonInfo commonInfo) {
         List<StatementNode> pStatementNodes = (List<StatementNode>)pMethodNode.getChildren();
         List<StatementNode> cStatementNodes = (List<StatementNode>)cMethodNode.getChildren();
 
@@ -294,7 +294,7 @@ class FileRenameHandler implements PublicConstants {
 
                 // 找到之后还需要判断是物理上的改变还是逻辑上的改变
                 if (map.isEmpty()) {
-                    NodeMapping.subTreeMappingRecursive(pStatementNode, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                    NodeMapping.subTreeMappingRecursive(pStatementNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
                     continue;
                 }
                 StatementNode cStatementNode = (StatementNode)map.keySet().toArray()[0];
@@ -306,7 +306,7 @@ class FileRenameHandler implements PublicConstants {
                             !((Double)1.00).equals(CosineUtil.cosineSimilarity(pStatementNode.getSelfBodyToken(), cStatementNode.getSelfBodyToken()))) ?
                             BaseNode.ChangeStatus.SELF_CHANGE : BaseNode.ChangeStatus.CHANGE;
                     cStatementNode.setChangeStatus(status);
-                    NodeMapping.setNodeMapped(pStatementNode, cStatementNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(pStatementNode, cStatementNode, proxyDao, commonInfo);
                     continue;
                 }
 
@@ -316,7 +316,7 @@ class FileRenameHandler implements PublicConstants {
                 BaseNode.ChangeStatus status = isSameContent ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
                 if (!isSameLine || !isSameContent) {
                     pStatementNode.setChangeStatus(status);
-                    physicalChangedHandler.subTreeMapping(pStatementNode, cStatementNode, preCommonInfo, curCommonInfo, proxyDao);
+                    physicalChangedHandler.subTreeMapping(pStatementNode, cStatementNode, commonInfo, proxyDao);
                 }
 
                 pStatementNode.setMapping(true);
@@ -330,7 +330,7 @@ class FileRenameHandler implements PublicConstants {
 
                 // 找到之后还需要判断是物理上的改变还是逻辑上的改变
                 if (map.isEmpty()) {
-                    NodeMapping.subTreeMappingRecursive(pStatementNode, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
+                    NodeMapping.subTreeMappingRecursive(pStatementNode, commonInfo ,proxyDao, BaseNode.ChangeStatus.DELETE);
                     continue;
                 }
                 StatementNode cStatementNode = (StatementNode)map.keySet().toArray()[0];
@@ -342,7 +342,7 @@ class FileRenameHandler implements PublicConstants {
                             !((Double)1.00).equals(CosineUtil.cosineSimilarity(pStatementNode.getSelfBodyToken(), cStatementNode.getSelfBodyToken()))) ?
                             BaseNode.ChangeStatus.SELF_CHANGE : BaseNode.ChangeStatus.CHANGE;
                     cStatementNode.setChangeStatus(status);
-                    NodeMapping.setNodeMapped(pStatementNode, cStatementNode, proxyDao, preCommonInfo, curCommonInfo);
+                    NodeMapping.setNodeMapped(pStatementNode, cStatementNode, proxyDao, commonInfo);
                     continue;
                 }
 
@@ -352,7 +352,7 @@ class FileRenameHandler implements PublicConstants {
                 BaseNode.ChangeStatus status = isSameContent ? BaseNode.ChangeStatus.CHANGE_LINE : BaseNode.ChangeStatus.CHANGE_RECORD;
                 if (!isSameLine || !isSameContent) {
                     pStatementNode.setChangeStatus(status);
-                    physicalChangedHandler.subTreeMapping(pStatementNode, cStatementNode, preCommonInfo, curCommonInfo, proxyDao);
+                    physicalChangedHandler.subTreeMapping(pStatementNode, cStatementNode, commonInfo, proxyDao);
                 }
 
                 pStatementNode.setMapping(true);
@@ -363,7 +363,7 @@ class FileRenameHandler implements PublicConstants {
         if (cStatementNodes != null) {
             cStatementNodes.stream().
                     filter(c -> !c.isMapping()).
-                    forEach(c -> NodeMapping.subTreeMappingRecursive(c, preCommonInfo, curCommonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
+                    forEach(c -> NodeMapping.subTreeMappingRecursive(c, commonInfo ,proxyDao, BaseNode.ChangeStatus.ADD));
         }
 
     }
