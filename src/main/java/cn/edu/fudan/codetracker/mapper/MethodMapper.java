@@ -19,6 +19,6 @@ public interface MethodMapper {
 
 
 
-    TrackerInfo getTrackerInfo(@Param("filePath") String filePath, @Param("className") String className, @Param("signature") String signature, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("content") String content);
+    List<TrackerInfo> getTrackerInfo(@Param("filePath") String filePath, @Param("className") String className, @Param("signature") String signature, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
 
 }

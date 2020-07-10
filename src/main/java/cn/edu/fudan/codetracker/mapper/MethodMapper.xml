@@ -146,16 +146,16 @@
 
     <resultMap id="trackerInfo" type="cn.edu.fudan.codetracker.domain.projectinfo.TrackerInfo">
         <id property="version" column="version"/>
-        <id property="rootUUID" column="uuid"/>
+        <id property="rootUUID" column="meta_method_uuid"/>
         <id property="lastChangeParent" column="commitid"/>
+        <id property="content" column="content"/>
     </resultMap>
 
     <!--    select version,uuid from meta_method where file_path = #{filePath} and class_name = #{className} and signature = #{signature} order by version desc limit 1-->
     <select id="getTrackerInfo" resultMap="trackerInfo" parameterType="String">
-        select m.uuid, m.version, r.commitid from raw_method as r, meta_method as m where r.meta_method_uuid = m.uuid and r.signature = #{signature} and r.content = #{content} and r.meta_method_uuid in
-        (select uuid from meta_method
-        where file_path = #{filePath} and class_name = #{className}
-          and meta_method.repo_uuid = #{repoUuid} and meta_method.branch = #{branch}) and r.change_relation != "DELETE" order by r.commit_date desc limit 1;
+        select meta_method_uuid, version, commitid, content from raw_method where signature = #{signature} and meta_method_uuid in
+        (select uuid from meta_method where file_path = #{filePath} and class_name = #{className} and repo_uuid = #{repoUuid} and branch = #{branch})
+        and change_relation != "DELETE" order by commit_date desc;
     </select>
 
 </mapper>

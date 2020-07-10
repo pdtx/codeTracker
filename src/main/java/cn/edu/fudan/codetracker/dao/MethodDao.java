@@ -70,6 +70,12 @@ public class MethodDao {
     }
 
     public TrackerInfo getTrackerInfo(String filePath, String className, String signature, String content, String repoUuid, String branch) {
-        return methodMapper.getTrackerInfo( filePath, className, signature, content, repoUuid, branch);
+        List<TrackerInfo> trackerInfos = methodMapper.getTrackerInfo(filePath, className, signature, repoUuid, branch);
+        for (TrackerInfo trackerInfo : trackerInfos) {
+            if (content.equals(trackerInfo.getContent())) {
+                return trackerInfo;
+            }
+        }
+        return null;
     }
 }
