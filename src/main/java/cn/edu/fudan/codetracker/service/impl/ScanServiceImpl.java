@@ -74,15 +74,18 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             //首次扫描
             if (scanInfo != null) {
                 log.warn("{} : already scanned before", repoUuid);
+                return;
             }
             beginScan(repoUuid, branch, beginCommit, false);
         } else {
             //更新
             if (scanInfo == null || scanInfo.getLatestCommit() == null) {
                 log.warn("{} : hasn't scanned before", repoUuid);
+                return;
             }
             if (ScanStatus.SCANNING.equals(scanInfo.getStatus())) {
                 log.warn("{} : already scanning", repoUuid);
+                return;
             }
             beginScan(repoUuid, branch, scanInfo.getLatestCommit(), true);
         }
