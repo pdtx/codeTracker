@@ -21,14 +21,6 @@ public interface ScanService {
     /**
      * description
      *
-     * @param branch 项目分值
-     * @param repoUuid 代码仓库的 uuid
-     */
-    void autoUpdate(String repoUuid, String branch, String commitId);
-
-    /**
-     * description
-     *
      * @param repoId 代码仓库的 uuid
      */
     ScanInfo getScanInfo(String repoId);

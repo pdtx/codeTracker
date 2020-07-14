@@ -35,27 +35,9 @@ public class RepoAnalyzerController {
         String repoId = requestParam.getString("repoId");
         String branch = requestParam.getString("branch");
         String beginCommit = requestParam.getString("beginCommit");
-        ScanInfo scanInfo = scanService.getScanInfo(repoId);
         try {
-            if (beginCommit != null) {
-                //首次扫描
-                if (scanInfo != null) {
-                    return new ResponseBean(HttpStatus.OK.value(), "error: already scanned before", null);
-                }
-                scanService.scan(repoId, branch, beginCommit);
-                return new ResponseBean(HttpStatus.OK.value(), "start scan", null);
-            } else {
-                //更新
-                if (scanInfo == null || scanInfo.getLatestCommit() == null) {
-                    return new ResponseBean(HttpStatus.OK.value(), "error: not scanned before", null);
-                }
-                //fixme 如果项目正在扫描，接收到新的更新请求，commit list 更新？
-                if (ScanStatus.SCANNING.equals(scanInfo.getStatus())) {
-                    return new ResponseBean(HttpStatus.OK.value(), "already scanning", null);
-                }
-                scanService.autoUpdate(repoId, branch, scanInfo.getLatestCommit());
-                return new ResponseBean(HttpStatus.OK.value(), "start scan", null);
-            }
+            scanService.scan(repoId, branch, beginCommit);
+            return new ResponseBean(HttpStatus.OK.value(), "start scan", null);
         } catch (Exception e) {
             return new ResponseBean(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null);
         }

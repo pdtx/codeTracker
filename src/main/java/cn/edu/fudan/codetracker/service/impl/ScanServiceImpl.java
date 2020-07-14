@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * description 扫描服务
@@ -49,6 +50,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private StatementDao statementDao;
     private RepoDao repoDao;
     private MethodCallDao methodCallDao;
+    private ConcurrentHashMap<String,Boolean> concurrentHashMap = new ConcurrentHashMap<>();
 
     private RestInterfaceManager restInterface;
 
@@ -58,33 +60,56 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-//        repoPath.set(getRepoPathByUuid(repoUuid));
-        JGitHelper jGitHelper = new JGitHelper(repoPath.get());
-        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, false);
-        log.info("commit size : " +  commitList.size());
-        ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(),ScanStatus.SCANNING,commitList.size(),0,new Date(),repoUuid,branch);
-        repoDao.insertScanRepo(scanInfo);
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, false, scanInfo);
-        scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
-        repoDao.saveScanInfo(scanInfo);
-        restInterface.freeRepo(repoUuid, repoPath.get());
+        if (concurrentHashMap.keySet().contains(repoUuid)) {
+            concurrentHashMap.put(repoUuid, true);
+            return;
+        }
+        prepareForScan(repoUuid, branch, beginCommit);
     }
 
-    @Async("taskExecutor")
-    @Override
-    public void autoUpdate(String repoUuid, String branch, String commitId) {
-        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
-//        repoPath.set(getRepoPathByUuid(repoUuid));
+    public void prepareForScan(String repoUuid, String branch, String beginCommit) {
+        concurrentHashMap.put(repoUuid, false);
+        ScanInfo scanInfo = getScanInfo(repoUuid);
+        if (beginCommit != null) {
+            //首次扫描
+            if (scanInfo != null) {
+                log.warn("{} : already scanned before", repoUuid);
+            }
+            beginScan(repoUuid, branch, beginCommit, false);
+        } else {
+            //更新
+            if (scanInfo == null || scanInfo.getLatestCommit() == null) {
+                log.warn("{} : hasn't scanned before", repoUuid);
+            }
+            if (ScanStatus.SCANNING.equals(scanInfo.getStatus())) {
+                log.warn("{} : already scanning", repoUuid);
+            }
+            beginScan(repoUuid, branch, scanInfo.getLatestCommit(), true);
+        }
+        //扫完再次判断是否有更新请求
+        if (!concurrentHashMap.keySet().contains(repoUuid)) {
+            log.error("{} : not in scan map");
+            return;
+        }
+        if (concurrentHashMap.get(repoUuid)) {
+            prepareForScan(repoUuid, branch, null);
+        } else {
+            concurrentHashMap.remove(repoUuid);
+        }
+    }
+
+    public void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
+//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
-        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, commitId, true);
+        List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         log.info("commit size : " +  commitList.size());
         ScanInfo scanInfo = new ScanInfo(UUID.randomUUID().toString(),ScanStatus.SCANNING,commitList.size(),0,new Date(),repoUuid,branch);
         repoDao.insertScanRepo(scanInfo);
-        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, true, scanInfo);
+        boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, isUpdate, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-        restInterface.freeRepo(repoUuid, repoPath.get());
+//        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
