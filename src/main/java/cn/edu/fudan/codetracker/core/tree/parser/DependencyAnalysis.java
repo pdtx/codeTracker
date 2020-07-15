@@ -13,9 +13,11 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.SneakyThrows;
+import org.apache.maven.model.Dependency;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.Set;
 @Component
 public class DependencyAnalysis {
 
-    private static String DEPENDENCY_PATH;
+    private static String DEPENDENCY_PATH ;
 
     @Value("${mavenRepoDir}")
     public void setDependencyPath(String dependencyPath) {
@@ -71,6 +73,7 @@ public class DependencyAnalysis {
         List<MethodCallRelationship> result = new ArrayList<>(4);
         for (MethodCallExpr methodCallExpr : methodCallExprs) {
             try {
+                // java.lang.OutOfMemoryError: Java heap space
                 MethodUsage methodUsage = JavaParserFacade.get(combinedTypeSolver).solveMethodAsUsage(methodCallExpr);
                 String methodName = methodUsage.getName();
                 String qualifiedSignature = methodUsage.getQualifiedSignature();
@@ -102,7 +105,9 @@ public class DependencyAnalysis {
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
                 (level, path, file) -> combinedTypeSolver.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
 
-        new DirExplorer((level, path, file) -> path.endsWith(".jar"),
+        // todo 可以根据pom中的变化来确定这次的依赖是否需要更新
+        Set<Dependency> dependencies = PomAnalysisUtil.getAllDependencies(repoPath);
+        new DirExplorer((level, path, file) -> path.endsWith(".jar") && containsJar(dependencies, path),
                 (level, path, file) -> {
                     try {
                         combinedTypeSolver.add(new JarTypeSolver(file));
@@ -111,12 +116,21 @@ public class DependencyAnalysis {
                     }
                 }).explore(new File(DEPENDENCY_PATH));
 
-
-
         // 指定该项目所依赖的每一个jar
         repoPathT.set(repoPath);
         allGroupIdT.set(PomAnalysisUtil.getAllGroupId(repoPath));
         combinedTypeSolverT.set(combinedTypeSolver);
+    }
+
+    private static boolean containsJar(Set<Dependency> dependencies, String path) {
+        path = path.replaceAll("/|\\\\",".");
+        for (Dependency d: dependencies) {
+            if (path.contains(d.getGroupId()) && path.contains(d.getArtifactId())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void removeAll() {

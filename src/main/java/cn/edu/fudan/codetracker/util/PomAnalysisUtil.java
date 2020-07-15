@@ -1,12 +1,15 @@
 package cn.edu.fudan.codetracker.util;
 
 import lombok.SneakyThrows;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,12 +38,28 @@ public class PomAnalysisUtil {
      * @return String
      */
     @SneakyThrows
-    public static String getGroupId(String pomPath) {
+    private static String getGroupId(String pomPath) {
         //pom 为 pom.xml 路径
         FileInputStream fis = new FileInputStream(new File(pomPath));
         MavenXpp3Reader reader = new MavenXpp3Reader();
         Model model = reader.read(fis);
         return model.getGroupId();
+    }
+
+    @SneakyThrows
+    public static Set<Dependency> getAllDependencies(String repoPath){
+        List<File> pomFile = new ArrayList<>();
+        new DirExplorer(((level, path, file) -> path.endsWith("pom.xml")),
+                (level, path, file) -> pomFile.add(file)).explore(new File(repoPath));
+        //读取每一个pom文件所含的依赖
+        Set<Dependency> dependencies = new HashSet<>(32);
+        for (File file : pomFile) {
+            FileInputStream fis = new FileInputStream(file);
+            MavenXpp3Reader reader = new MavenXpp3Reader();
+            Model model = reader.read(fis);
+            dependencies.addAll(model.getDependencies());
+        }
+        return dependencies;
     }
 
 }
