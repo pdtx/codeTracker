@@ -207,11 +207,20 @@
 
 
 <!--         https://mvnrepository.com/artifact/org.codehaus.javancss/javancss-->
+<!--        <dependency>-->
+<!--            <groupId>org.codehaus.javancss</groupId>-->
+<!--            <artifactId>javancss</artifactId>-->
+<!--            <version>33.54</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>org.codehaus.javancss</groupId>
             <artifactId>javancss</artifactId>
             <version>33.54</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/jar/javancss-34.55-SNAPSHOT.jar</systemPath>
         </dependency>
+
 
     </dependencies>
 
