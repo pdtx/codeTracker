@@ -102,6 +102,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
         validLineInfos.addAll(statisticsDao.getValidLineInfo(METHOD,repoUuid,beginDate,endDate));
         validLineInfos.addAll(statisticsDao.getValidLineInfo(FIELD,repoUuid,beginDate,endDate));
         validLineInfos.addAll(statisticsDao.getValidLineInfo(STATEMENT,repoUuid,beginDate,endDate));
+        Map<String,ValidLineInfo> deleteMap = new HashMap<>();
         for (ValidLineInfo line: validLineInfos) {
             String changeRelation = line.getChangeRelation();
             Map<String,Integer> map;
@@ -118,7 +119,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
                     map.replace(ADD,map.get(ADD)+1);
                     break;
                 case DELETE:
-                    map.replace(DELETE,map.get(DELETE)+1);
+                    deleteMap.put(line.getMetaUuid(),line);
                     break;
                 case SELF_CHANGE:
                     map.replace(CHANGE,map.get(CHANGE)+1);
@@ -127,6 +128,19 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
                     break;
             }
             result.put(line.getCommitter(),map);
+        }
+        for (ValidLineInfo validLineInfo : deleteMap.values()) {
+            Map<String,Integer> map;
+            if(result.keySet().contains(validLineInfo.getCommitter())) {
+                map = result.get(validLineInfo.getCommitter());
+            } else {
+                map = new HashMap<>();
+                map.put(ADD,0);
+                map.put(DELETE,0);
+                map.put(CHANGE,0);
+            }
+            map.put(DELETE, map.get(DELETE)+1);
+            result.put(validLineInfo.getCommitter(),map);
         }
         return result;
     }
