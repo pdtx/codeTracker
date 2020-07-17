@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.service.impl;
 
+import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.core.*;
@@ -49,6 +50,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private RepoDao repoDao;
     private MethodCallDao methodCallDao;
 
+    private RestInterfaceManager restInterface;
+
     private ConcurrentHashMap<String, Boolean> scanStatus = new ConcurrentHashMap<>();
     private final Short lock = 1;
 
@@ -70,22 +73,35 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 
     private void prepareForScan(String repoUuid, String branch, String beginCommit) {
         ScanInfo scanInfo = getScanInfo(repoUuid);
-        if (beginCommit != null && scanInfo == null) {
+        if (beginCommit != null) {
+            //首次扫描
+            if (scanInfo != null) {
+                log.warn("{} : already scanned before", repoUuid);
+                checkAfterScan(repoUuid,branch);
+                return;
+            }
             beginScan(repoUuid, branch, beginCommit, false);
         }
         if (beginCommit == null) {
             //更新
             if (scanInfo == null || scanInfo.getLatestCommit() == null) {
                 log.warn("{} : hasn't scanned before", repoUuid);
+                checkAfterScan(repoUuid,branch);
                 return;
             }
             if (ScanStatus.SCANNING.equals(scanInfo.getStatus())) {
                 log.warn("{} : already scanning", repoUuid);
+                checkAfterScan(repoUuid,branch);
                 return;
             }
             beginScan(repoUuid, branch, scanInfo.getLatestCommit(), true);
         }
 
+        checkAfterScan(repoUuid,branch);
+
+    }
+
+    private void checkAfterScan(String repoUuid, String branch) {
         if (! scanStatus.keySet().contains(repoUuid)) {
             log.error("{} : not in scan map", repoUuid);
             return;
@@ -103,8 +119,8 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     }
 
     private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
-        repoPath.remove();
-        repoPath.set(getRepoPathByUuid(repoUuid));
+        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+//        repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
         log.info("commit size : " +  commitList.size());
@@ -113,7 +129,7 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         boolean isAbort = scanCommitList(repoUuid, branch, repoPath.get(), jGitHelper, commitList, isUpdate, scanInfo);
         scanInfo.setStatus(isAbort ? ScanStatus.FAILED : ScanStatus.COMPLETE);
         repoDao.saveScanInfo(scanInfo);
-//        restInterface.freeRepo(repoUuid, repoPath.get());
+        restInterface.freeRepo(repoUuid, repoPath.get());
     }
 
     /**
@@ -670,5 +686,10 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Autowired
     public void setMethodCallDao(MethodCallDao methodCallDao) {
         this.methodCallDao = methodCallDao;
+    }
+
+    @Autowired
+    public void setRestInterface(RestInterfaceManager restInterface) {
+        this.restInterface = restInterface;
     }
 }
