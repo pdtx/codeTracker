@@ -28,6 +28,7 @@ public class MethodNode extends BaseNode{
     private String packageName;
     private String filePath;
     private String lastChangeCommit;
+    private int ccn;
 
     public MethodNode() {
         super.setProjectInfoLevel(ProjectInfoLevel.METHOD);

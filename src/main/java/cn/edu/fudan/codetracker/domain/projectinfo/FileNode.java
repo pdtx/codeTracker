@@ -12,6 +12,7 @@ public class FileNode extends BaseNode{
 
     private String fileName;
     private String filePath;
+    private int ccn;
 
     public FileNode(String fileName, String filePath) {
         super.setProjectInfoLevel(ProjectInfoLevel.FILE);

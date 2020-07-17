@@ -1,5 +1,7 @@
 package cn.edu.fudan.codetracker.util.comparison;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.*;
 
 /**
@@ -205,6 +207,47 @@ public class CosineUtil {
         return set.replaceFirst(subset, "");
     }
 
+    public static double getSimilarity(String code1, String code2) {
+        if (StringUtils.isBlank(code1) || StringUtils.isBlank(code2)) {
+            return 0L;
+        }
+        Map<Character,int[]> algMap=new HashMap<>();
+        for (int i = 0; i<code1.length(); i++) {
+            char d1 = code1.charAt(i);
+            int[] fq = algMap.get(d1);
+            if (fq != null && fq.length == 2) {
+                fq[0]++;
+            } else {
+                fq = new int[2];
+                fq[0] = 1;
+                fq[1] = 0;
+                algMap.put(d1, fq);
+            }
+        }
+        for (int i = 0; i<code2.length(); i++) {
+            char d2 = code2.charAt(i);
+            int[] fq = algMap.get(d2);
+            if (fq != null && fq.length == 2) {
+                fq[1]++;
+            } else {
+                fq = new int[2];
+                fq[0] = 0;
+                fq[1] = 1;
+                algMap.put(d2, fq);
+            }
+        }
+        double sqCode1 = 0;
+        double sqCode2 = 0;
+        double denuminator = 0;
+        for (Map.Entry entry : algMap.entrySet()) {
+            int[] c = (int[]) entry.getValue();
+            denuminator += c[0] * c[1];
+            sqCode1 += c[0] * c[0];
+            sqCode2 += c[1] * c[1];
+        }
+        return denuminator / Math.sqrt(sqCode1 * sqCode2);
+    }
+
     /**
      * * 处理注释
      * @param code
@@ -214,4 +257,10 @@ public class CosineUtil {
         return code.replaceAll( "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1" );
     }
 
+    public static void main(String[] args) {
+        String str1 = "byteArrayToHex()";
+        String[] strs = str1.replace(")","").split("\\(");
+        String str2 = "byteArrayToHex(String[])";
+        System.out.println(getSimilarity(str1,str2));
+    }
 }
