@@ -20,7 +20,8 @@
         repo_uuid,
         branch,
         content,
-        version
+        version,
+        ccn
         )
         VALUES
         <foreach collection="methodNodes" item="item" index="index" separator=",">
@@ -39,7 +40,8 @@
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
             #{item.content},
-            #{item.version}
+            #{item.version},
+            #{item.ccn}
             )
         </foreach>
     </insert>
@@ -64,7 +66,8 @@
         method_end,
         diff,
         branch,
-        repo_uuid
+        repo_uuid,
+        ccn
         )
         VALUES
         <foreach collection="methodNodes" item="item" index="index" separator=",">
@@ -86,7 +89,8 @@
             #{item.end},
             #{item.diff,jdbcType=OTHER,typeHandler=cn.edu.fudan.codetracker.handler.JsonTypeHandler},
             #{commonInfo.branch},
-            #{commonInfo.repoUuid}
+            #{commonInfo.repoUuid},
+            #{item.ccn}
             )
         </foreach>
     </insert>
@@ -132,6 +136,11 @@
             <trim prefix="class_name = case" suffix="end,">
                 <foreach collection="methodNodes" item="item">
                     when uuid=#{item.rootUuid} then #{item.parent.className}
+                </foreach>
+            </trim>
+            <trim prefix="ccn = case" suffix="end,">
+                <foreach collection="methodNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.ccn}
                 </foreach>
             </trim>
         </trim>

@@ -18,7 +18,8 @@
         end_commit_date,
         repo_uuid,
         branch,
-        version
+        version,
+        ccn
         )
         VALUES
         <foreach collection="fileNodes" item="item" index="index" separator=",">
@@ -35,7 +36,8 @@
             #{commonInfo.commitDate},
             #{commonInfo.repoUuid},
             #{commonInfo.branch},
-            #{item.version}
+            #{item.version},
+            #{item.ccn}
             )
         </foreach>
     </insert>
@@ -54,7 +56,8 @@
         last_change_commit,
         change_relation,
         branch,
-        repo_uuid
+        repo_uuid,
+        ccn
         )
         VALUES
         <foreach collection="fileNodes" item="item" index="index" separator=",">
@@ -70,7 +73,8 @@
             #{commonInfo.parentCommit},
             #{item.changeStatus},
             #{commonInfo.branch},
-            #{commonInfo.repoUuid}
+            #{commonInfo.repoUuid},
+            #{item.ccn}
             )
         </foreach>
     </insert>
@@ -101,6 +105,11 @@
             <trim prefix="file_path = case" suffix="end,">
                 <foreach collection="fileNodes" item="item">
                     when uuid=#{item.rootUuid} then #{item.filePath}
+                </foreach>
+            </trim>
+            <trim prefix="ccn = case" suffix="end,">
+                <foreach collection="fileNodes" item="item">
+                    when uuid=#{item.rootUuid} then #{item.ccn}
                 </foreach>
             </trim>
         </trim>

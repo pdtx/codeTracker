@@ -3,16 +3,16 @@ package cn.edu.fudan.codetracker.core.tree;
 import cn.edu.fudan.codetracker.core.tree.parser.JavaFileParser;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.util.FileFilter;
+import cn.edu.fudan.codetracker.util.JavancssScaner;
+import cn.edu.fudan.codetracker.util.comparison.CosineUtil;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * description: java语言树
@@ -95,8 +95,78 @@ public class JavaTree extends BaseLanguageTree {
 
             //添加调用关系
             methodCallMap.putAll(javaFileParser.getMethodCallMap());
+
+            extractFileCCNs(path,javaFileParser.getFileNode());
         }
         travelRepoInfo();
+    }
+
+    /**
+     * 计算出文件节点的圈复杂度，以及属于该文件的方法的圈复杂度
+     * @param fileNode,path
+     */
+    private void extractFileCCNs(String path,FileNode fileNode) {
+        Map<String,Integer> methodCCNs = JavancssScaner.getOneFileCCNs(path);
+        List<MethodNode> methodNodes = getMethodNodesFromFileNode(fileNode);
+        int fileCCN = 0;
+        Set<MethodNode> unMatchNodes = new HashSet<>();
+        for (MethodNode methodNode : methodNodes) {
+            String signature = methodNode.getSignature().replace(" ","");
+            if (methodCCNs.keySet().contains(signature)) {
+                int methodCCN = methodCCNs.get(signature);
+                methodNode.setCcn(methodCCN);
+                fileCCN += methodCCN;
+                methodCCNs.remove(signature);
+            } else {
+                unMatchNodes.add(methodNode);
+            }
+        }
+        //未能精准匹配的，按照一定相似度阈值进行匹配，以处理签名解析有误情况
+        for (String key : methodCCNs.keySet()) {
+            boolean find = false;
+            for (MethodNode methodNode : unMatchNodes) {
+                if (isSameMethod(key,methodNode.getSignature())) {
+                    int methodCCN = methodCCNs.get(key);
+                    methodNode.setCcn(methodCCN);
+                    fileCCN += methodCCN;
+                    find = true;
+                    break;
+                }
+            }
+            if (!find) {
+                log.warn("{} : can not find this method",key);
+            }
+        }
+        fileNode.setCcn(fileCCN);
+    }
+
+    private boolean isSameMethod(String key, String signature) {
+        String[] keyWords = key.replace(")","").split("\\(");
+        String[] signatureWords = signature.replace(")","").split("\\(");
+        if (keyWords.length == 0 || signatureWords.length == 0 || keyWords.length != signatureWords.length) {
+            return false;
+        }
+        if (keyWords[0].equals(signatureWords[0])){
+            if(keyWords.length == 1 && signatureWords.length == 1) {
+                return true;
+            }
+            String[] args1 = keyWords[1].split(",");
+            String[] args2 = signatureWords[1].split(",");
+            if (args1.length == args2.length) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<MethodNode> getMethodNodesFromFileNode(FileNode fileNode) {
+        List<MethodNode> methodNodes = new ArrayList<>();
+        for (BaseNode baseNode : fileNode.getChildren()) {
+            for (BaseNode methodNode : baseNode.getChildren()) {
+                methodNodes.add((MethodNode)methodNode);
+            }
+        }
+        return methodNodes;
     }
 
     private void travelRepoInfo() {
