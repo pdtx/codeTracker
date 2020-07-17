@@ -1,6 +1,5 @@
 package cn.edu.fudan.codetracker.service.impl;
 
-import cn.edu.fudan.codetracker.component.RestInterfaceManager;
 import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.core.*;
@@ -39,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ScanServiceImpl implements ScanService, PublicConstants {
 
     private static ThreadLocal<String> repoPath = new ThreadLocal<>();
-
     private static MergeHandler mergeHandler = MergeHandler.getInstance();
 
     private PackageDao packageDao;
@@ -50,9 +48,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private StatementDao statementDao;
     private RepoDao repoDao;
     private MethodCallDao methodCallDao;
-    private ConcurrentHashMap<String,Boolean> concurrentHashMap = new ConcurrentHashMap<>();
 
-    private RestInterfaceManager restInterface;
+    private ConcurrentHashMap<String, Boolean> scanStatus = new ConcurrentHashMap<>();
+    private final Short lock = 1;
 
     @Value("${outputDir}")
     private String outputDir;
@@ -60,24 +58,22 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Async("taskExecutor")
     @Override
     public void scan(String repoUuid, String branch, String beginCommit) {
-        if (concurrentHashMap.keySet().contains(repoUuid)) {
-            concurrentHashMap.put(repoUuid, true);
-            return;
+        synchronized (lock) {
+            if (scanStatus.keySet().contains(repoUuid)) {
+                scanStatus.put(repoUuid, true);
+                return;
+            }
+            scanStatus.putIfAbsent(repoUuid, false);
         }
         prepareForScan(repoUuid, branch, beginCommit);
     }
 
-    public void prepareForScan(String repoUuid, String branch, String beginCommit) {
-        concurrentHashMap.put(repoUuid, false);
+    private void prepareForScan(String repoUuid, String branch, String beginCommit) {
         ScanInfo scanInfo = getScanInfo(repoUuid);
-        if (beginCommit != null) {
-            //首次扫描
-            if (scanInfo != null) {
-                log.warn("{} : already scanned before", repoUuid);
-                return;
-            }
+        if (beginCommit != null && scanInfo == null) {
             beginScan(repoUuid, branch, beginCommit, false);
-        } else {
+        }
+        if (beginCommit == null) {
             //更新
             if (scanInfo == null || scanInfo.getLatestCommit() == null) {
                 log.warn("{} : hasn't scanned before", repoUuid);
@@ -89,20 +85,25 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
             }
             beginScan(repoUuid, branch, scanInfo.getLatestCommit(), true);
         }
-        //扫完再次判断是否有更新请求
-        if (!concurrentHashMap.keySet().contains(repoUuid)) {
-            log.error("{} : not in scan map");
+
+        if (! scanStatus.keySet().contains(repoUuid)) {
+            log.error("{} : not in scan map", repoUuid);
             return;
         }
-        if (concurrentHashMap.get(repoUuid)) {
-            prepareForScan(repoUuid, branch, null);
-        } else {
-            concurrentHashMap.remove(repoUuid);
+        //扫完再次判断是否有更新请求
+        synchronized (lock) {
+            if (scanStatus.get(repoUuid)) {
+                scanStatus.put(repoUuid, false);
+            } else {
+                scanStatus.remove(repoUuid);
+                return;
+            }
         }
+        prepareForScan(repoUuid, branch, null);
     }
 
-    public void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
-//        repoPath.set(restInterface.getCodeServiceRepo(repoUuid));
+    private void beginScan(String repoUuid, String branch, String beginCommit, boolean isUpdate) {
+        repoPath.remove();
         repoPath.set(getRepoPathByUuid(repoUuid));
         JGitHelper jGitHelper = new JGitHelper(repoPath.get());
         List<String> commitList = jGitHelper.getCommitListByBranchAndBeginCommit(branch, beginCommit, isUpdate);
@@ -164,38 +165,32 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
         Map<String, List<MethodCall>> methodCallMap = curJavaTree.getMethodCallMap();
         List<MethodNode> methodNodes = curJavaTree.getMethodInfos();
         List<MethodCall> methodCalls = new ArrayList<>();
+
         //处理field add的方法调用
-        for (FieldNode fieldNode : curJavaTree.getFieldInfos()) {
-            if (BaseNode.ChangeStatus.ADD.equals(fieldNode.getChangeStatus()) && methodCallMap.keySet().contains(fieldNode.getUuid())) {
-                List<MethodCall> list = methodCallMap.get(fieldNode.getUuid());
-                for (MethodCall methodCall : list) {
-                    String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
-                    if (rawMethodUuid != null) {
-                        methodCall.setRawMethodUuid(rawMethodUuid);
-                        methodCalls.add(methodCall);
-                    }
-                }
-            }
-        }
+        methodCallHandle(methodCallMap, methodNodes, methodCalls, curJavaTree.getFieldInfos());
 
         //处理statement add的方法调用
-        for (StatementNode statementNode : curJavaTree.getStatementInfos()) {
-            if (BaseNode.ChangeStatus.ADD.equals(statementNode.getChangeStatus()) && methodCallMap.keySet().contains(statementNode.getUuid())) {
-                List<MethodCall> list = methodCallMap.get(statementNode.getUuid());
-                for (MethodCall methodCall : list) {
-                    String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
-                    if (rawMethodUuid != null) {
-                        methodCall.setRawMethodUuid(rawMethodUuid);
-                        methodCalls.add(methodCall);
-                    }
-                }
-            }
-        }
+        methodCallHandle(methodCallMap, methodNodes, methodCalls, curJavaTree.getStatementInfos());
 
         //fixme field,statement change情况新增调用识别待处理
 
         //save入库
         saveMethodCallList(methodCalls, commonInfo);
+    }
+
+    private void methodCallHandle(Map<String, List<MethodCall>> methodCallMap, List<MethodNode> methodNodes, List<MethodCall> methodCalls, List<? extends BaseNode> baseNodes) {
+        for (BaseNode baseNode : baseNodes) {
+            if (BaseNode.ChangeStatus.ADD.equals(baseNode.getChangeStatus()) && methodCallMap.keySet().contains(baseNode.getUuid())) {
+                List<MethodCall> list = methodCallMap.get(baseNode.getUuid());
+                for (MethodCall methodCall : list) {
+                    String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
+                    if (rawMethodUuid != null) {
+                        methodCall.setRawMethodUuid(rawMethodUuid);
+                        methodCalls.add(methodCall);
+                    }
+                }
+            }
+        }
     }
 
     private void saveMethodCallList(List<MethodCall> methodCallList, CommonInfo commonInfo) {
@@ -634,12 +629,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 //        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 
-    public static void main(String[] args) {
-        Map<String,Map<String,String>> map = new ScanServiceImpl().extractDiffFilePathFromClDiff("/Users/tangyuan/Documents/Git/IssueTracker-Master","c2d014ec63e6079f62fe734f1f9650c0890e6569","/Users/tangyuan/Desktop/demo/IssueTracker-Master/c2d014ec63e6079f62fe734f1f9650c0890e6569");
-        System.out.println(map);
-    }
-
-
     /**
      * getter and setter
      * */
@@ -666,11 +655,6 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     @Autowired
     public void setMethodDao(MethodDao methodDao) {
         this.methodDao = methodDao;
-    }
-
-    @Autowired
-    public void setRestInterface(RestInterfaceManager restInterface) {
-        this.restInterface = restInterface;
     }
 
     @Autowired
