@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserMethodDeclaration;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
@@ -45,6 +46,7 @@ public class DependencyAnalysis {
     private static ThreadLocal<String> repoPathT = new ThreadLocal<>();
     private static ThreadLocal<Set<String>> allGroupIdT = new ThreadLocal<>();
     private static ThreadLocal<CombinedTypeSolver> combinedTypeSolverT = new ThreadLocal<>();
+    private static ThreadLocal<List<TypeSolver>>  typeSolverT = new ThreadLocal<>();
 
     /**
      * 判断是否属于本项目的依赖
@@ -99,27 +101,31 @@ public class DependencyAnalysis {
     public static void setRepoPathT(String repoPath) {
         removeAll();
 
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
+        List<TypeSolver> typeSolvers = new ArrayList<>(256);
+        typeSolvers.add(new ReflectionTypeSolver());
+
         // JavaParserTypeSolver 必须要指定到项目的java目录下 如 E:\Lab\gitlab\codeTracker\src\main\java
         new DirExplorer((level, path, file) -> file.getAbsolutePath().endsWith("java"),
-                (level, path, file) -> combinedTypeSolver.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
+                (level, path, file) -> typeSolvers.add(new JavaParserTypeSolver(file))).exploreDir(new File(repoPath));
 
         // todo 可以根据pom中的变化来确定这次的依赖是否需要更新
         Set<Dependency> dependencies = PomAnalysisUtil.getAllDependencies(repoPath);
         new DirExplorer((level, path, file) -> path.endsWith(".jar") && containsJar(dependencies, path),
                 (level, path, file) -> {
                     try {
-                        combinedTypeSolver.add(new JarTypeSolver(file));
+                        typeSolvers.add(new JarTypeSolver(file));
                     } catch (Exception e){
                         // nothing to do
                     }
                 }).explore(new File(DEPENDENCY_PATH));
 
-        // 指定该项目所依赖的每一个jar
+        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+        typeSolvers.forEach(combinedTypeSolver::add);
+
         repoPathT.set(repoPath);
         allGroupIdT.set(PomAnalysisUtil.getAllGroupId(repoPath));
         combinedTypeSolverT.set(combinedTypeSolver);
+        typeSolverT.set(typeSolvers);
     }
 
     private static boolean containsJar(Set<Dependency> dependencies, String path) {
@@ -136,12 +142,17 @@ public class DependencyAnalysis {
     private static void removeAll() {
         repoPathT.remove();
         allGroupIdT.remove();
+
+        List<TypeSolver> typeSolvers = typeSolverT.get();
+        typeSolvers.forEach(t -> t = null);
+        typeSolverT.remove();
+
         CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
         combinedTypeSolverT.remove();
-        if (combinedTypeSolver != null) {
-            // 方便GC
-            combinedTypeSolver = null;
-        }
+
+        // GC
+        typeSolvers = null;
+        combinedTypeSolver = null;
     }
 
 }
