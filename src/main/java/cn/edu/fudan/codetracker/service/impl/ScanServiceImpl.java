@@ -200,10 +200,12 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
                 List<MethodCall> list = methodCallMap.get(baseNode.getUuid());
                 for (MethodCall methodCall : list) {
                     String rawMethodUuid = findCalledMethod(methodCall, methodNodes);
+                    //如果新增调用中被调用的方法也在本次commit中有修改，能找到对应的rawMethodUuid
                     if (rawMethodUuid != null) {
                         methodCall.setRawMethodUuid(rawMethodUuid);
-                        methodCalls.add(methodCall);
                     }
+                    //不管调用的method是否在本次commit中有修改，都入库，区别是有无rawMethodUuid
+                    methodCalls.add(methodCall);
                 }
             }
         }
