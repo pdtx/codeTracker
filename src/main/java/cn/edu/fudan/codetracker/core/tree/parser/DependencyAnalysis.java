@@ -144,7 +144,9 @@ public class DependencyAnalysis {
         allGroupIdT.remove();
 
         List<TypeSolver> typeSolvers = typeSolverT.get();
-        typeSolvers.forEach(t -> t = null);
+        if(typeSolvers != null) {
+            typeSolvers.forEach(t -> t = null);
+        }
         typeSolverT.remove();
 
         CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();

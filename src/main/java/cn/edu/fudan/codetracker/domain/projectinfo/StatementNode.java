@@ -109,4 +109,9 @@ public class StatementNode extends BaseNode{
         return result;
     }
 
+    @Override
+    public String toString() {
+        return this.getBody();
+    }
+
 }

@@ -28,10 +28,16 @@ public class PackageDao {
     }
 
     public void insertPackageInfoList(List<PackageNode> packageNodes, CommonInfo commonInfo) {
+        if (packageNodes.size() == 0) {
+            return;
+        }
         packageMapper.insertPackageInfoList(packageNodes, commonInfo);
     }
 
     public void insertRawPackageInfoList(List<PackageNode> packageNodes, CommonInfo commonInfo) {
+        if (packageNodes.size() == 0) {
+            return;
+        }
         packageMapper.insertRawPackageInfoList(packageNodes, commonInfo);
     }
 

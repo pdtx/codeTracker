@@ -27,14 +27,23 @@ public class StatementDao {
     }
 
     public void insertStatementInfoList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        if (statementNodes.size() == 0) {
+            return;
+        }
         statementMapper.insertStatementInfoList(statementNodes, commonInfo);
     }
 
     public void insertRawStatementInfoList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        if (statementNodes.size() == 0) {
+            return;
+        }
         statementMapper.insertRawStatementInfoList(statementNodes, commonInfo);
     }
 
     public void insertStatementRelationList(List<StatementNode> statementNodes, CommonInfo commonInfo) {
+        if (statementNodes.size() == 0) {
+            return;
+        }
         List<StatementRelationInfo> statementRelationInfoList = new ArrayList<>();
         for (StatementNode statementInfo:statementNodes) {
             if (statementInfo.getLevel() == 6){

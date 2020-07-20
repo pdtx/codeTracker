@@ -27,10 +27,16 @@ public class FileDao {
     }
 
     public void insertFileInfoList(List<FileNode> fileNodes, CommonInfo commonInfo) {
+        if (fileNodes.size() == 0) {
+            return;
+        }
         fileMapper.insertFileInfoList(fileNodes, commonInfo);
     }
 
     public void insertRawFileInfoList(List<FileNode> fileNodes, CommonInfo commonInfo) {
+        if (fileNodes.size() == 0) {
+            return;
+        }
         fileMapper.insertRawFileInfoList(fileNodes, commonInfo);
     }
 

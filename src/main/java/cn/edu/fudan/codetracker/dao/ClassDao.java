@@ -25,10 +25,16 @@ public class ClassDao {
     }
 
     public void insertClassInfoList(List<ClassNode> classNodes, CommonInfo commonInfo) {
+        if (classNodes.size() == 0) {
+            return;
+        }
         classMapper.insertClassInfoList(classNodes, commonInfo);
     }
 
     public void insertRawClassInfoList(List<ClassNode> classNodes, CommonInfo commonInfo) {
+        if (classNodes.size() == 0) {
+            return;
+        }
         classMapper.insertRawClassInfoList(classNodes, commonInfo);
     }
 

@@ -28,10 +28,16 @@ public class MethodDao {
     }
 
     public void insertMethodInfoList(List<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.size() == 0) {
+            return;
+        }
         methodMapper.insertMethodInfoList(methodNodes, commonInfo);
     }
 
     public void insertRawMethodInfoList(List<MethodNode> methodNodes, CommonInfo commonInfo) {
+        if (methodNodes.size() == 0) {
+            return;
+        }
         methodMapper.insertRawMethodInfoList(methodNodes, commonInfo);
     }
 

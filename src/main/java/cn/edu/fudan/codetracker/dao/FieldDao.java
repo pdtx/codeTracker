@@ -28,10 +28,16 @@ public class FieldDao {
     }
 
     public void insertFieldInfoList(List<FieldNode> fieldNodes, CommonInfo commonInfo) {
+        if (fieldNodes.size() == 0) {
+            return;
+        }
         fieldMapper.insertFieldInfoList(fieldNodes, commonInfo);
     }
 
     public void insertRawFieldInfoList(List<FieldNode> fieldNodes, CommonInfo commonInfo) {
+        if (fieldNodes.size() == 0) {
+            return;
+        }
         fieldMapper.insertRawFieldInfoList(fieldNodes, commonInfo);
     }
 
