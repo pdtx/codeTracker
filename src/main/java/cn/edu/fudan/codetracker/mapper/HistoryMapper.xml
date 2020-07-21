@@ -212,10 +212,13 @@
         <id property="uuid" column="uuid"/>
         <result property="bodyUuid" column="body_uuid"/>
         <result property="rawMethodUuid" column="raw_method_uuid"/>
+        <result property="packageName" column="package_name" />
+        <result property="className" column="class_name" />
+        <result property="signature" column="signature" />
     </resultMap>
 
     <select id="getMethodCallsByCommit" parameterType="String" resultMap="MethodCalls">
-        select uuid, body_uuid, raw_method_uuid from method_call where repo_uuid = #{repoUuid} and start_commit_id = #{commitId} and body_type = "statement";
+        select uuid, body_uuid, raw_method_uuid, package_name, class_name, signature from method_call where repo_uuid = #{repoUuid} and start_commit_id = #{commitId} and body_type = "statement";
     </select>
 
 </mapper>

@@ -1,5 +1,6 @@
 package cn.edu.fudan.codetracker.domain.resultmap;
 
+import cn.edu.fudan.codetracker.domain.projectinfo.MethodNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,7 @@ public class TempMostInfo {
     private int LineHeight;
     private String rawUuid;
     private List<String> calledMethodUuid;
+    private List<String> calledMethodSignature;
 
 
     public TempMostInfo() {

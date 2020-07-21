@@ -4,6 +4,7 @@ import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.domain.projectinfo.MethodCall;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.HistoryMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @Repository
+@Slf4j
 public class HistoryDao implements PublicConstants {
     private HistoryMapper historyMapper;
 
@@ -289,15 +291,29 @@ public class HistoryDao implements PublicConstants {
         List<MostModifiedInfo> statementInfos = historyMapper.getStatementInfoByCommit(repoUuid, commitId);
         List<MethodCall> methodCalls = historyMapper.getMethodCallsByCommit(repoUuid, commitId);
         Set<String> methodUuidList = new HashSet<>();
-        Map<String,Set<String>> methodCallMap = new HashMap<>(4);
+        Map<String,Map<String, Set<String>>> methodCallMap = new HashMap<>(4);
         if (methodCalls != null) {
             for (MethodCall methodCall : methodCalls) {
                 if (methodCallMap.keySet().contains(methodCall.getBodyUuid())) {
-                    methodCallMap.get(methodCall.getBodyUuid()).add(methodCall.getRawMethodUuid());
+                    if(methodCall.getRawMethodUuid() == null){
+                        String fullName= methodCall.getPackageName()+ "*"+methodCall.getClassName()
+                                +"*"+ methodCall.getSignature();
+                        methodCallMap.get(methodCall.getBodyUuid()).get("signature").add(fullName);
+                    }else{
+                        methodCallMap.get(methodCall.getBodyUuid()).get("methodUuid").add(methodCall.getRawMethodUuid());
+                    }
                 } else {
-                    Set<String> set = new HashSet<>();
-                    set.add(methodCall.getRawMethodUuid());
-                    methodCallMap.put(methodCall.getBodyUuid(), set);
+                    Map<String, Set<String>> map = new HashMap<>(4);
+                    map.put("signature", new HashSet<>());
+                    map.put("methodUuid", new HashSet<>());
+                    if(methodCall.getRawMethodUuid() == null){
+                        String fullName= methodCall.getPackageName()+ "*"+methodCall.getClassName()
+                                +"*"+ methodCall.getSignature();
+                        map.get("signature").add(fullName);
+                    }else{
+                        map.get("methodUuid").add(methodCall.getRawMethodUuid());
+                    }
+                    methodCallMap.put(methodCall.getBodyUuid(), map);
                 }
             }
         }
@@ -364,7 +380,8 @@ public class HistoryDao implements PublicConstants {
                             statementInfo.setDescription(statement.getDescription());
                             statementInfo.setRawUuid(statement.getRawUuid());
                             if (methodCallMap.get(statement.getRawUuid()) != null) {
-                                statementInfo.setCalledMethodUuid(new ArrayList<>(methodCallMap.get(statement.getRawUuid())));
+                                statementInfo.setCalledMethodUuid(new ArrayList<>(methodCallMap.get(statement.getRawUuid()).get("methodUuid")));
+                                statementInfo.setCalledMethodSignature(new ArrayList<>(methodCallMap.get(statement.getRawUuid()).get("signature")));
                             }
                             //statement真实行号、长度信息
                             statementInfo.setLineBegin(statement.getBegin());
