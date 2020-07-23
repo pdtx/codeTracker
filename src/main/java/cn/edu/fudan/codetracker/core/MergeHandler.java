@@ -4,18 +4,23 @@ import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.core.tree.JavaTree;
 import cn.edu.fudan.codetracker.core.tree.Language;
 import cn.edu.fudan.codetracker.core.tree.RepoInfoTree;
+import cn.edu.fudan.codetracker.dao.ProxyDao;
 import cn.edu.fudan.codetracker.domain.projectinfo.*;
 import cn.edu.fudan.codetracker.jgit.JGitHelper;
 import cn.edu.fudan.codetracker.util.FileFilter;
 import com.alibaba.fastjson.JSONObject;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 /**
  * @author 汤圆
  */
+@Component
 public class MergeHandler implements PublicConstants {
+    private static ProxyDao proxyDao;
     private MergeHandler(){}
 
     public static MergeHandler getInstance(){
@@ -24,6 +29,11 @@ public class MergeHandler implements PublicConstants {
 
     private static final class MappingGeneratorHolder {
         static final MergeHandler MERGE_HANDLER = new MergeHandler();
+    }
+
+    @Autowired
+    public void setProxyDao(ProxyDao proxyDao) {
+        MergeHandler.proxyDao = proxyDao;
     }
 
     public JSONObject dealWithMerge(JGitHelper jGitHelper, String commit, String outputPath, String repoUuid, String branch, Map<String,Map<String,String>> logicalChangedFileMap, String repoPath) {
@@ -80,6 +90,10 @@ public class MergeHandler implements PublicConstants {
         //与第三棵树对比ADD情况
         compareWithParent2(curJavaTree,compareJavaTree);
 
+        //判断curJavaTree merge节点是否真的ADD
+        //fixme merge情况中 B未新增方法a、C新增方法a，D为两者孩子节点新增方法a，D与B比对情况，方法反复ADD
+        dealWithNonRealAdd(curJavaTree, curCommonInfo);
+
         JSONObject result = new JSONObject();
         result.put("pre",preTree);
         result.put("cur",curTree);
@@ -87,6 +101,54 @@ public class MergeHandler implements PublicConstants {
 
         return result;
 
+    }
+
+    private void dealWithNonRealAdd(JavaTree curJavaTree, CommonInfo commonInfo) {
+        if (curJavaTree == null) {
+            return;
+        }
+        dealWithNonRealAddNodeSet(curJavaTree.getFileInfos(), commonInfo);
+        dealWithNonRealAddNodeSet(curJavaTree.getClassInfos(), commonInfo);
+        dealWithNonRealAddNodeSet(curJavaTree.getFieldInfos(), commonInfo);
+        dealWithNonRealAddNodeSet(curJavaTree.getMethodInfos(), commonInfo);
+        dealWithNonRealAddNodeSet(curJavaTree.getStatementInfos(), commonInfo);
+    }
+
+    private void dealWithNonRealAddNodeSet(List<? extends BaseNode> baseNodes, CommonInfo commonInfo) {
+        for (BaseNode baseNode : baseNodes) {
+            if (BaseNode.ChangeStatus.ADD.equals(baseNode.getChangeStatus())) {
+                TrackerInfo trackerInfo = NodeMapping.getTrackerInfo(baseNode, proxyDao, commonInfo);
+                if (trackerInfo != null) {
+                    baseNode.setRootUuid(trackerInfo.getRootUUID());
+                    baseNode.setVersion(trackerInfo.getVersion() + 1);
+                    baseNode.setChangeStatusAtMerge(BaseNode.ChangeStatus.CHANGE);
+                    dealWithMethod(baseNode);
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置method下面的statement的methodUuid，为了查找trackerInfo
+     */
+    private void dealWithMethod(BaseNode baseNode) {
+        if (baseNode instanceof MethodNode) {
+            Queue<StatementNode> statementNodes = new ArrayDeque<>();
+            if (baseNode.getChildren() != null) {
+                for (BaseNode statementNode : baseNode.getChildren()) {
+                    statementNodes.offer((StatementNode) statementNode);
+                }
+            }
+            while (statementNodes.size() > 0) {
+                StatementNode node = statementNodes.poll();
+                node.setMethodUuid(baseNode.getRootUuid());
+                if (node.getChildren() != null) {
+                    for (BaseNode child : node.getChildren()) {
+                        statementNodes.offer((StatementNode) child);
+                    }
+                }
+            }
+        }
     }
 
     private void compareWithParent2(JavaTree curTree, JavaTree compareTree) {

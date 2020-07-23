@@ -34,6 +34,10 @@ public  class BaseNode {
         }
     }
 
+    public void setChangeStatusAtMerge(ChangeStatus changeStatus) {
+        this.changeStatus = changeStatus;
+    }
+
     private ChangeStatus changeStatus = ChangeStatus.UNCHANGED;
 
     /**

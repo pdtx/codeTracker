@@ -471,7 +471,16 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
     private <T> void handleNodeDelete(Map<String, Set<T>> map, List<? extends BaseNode> baseNodes) {
         baseNodes.stream().
                 filter(t -> BaseNode.ChangeStatus.DELETE.equals(t.getChangeStatus())).
-                forEach(t -> map.get("DELETE").add((T)t));
+                forEach(t -> {
+                    //方法或文件删除时，ccn为0
+                    if(t instanceof MethodNode) {
+                        ((MethodNode)t).setCcn(0);
+                    }
+                    if(t instanceof FileNode) {
+                        ((FileNode)t).setCcn(0);
+                    }
+                    map.get("DELETE").add((T)t);
+                });
     }
 
     @SuppressWarnings("unchecked")
