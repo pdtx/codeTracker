@@ -54,6 +54,7 @@ public class FileDao {
             return;
         }
         List<FileNode> fileInfoList = new ArrayList<>(fileNodes);
+        fileMapper.updateChangeInfo(fileInfoList, commonInfo);
         insertRawFileInfoList(fileInfoList, commonInfo);
     }
 

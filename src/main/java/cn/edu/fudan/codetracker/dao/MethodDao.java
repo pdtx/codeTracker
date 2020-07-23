@@ -55,6 +55,7 @@ public class MethodDao {
             return;
         }
         List<MethodNode> methodInfoArrayList = new ArrayList<>(methodNodes);
+        methodMapper.updateChangeInfo(methodInfoArrayList, commonInfo);
         insertRawMethodInfoList(methodInfoArrayList, commonInfo);
     }
 
