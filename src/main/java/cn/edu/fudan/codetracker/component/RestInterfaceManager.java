@@ -6,6 +6,7 @@
 package cn.edu.fudan.codetracker.component;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.util.Closeable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class RestInterfaceManager {
 
     @Value("${code.service.path}")
@@ -45,7 +47,14 @@ public class RestInterfaceManager {
     }
 
     public String getCodeServiceRepo(String repoId) {
-        return restTemplate.getForObject(codeServiceRepoPath + "?repo_id=" + repoId, JSONObject.class).getJSONObject("data").getString("content");
+        JSONObject data = restTemplate.getForObject(codeServiceRepoPath + "?repo_id=" + repoId, JSONObject.class).getJSONObject("data");
+        String status = data.getString("status");
+        String content = data.getString("content");
+        if ("Successful".equals(status)) {
+            return content;
+        }
+        log.error(content);
+        return null;
     }
 
     public void freeRepo(String repoId, String path) {
