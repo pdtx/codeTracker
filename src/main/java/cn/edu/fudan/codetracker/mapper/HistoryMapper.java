@@ -22,7 +22,7 @@ public interface HistoryMapper {
     List<StatementInfoByMethod> getAllValidStatement(@Param("methodUuid") String methodUuid, @Param("commitDate") String commitDate);
 
     /**
-     * 获取method历史，默认近两个月
+     * 获取method历史
      */
     List<MethodHistory> getMethodHistory(@Param("methodUuid") String methodUuid);
 

@@ -123,4 +123,9 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
     }
 
 
+    @Override
+    public List<MethodHistory> getMethodHistoryByCcn(String methodUuid) {
+        return historyDao.getMethodHistoryByCcn(methodUuid);
+    }
+
 }

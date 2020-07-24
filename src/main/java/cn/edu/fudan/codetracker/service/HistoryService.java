@@ -61,6 +61,10 @@ public interface HistoryService {
      */
     List<SurviveStatementInfo> getStatementHistoryByUuid(String methodUuid, String statementUuid);
 
+    /**
+     * 方法基于圈复杂度切片历史
+     */
+    List<MethodHistory> getMethodHistoryByCcn(String methodUuid);
 
 
 }

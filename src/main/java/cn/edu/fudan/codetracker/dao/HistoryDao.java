@@ -173,6 +173,30 @@ public class HistoryDao implements PublicConstants {
         return methodHistoryList;
     }
 
+
+    public List<MethodHistory> getMethodHistoryByCcn(String methodUuid) {
+        List<MethodHistory> methodHistoryByCcn = new ArrayList<>();
+        MethodHistory lastMethod = null;
+        List<MethodHistory> methodHistoryList = historyMapper.getMethodHistory(methodUuid);
+        for (MethodHistory methodHistory : methodHistoryList) {
+            if (methodHistory.getChangeRelation().equals(DELETE)) {
+                methodHistory.setContent(null);
+                methodHistory.setDiff(null);
+                methodHistory.setMethodBegin(-1);
+                methodHistory.setMethodEnd(-1);
+            }
+            if (lastMethod != null && methodHistory.getCcn() != lastMethod.getCcn()) {
+                methodHistoryByCcn.add(lastMethod);
+            }
+            lastMethod = methodHistory;
+        }
+        if (lastMethod != null) {
+            methodHistoryByCcn.add(lastMethod);
+        }
+        return methodHistoryByCcn;
+    }
+
+
     /**
      * 临时接口
      */

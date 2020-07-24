@@ -173,5 +173,18 @@ public class HistoryController {
     }
 
 
+    /**
+     * 获取方法基于圈复杂度切片历史
+     */
+    @GetMapping(value = {"/history/method/ccn"})
+    public ResponseBean getMethodHistoryByCcn(@RequestParam("methodUuid") String methodUuid) {
+        try {
+            List<MethodHistory> data = historyService.getMethodHistoryByCcn(methodUuid);
+            return new ResponseBean(200, "", data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
 
 }

@@ -23,6 +23,7 @@ public class MethodHistory {
     private String repoUuid;
     private String filePath;
     private int line;
+    private int ccn;
 
 
     public MethodHistory() {
