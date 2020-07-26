@@ -30,7 +30,7 @@
 
 
     <!--一次性获取有效语句-->
-    <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.StatementInfoByMethod">
+    <resultMap id="AllValidStatement" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
         <id property="statementUuid" column="meta_statement_uuid"/>
         <result property="changeRelation" column="change_relation"/>
         <result property="body" column="body"/>

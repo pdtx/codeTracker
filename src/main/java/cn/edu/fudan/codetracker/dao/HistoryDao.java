@@ -122,9 +122,9 @@ public class HistoryDao implements PublicConstants {
         List<Map<String,String>> mapList = new ArrayList<>();
         List<String> list = new ArrayList<>();
 
-        List<StatementInfoByMethod> statementInfoByMethodList = historyMapper.getAllValidStatement(methodUuid, commitDate);
+        List<SurviveStatementInfo> statementInfoByMethodList = historyMapper.getAllValidStatement(methodUuid, commitDate);
         String lastStatementUuid = "";
-        for (StatementInfoByMethod statementInfoByMethod : statementInfoByMethodList) {
+        for (SurviveStatementInfo statementInfoByMethod : statementInfoByMethodList) {
             if (!statementInfoByMethod.getStatementUuid().equals(lastStatementUuid)) {
                 if(!DELETE.equals(statementInfoByMethod.getChangeRelation())) {
                     list.add(statementInfoByMethod.getBody());

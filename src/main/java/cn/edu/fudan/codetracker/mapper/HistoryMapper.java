@@ -19,7 +19,7 @@ public interface HistoryMapper {
     /**
      * 尝试一次查询出所有有效语句
      */
-    List<StatementInfoByMethod> getAllValidStatement(@Param("methodUuid") String methodUuid, @Param("commitDate") String commitDate);
+    List<SurviveStatementInfo> getAllValidStatement(@Param("methodUuid") String methodUuid, @Param("commitDate") String commitDate);
 
     /**
      * 获取method历史

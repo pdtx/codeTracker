@@ -8,6 +8,7 @@ public class SurviveStatementInfo {
     private String committer;
     private String commitDate;
     private String changeRelation;
+    private String commitMessage;
     private String commit;
     private String body;
     private int begin;
@@ -16,6 +17,10 @@ public class SurviveStatementInfo {
     public SurviveStatementInfo() {
 
     }
+
+    public String getCommitMessage() { return commitMessage; }
+
+    public void setCommitMessage(String commitMessage) { this.commitMessage = commitMessage; }
 
     public String getStatementUuid() {
         return statementUuid;
