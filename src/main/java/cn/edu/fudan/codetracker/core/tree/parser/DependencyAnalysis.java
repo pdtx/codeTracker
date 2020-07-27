@@ -14,12 +14,13 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.model.Dependency;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.Set;
  * @author fancying
  * create: 2020-06-18 15:30
  **/
+@Slf4j
 @Component
 public class DependencyAnalysis {
 
@@ -139,22 +141,25 @@ public class DependencyAnalysis {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     private static void removeAll() {
         repoPathT.remove();
         allGroupIdT.remove();
 
         List<TypeSolver> typeSolvers = typeSolverT.get();
-        if(typeSolvers != null) {
-            typeSolvers.forEach(t -> t = null);
-        }
+        typeSolvers.clear();
         typeSolverT.remove();
 
         CombinedTypeSolver combinedTypeSolver = combinedTypeSolverT.get();
+        try {
+            Field  elements = CombinedTypeSolver.class.getDeclaredField("elements");
+            elements.setAccessible(true);
+            List<TypeSolver> typeSolverList = (List<TypeSolver>)elements.get(combinedTypeSolver);
+            typeSolverList.clear();
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
         combinedTypeSolverT.remove();
-
-        // GC
-        typeSolvers = null;
-        combinedTypeSolver = null;
     }
 
 }
