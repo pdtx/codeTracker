@@ -93,7 +93,7 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
                         int tmp = line.getEnd()-line.getBegin();
                         if (tmp < min) {
                             min = tmp;
-                            statement = line.getBody();
+                            statement = line.getMetaUuid();
                         }
                     }
                     lastLine = line;
