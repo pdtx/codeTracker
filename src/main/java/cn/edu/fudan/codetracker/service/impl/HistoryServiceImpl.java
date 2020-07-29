@@ -72,7 +72,7 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
 
 
     @Override
-    public JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code) {
+    public JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code, int begin, int end) {
         MethodHistory methodHistory = historyDao.getMethodInfo(repoUuid, filePath, commitTime, methodName);
         JSONObject jsonObject = new JSONObject();
         //用repoUuid暂存methodUuid
@@ -90,7 +90,7 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
             for (ValidLineInfo line: statements) {
                 if (lastLine == null || !lastLine.getMetaUuid().equals(line.getMetaUuid())) {
                     if (!DELETE.equals(line.getChangeRelation())) {
-                        int tmp = line.getEnd()-line.getBegin();
+                        int tmp = Math.abs(line.getEnd()-end) + Math.abs(line.getBegin()-begin);
                         if (tmp < min) {
                             min = tmp;
                             statement = line.getMetaUuid();
