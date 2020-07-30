@@ -102,7 +102,7 @@ public class HistoryController {
     @PostMapping(value = {"/history/issue/method"})
     public ResponseBean getMethodUuid(@RequestBody JSONObject body) {
         try {
-            JSONObject data = historyService.getBugInfo(body.getString("repoUuid"), body.getString("filePath"), body.getString("commitTime"), body.getString("methodName"), body.getString("code"));
+            JSONObject data = historyService.getBugInfo(body.getString("repoUuid"), body.getString("filePath"), body.getString("commitTime"), body.getString("methodName"), body.getString("code"), body.getIntValue("begin"), body.getIntValue("end"));
             return new ResponseBean(200, "", data);
         } catch (Exception e) {
             e.printStackTrace();

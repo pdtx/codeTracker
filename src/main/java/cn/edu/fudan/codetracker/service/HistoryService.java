@@ -43,7 +43,7 @@ public interface HistoryService {
     /**
      * 获取method信息、符合条件最新的commitid、bug所在语句列表
      */
-    JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code);
+    JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code, int begin, int end);
 
 
     /**

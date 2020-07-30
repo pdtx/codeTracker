@@ -72,9 +72,13 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
 
 
     @Override
-    public JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code) {
+    public JSONObject getBugInfo(String repoUuid, String filePath, String commitTime, String methodName, String code, int begin, int end) {
         MethodHistory methodHistory = historyDao.getMethodInfo(repoUuid, filePath, commitTime, methodName);
         JSONObject jsonObject = new JSONObject();
+        if(methodHistory == null) {
+            jsonObject.put("status","fail:can not find method");
+            return jsonObject;
+        }
         //用repoUuid暂存methodUuid
         String methodUuid = methodHistory.getRepoUuid();
         jsonObject.put("methodUuid",methodUuid);
@@ -84,16 +88,19 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
         for (String str: strings) {
             String s = "%" + str.trim() + "%";
             List<ValidLineInfo> statements = historyDao.getBugStatement(methodUuid,commitTime,s);
+            if (statements == null) {
+                continue;
+            }
             String statement = null;
             ValidLineInfo lastLine = null;
             int min = Integer.MAX_VALUE;
             for (ValidLineInfo line: statements) {
                 if (lastLine == null || !lastLine.getMetaUuid().equals(line.getMetaUuid())) {
                     if (!DELETE.equals(line.getChangeRelation())) {
-                        int tmp = line.getEnd()-line.getBegin();
+                        int tmp = Math.abs(line.getEnd()-end) + Math.abs(line.getBegin()-begin);
                         if (tmp < min) {
                             min = tmp;
-                            statement = line.getBody();
+                            statement = line.getMetaUuid();
                         }
                     }
                     lastLine = line;
@@ -104,6 +111,7 @@ public class HistoryServiceImpl implements HistoryService, PublicConstants {
             }
         }
         jsonObject.put("statementList",list);
+        jsonObject.put("status","success");
         return jsonObject;
     }
 
