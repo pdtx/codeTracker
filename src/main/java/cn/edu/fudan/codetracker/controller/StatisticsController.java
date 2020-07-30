@@ -72,20 +72,6 @@ public class StatisticsController {
     }
 
     /**
-     * 删除操作
-     */
-    @DeleteMapping(value = {"/codetracker"})
-    public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
-        try{
-            statisticsService.delete(repoUuid, branch);
-            return new ResponseBean(200, "delete success", null);
-        } catch (Exception e) {
-            return new ResponseBean(401, e.getMessage(), null);
-        }
-    }
-
-
-    /**
      * 获取新增删除语句数
      * @param repoUuid
      * @param branch

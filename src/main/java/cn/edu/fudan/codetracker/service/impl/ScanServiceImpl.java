@@ -656,9 +656,9 @@ public class ScanServiceImpl implements ScanService, PublicConstants {
 //            return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
         }
 
-        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
+//        return "/home/fdse/codewisdom/repo/IssueTracker-Master";
 //        return "/Users/tangyuan/Documents/Git/IssueTracker-Master";
-//        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
+        return "/home/fdse/codewisdom/repo/pom-manipulation-ext";
     }
 
     /**

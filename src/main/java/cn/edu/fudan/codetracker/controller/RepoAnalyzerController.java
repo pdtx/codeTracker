@@ -4,6 +4,7 @@ import cn.edu.fudan.codetracker.constants.ScanStatus;
 import cn.edu.fudan.codetracker.domain.ResponseBean;
 import cn.edu.fudan.codetracker.domain.projectinfo.ScanInfo;
 import cn.edu.fudan.codetracker.service.ScanService;
+import cn.edu.fudan.codetracker.service.StatisticsService;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class RepoAnalyzerController {
 
     private ScanService scanService;
-
+    private StatisticsService statisticsService;
 
     /**
      * description 开始项目扫描 是否是第一次扫描应该由具体的服务决定 与调用的服务无关
@@ -59,7 +60,18 @@ public class RepoAnalyzerController {
         }
     }
 
-
+    /**
+     * 删除操作
+     */
+    @DeleteMapping(value = {"/codetracker"})
+    public ResponseBean delete(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch) {
+        try{
+            statisticsService.delete(repoUuid, branch);
+            return new ResponseBean(200, "delete success", null);
+        } catch (Exception e) {
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
 
 
     @Autowired
@@ -67,6 +79,10 @@ public class RepoAnalyzerController {
         this.scanService = scanService;
     }
 
+    @Autowired
+    public void setStatisticsService(StatisticsService statisticsService) {
+        this.statisticsService = statisticsService;
+    }
 
 }
 
