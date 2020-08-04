@@ -113,10 +113,15 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
                 committerMap.put(MEDIAN, new BigDecimal(median).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                 setQuartiles(list, committerMap);
             } else {
-                // 若总个数为奇数，则移除中位数后，再计算上下四分位
+                // 若总个数为奇数且大于1，则移除中位数后，再计算上下四分位
                 committerMap.put(MEDIAN,(double)list.get((list.size()-1)/2));
-                list.remove((list.size() -1)/2);
-                setQuartiles(list, committerMap);
+                if(list.size()> 1){
+                    list.remove((list.size() -1)/2);
+                    setQuartiles(list, committerMap);
+                }else{
+                    committerMap.put(LOWER_QUARTILE, (double)list.get((list.size()-1)/2));
+                    committerMap.put(UPPER_QUARTILE, (double)list.get((list.size()-1)/2));
+                }
             }
             measureResult.put(committer, committerMap);
         }

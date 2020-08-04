@@ -101,6 +101,9 @@ public class StatisticsController {
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
             Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(begin, end, repoUuid, branch);
+            if(developer != null){
+                return new ResponseBean(200, "", data.get(developer));
+            }
             return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();
@@ -172,8 +175,13 @@ public class StatisticsController {
 
 
     @GetMapping(value = {"/statistics/focus/file/num"})
-    public ResponseBean getFocusFileNum(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+    public ResponseBean getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate) {
         try {
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
             JSONObject data = statisticsService.getFocusFileNum(repoUuid, begin, end);
@@ -198,25 +206,6 @@ public class StatisticsController {
             return new ResponseBean(401,e.getMessage(),null);
         }
     }
-
-
-    @GetMapping(value = {"/statistics/file/num"})
-    public ResponseBean getFileNum(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
-        try {
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            JSONObject data = statisticsService.getFileNum(repoUuid, begin, end);
-            if (developer == null) {
-                return new ResponseBean(200,"",data);
-            } else {
-                return new ResponseBean(200,"",data.getIntValue(developer));
-            }
-        } catch (Exception e) {
-            return new ResponseBean(401,e.getMessage(),null);
-        }
-    }
-
-
 
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {

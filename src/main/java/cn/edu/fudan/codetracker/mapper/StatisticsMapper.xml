@@ -248,7 +248,11 @@
     </resultMap>
 
     <select id="getFocusFileNum" parameterType="String" resultMap="FocusFiles">
-        select uuid, file_name, committer from raw_file where repo_uuid = #{repoUuid} and commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1);
+        select uuid, file_name, committer from raw_file where
+        <if test="repoUuid != null and repoUuid != ''">
+            repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and
+        </if>
+        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate};
     </select>
 
 
