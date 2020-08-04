@@ -10,6 +10,7 @@ public class ValidLineInfo {
     private String committer;
     private String metaUuid;
     private String changeRelation;
+    private String repoUuid;
     private String commitDate;
     private String body;
     private int begin;

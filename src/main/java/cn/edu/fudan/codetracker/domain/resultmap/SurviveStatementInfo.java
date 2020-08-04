@@ -7,6 +7,7 @@ public class SurviveStatementInfo {
     private String statementUuid;
     private String committer;
     private String commitDate;
+    private String repoUuid;
     private String changeRelation;
     private String commitMessage;
     private String commit;
@@ -84,6 +85,14 @@ public class SurviveStatementInfo {
 
     public void setEnd(int end) {
         this.end = end;
+    }
+
+    public String getRepoUuid() {
+        return repoUuid;
+    }
+
+    public void setRepoUuid(String repoUuid) {
+        this.repoUuid = repoUuid;
     }
 
 }

@@ -6,6 +6,7 @@
     <!--valid line 相关-->
     <resultMap id="ValidLineInfoClass" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
         <id property="uuid" column="uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="meta_class_uuid"/>
         <result property="changeRelation" column="change_relation"/>
@@ -13,11 +14,19 @@
     </resultMap>
 
     <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
-        select uuid,committer,meta_class_uuid,change_relation,commit_date from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_class_uuid,commit_date desc;
+        select uuid,repo_uuid,committer,meta_class_uuid,change_relation,commit_date from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        <if test="repoUuid != null and repoUuid != ''">
+            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+        </if>
+        change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_class_uuid,commit_date
+        <if test="!asc">
+            desc
+        </if>;
     </select>
 
     <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
         <id property="uuid" column="uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="meta_method_uuid"/>
         <result property="changeRelation" column="change_relation"/>
@@ -25,11 +34,19 @@
     </resultMap>
 
     <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
-        select uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_method_uuid,commit_date desc;
+        select uuid,repo_uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        <if test="repoUuid != null and repoUuid != ''">
+            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+        </if>
+        change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_method_uuid,commit_date
+        <if test="!asc">
+            desc
+        </if>;
     </select>
 
     <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
         <id property="uuid" column="uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="meta_field_uuid"/>
         <result property="changeRelation" column="change_relation"/>
@@ -37,11 +54,19 @@
     </resultMap>
 
     <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
-        select uuid,committer,meta_field_uuid,change_relation,commit_date from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_field_uuid,commit_date desc;
+        select uuid,repo_uuid,committer,meta_field_uuid,change_relation,commit_date from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        <if test="repoUuid != null and repoUuid != ''">
+            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+        </if>
+         change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_field_uuid,commit_date
+        <if test="!asc">
+            desc
+        </if>;
     </select>
 
     <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
         <id property="uuid" column="uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="committer" column="committer"/>
         <result property="metaUuid" column="meta_statement_uuid"/>
         <result property="changeRelation" column="change_relation"/>
@@ -49,7 +74,14 @@
     </resultMap>
 
     <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
-        select uuid,committer,meta_statement_uuid,change_relation,commit_date from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
+        select uuid,repo_uuid,committer,meta_statement_uuid,change_relation,commit_date from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <if test="repoUuid != null and repoUuid != ''">
+            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+        </if>
+         and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date
+        <if test="!asc">
+            desc
+        </if>;
     </select>
 
     <!--获取时间段内代码存活情况-->
@@ -61,7 +93,12 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} and isLogic = 1 order by meta_statement_uuid, commit_date;
+        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where meta_statement_uuid in (
+        select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <if test="repoUuid != null and repoUuid != ''">
+           and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>)
+        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and isLogic = 1 order by meta_statement_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -72,7 +109,12 @@
     </resultMap>
 
     <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
-        select meta_method_uuid, committer, commit_date, change_relation from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_method_uuid, commit_date;
+        select meta_method_uuid, committer, commit_date, change_relation from raw_method where meta_method_uuid in (select meta_method_uuid from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <if test="repoUuid != null and repoUuid != ''">
+            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>
+        )
+        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_method_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -83,7 +125,12 @@
     </resultMap>
 
     <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
-        select meta_field_uuid, committer, commit_date, change_relation from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_field_uuid, commit_date;
+        select meta_field_uuid, committer, commit_date, change_relation from raw_field where meta_field_uuid in (select meta_field_uuid from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <if test="repoUuid != null and repoUuid != ''">
+            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>
+        )
+        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_field_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveClass" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -94,9 +141,12 @@
     </resultMap>
 
     <select id="getSurviveClass" parameterType="String" resultMap="SurviveClass">
-        select meta_class_uuid, committer, commit_date, change_relation from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation != "CHANGE" and repo_uuid = #{repoUuid} and branch = #{branch} order by meta_class_uuid, commit_date;
+        select meta_class_uuid, committer, commit_date, change_relation from raw_class where meta_class_uuid in (select meta_class_uuid from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <if test="repoUuid != null and repoUuid != ''">
+            and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>
+        ) and change_relation != "CHANGE" order by meta_class_uuid, commit_date;
     </select>
-
 
 
     <!--删除操作-->
@@ -164,24 +214,32 @@
     <!--获取删除代码信息-->
     <resultMap id="DeleteStatements" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
         <id property="statementUuid" column="meta_statement_uuid"/>
+        <result property="repoUuid" column="repo_uuid"/>
         <result property="committer" column="committer"/>
         <result property="commitDate" column="commit_date"/>
         <result property="changeRelation" column="change_relation"/>
     </resultMap>
 
     <select id="getDeleteInfo" parameterType="String" resultMap="DeleteStatements" >
-        select meta_statement_uuid,committer,commit_date,change_relation from raw_statement where
-        meta_statement_uuid in (select meta_statement_uuid from raw_statement where repo_uuid = #{repoUuid} and commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "DELETE")
+        select meta_statement_uuid,repo_uuid,committer,commit_date,change_relation from raw_statement where
+        meta_statement_uuid in (select meta_statement_uuid from raw_statement where
+        <if test="repoUuid != null and repoUuid != ''">
+            repo_uuid = #{repoUuid} and
+        </if>
+        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "DELETE")
         and change_relation in ("ADD","DELETE") order by meta_statement_uuid,commit_date desc;
     </select>
 
     <!--获取修改信息-->
     <select id="getChangeInfo" parameterType="String" resultMap="DeleteStatements" >
-        select meta_statement_uuid,committer,commit_date,change_relation from raw_statement where
-        meta_statement_uuid in (select meta_statement_uuid from raw_statement where repo_uuid = #{repoUuid} and commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "SELF_CHANGE")
+        select meta_statement_uuid,repo_uuid, committer,commit_date,change_relation from raw_statement where
+        meta_statement_uuid in (select meta_statement_uuid from raw_statement where
+        <if test="repoUuid != null and repoUuid != ''">
+            repo_uuid = #{repoUuid} and
+        </if>
+        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "SELF_CHANGE")
         and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
     </select>
-
 
     <resultMap id="FocusFiles" type="cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo">
         <id property="uuid" column="uuid"/>

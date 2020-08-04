@@ -68,7 +68,7 @@ public class TrackerCore implements PublicConstants {
         Map<String,FileNode> preChangedFileMap = new HashMap<>(mapInitialCapacity);
         Map<String,FileNode> curChangedFileMap = new HashMap<>(mapInitialCapacity);
 
-        // fixme 之前已近过滤了 这里还有必要？ 过滤非java文件等无法解析的文件
+        // fixme 之前已经过滤了 这里还有必要？ 过滤非java文件等无法解析的文件
         List<FileNode> preFileNodes = preRepoInfo.getFileInfos().stream().
                 filter(f -> !FileFilter.javaFilenameFilter(f.getFilePath())).
                 collect(Collectors.toList());

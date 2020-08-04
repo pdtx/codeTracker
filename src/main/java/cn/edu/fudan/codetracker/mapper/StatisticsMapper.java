@@ -15,19 +15,19 @@ public interface StatisticsMapper {
     /**
      * get valid line info by class
      */
-    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
     /**
      * get valid line info by method
      */
-    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
     /**
      * get valid line info by field
      */
-    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
     /**
      * get valid line info by statement
      */
-    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
 
 
     /**

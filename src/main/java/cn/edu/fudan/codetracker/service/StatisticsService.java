@@ -11,7 +11,7 @@ public interface StatisticsService {
     /**
      * 优化有效行数查询
      */
-    Map<String,Integer> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate);
+    Map<String,Map<String, Integer>> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate, String developer);
 
     /**
      * 统计存活周期
@@ -31,8 +31,17 @@ public interface StatisticsService {
      * @param branch
      * @return
      */
-    Map<String,Map<String,Integer>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch);
+    Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch);
 
+    /**
+     * 获取变更语句的年龄
+     * @param beginDate
+     * @param endDate
+     * @param repoUuid
+     * @param branch
+     * @return
+     */
+    Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch);
 
     /**
      * 获取删除代码年代信息 max average

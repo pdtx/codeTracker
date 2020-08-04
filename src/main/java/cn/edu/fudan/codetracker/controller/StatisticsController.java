@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @EnableAutoConfiguration
@@ -32,16 +29,25 @@ public class StatisticsController {
      * 跟前端对接的接口，根据repoId,beginDate,endDate,committer(可选)获取期间贡献情况
      */
     @GetMapping(value = {"/statistics/committer/line/valid"})
-    public ResponseBean getValidLineInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer){
+    public ResponseBean getValidLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer){
         try{
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
-            Map<String,Integer> data = statisticsService.getValidLineCount(repoUuid, branch, begin, end);
-            if (developer == null) {
-                return new ResponseBean(200, "", data);
-            } else {
-                return new ResponseBean(200, "", data.get(developer));
+            Map<String, Map<String, Integer>> data = statisticsService.getValidLineCount(repoUuid, branch, begin, end, developer);
+            if(developer != null && repoUuid == null){
+                return new ResponseBean(200, "", data.get("total").get(developer));
+            }else if(developer != null){
+                return new ResponseBean(200, "", data.get(repoUuid).get(developer));
             }
+            if(repoUuid != null){
+                return new ResponseBean(200, "", data.get(repoUuid));
+            }
+            return new ResponseBean(200, "", data);
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code
@@ -53,8 +59,13 @@ public class StatisticsController {
      * 统计存活周期
      */
     @GetMapping(value = {"/statistics/lifecycle"})
-    public ResponseBean getSurviveStatementStatistics(@RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @Param("developer") String developer){
+    public ResponseBean getSurviveStatementStatistics(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
             Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
@@ -63,10 +74,36 @@ public class StatisticsController {
             } else {
                 return new ResponseBean(200, "" , data.get(developer));
             }
-
         }catch (Exception e){
             e.printStackTrace();
             // 需要修改code
+            return new ResponseBean(401, e.getMessage(), null);
+        }
+    }
+
+    /**
+     * 获取修改代码的年龄
+     * @param beginDate
+     * @param endDate
+     * @param repoUuid
+     * @param branch
+     * @param developer
+     * @return
+     */
+    @GetMapping(value = {"/statistics/changeInfo/lifecycle"})
+    public ResponseBean getChangeStatementsLifecycle(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
+        try{
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
+            String begin = beginDate + " 00:00:00";
+            String end = endDate + " 24:00:00";
+            Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(begin, end, repoUuid, branch);
+            return new ResponseBean(200, "", data);
+        }catch (Exception e){
+            e.printStackTrace();
             return new ResponseBean(401, e.getMessage(), null);
         }
     }
@@ -80,16 +117,20 @@ public class StatisticsController {
      * @return
      */
     @GetMapping(value = {"/statistics/statements"})
-    public ResponseBean getAddAndDeleteStatements(@RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+    public ResponseBean getAddAndDeleteStatements(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
-            Map<String,Map<String,Integer>> data = statisticsService.getAddDeleteStatementsNumber(begin,end,repoUuid,branch);
-            if (developer == null) {
-                return new ResponseBean(200, "", data);
-            } else {
-                return new ResponseBean(200, "", data.get(developer));
+            Map<String, Map<String,Map<String,Integer>>> data = statisticsService.getAddDeleteStatementsNumber(begin,end,repoUuid,branch);
+            if(repoUuid != null){
+                return new ResponseBean(200,"", data.get(repoUuid));
             }
+            return new ResponseBean(200, "", data);
         } catch (Exception e) {
             return new ResponseBean(401, e.getMessage(), null);
         }
@@ -97,8 +138,13 @@ public class StatisticsController {
 
 
     @GetMapping(value = {"/statistics/delete/info"})
-    public ResponseBean getDeleteInfo(@RequestParam("repoUuid") String repoUuid, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @Param("developer") String developer) {
+    public ResponseBean getDeleteInfo(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
             JSONObject data = statisticsService.getDeleteInfo(begin,end,repoUuid);

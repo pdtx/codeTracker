@@ -29,16 +29,16 @@ public class StatisticsDao implements PublicConstants {
     /**
      * get valid line info
      */
-    public List<ValidLineInfo> getValidLineInfo(String type, String repoUuid, String beginDate, String endDate) {
+    public List<ValidLineInfo> getValidLineInfo(String type, String repoUuid, String beginDate, String endDate, Boolean asc) {
         switch (type) {
             case CLASS:
-                return statisticsMapper.getValidLineInfoByClass(repoUuid, beginDate, endDate);
+                return statisticsMapper.getValidLineInfoByClass(repoUuid, beginDate, endDate, asc);
             case METHOD:
-                return statisticsMapper.getValidLineInfoByMethod(repoUuid, beginDate, endDate);
+                return statisticsMapper.getValidLineInfoByMethod(repoUuid, beginDate, endDate, asc);
             case FIELD:
-                return statisticsMapper.getValidLineInfoByField(repoUuid, beginDate, endDate);
+                return statisticsMapper.getValidLineInfoByField(repoUuid, beginDate, endDate, asc);
             case STATEMENT:
-                return statisticsMapper.getValidLineInfoByStatement(repoUuid, beginDate, endDate);
+                return statisticsMapper.getValidLineInfoByStatement(repoUuid, beginDate, endDate, asc);
             default:
                 return null;
         }
@@ -123,6 +123,63 @@ public class StatisticsDao implements PublicConstants {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    /**
+     * 获取修改代码的年龄，修改包括DELETE和SELF_CHANGE
+     */
+    public Map<String, List<Long>> getChangeStatementsInfo(String beginDate, String endDate, String repoUuid, String branch){
+        Map<String, List<Long>> result = new HashMap<>();
+        List<SurviveStatementInfo> list = new ArrayList<>();
+        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listClass = statisticsMapper.getSurviveClass(beginDate, endDate, repoUuid, branch);
+        if (listStatement != null && listStatement.size() != 0) {
+            list.addAll(listStatement);
+        }
+        if (listMethod != null && listMethod.size() != 0) {
+            list.addAll(listMethod);
+        }
+        if (listField != null && listField.size() != 0) {
+            list.addAll(listField);
+        }
+        if (listClass != null && listClass.size() != 0) {
+            list.addAll(listClass);
+        }
+        SurviveStatementInfo lastStatement = null;
+        for(SurviveStatementInfo line : list){
+            long days = 0;
+            if(lastStatement != null) {
+                if (line.getChangeRelation().equals(ADD) || line.getChangeRelation().equals(MOVE)) {
+                    lastStatement= line;
+                    continue;
+                }
+                days = Math.abs(calBetweenDays(lastStatement.getCommitDate(), line.getCommitDate()));
+                if (days > 0) {
+                    List<Long> developerLifecycle = new ArrayList<>();
+                    if (result.containsKey(line.getCommitter())) {
+                        developerLifecycle = result.get(line.getCommitter());
+                        developerLifecycle.add(days);
+                        result.replace(line.getCommitter(), developerLifecycle);
+                    } else {
+                        developerLifecycle.add(days);
+                        result.put(line.getCommitter(), developerLifecycle);
+                    }
+                }
+            }else{
+                if(!line.getChangeRelation().equals(ADD) && !line.getChangeRelation().equals(MOVE)){
+                    days = Math.abs(calBetweenDays(beginDate, line.getCommitDate()));
+                    if(days> 0){
+                        List<Long> developerLifecycle = new ArrayList<>();
+                        developerLifecycle.add(days);
+                        result.put(line.getCommitter(), developerLifecycle);
+                    }
+                }
+            }
+            lastStatement= line;
+        }
+        return result;
     }
 
 

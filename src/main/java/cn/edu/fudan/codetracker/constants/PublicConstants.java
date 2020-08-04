@@ -21,6 +21,7 @@ public interface PublicConstants {
     String CHANGE = "CHANGE";
     String MODIFY = "MODIFY";
     String SELF_CHANGE = "SELF_CHANGE";
+    String MOVE = "MOVE";
 
     String CLASS = "class";
     String METHOD = "method";
@@ -31,6 +32,9 @@ public interface PublicConstants {
     String MIN = "min";
     String MEDIAN = "median";
     String AVERAGE = "average";
+
+    String UPPER_QUARTILE = "upper_quartile";
+    String LOWER_QUARTILE = "lower_quartile";
 
     String DELIMITER_RENAME = ":";
 
