@@ -1,6 +1,6 @@
 package cn.edu.fudan.codetracker.jgit;
 
-import com.alibaba.fastjson.JSONObject;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -8,15 +8,12 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.Closeable;
 import java.io.File;
@@ -42,6 +39,8 @@ public class JGitHelper implements Closeable {
     private Repository repository;
     private RevWalk revWalk;
     private Git git;
+    @Setter
+    private String branch;
 
     /**
      *
@@ -130,6 +129,7 @@ public class JGitHelper implements Closeable {
 
 
     public List<String> getCommitListByBranchAndBeginCommit(String branchName, String beginCommit, Boolean isUpdate) {
+        branch = branchName;
         checkout(branchName);
         Map<String, Long> commitMap = new HashMap<>(512);
         Long start = getLongCommitTime(beginCommit);
