@@ -23,6 +23,9 @@ public interface PublicConstants {
     String SELF_CHANGE = "SELF_CHANGE";
     String MOVE = "MOVE";
 
+    String DELETE_SELF = "DELETE_SELF";
+    String DELETE_OTHERS = "DELETE_OTHERS";
+
     String CLASS = "class";
     String METHOD = "method";
     String FIELD = "field";

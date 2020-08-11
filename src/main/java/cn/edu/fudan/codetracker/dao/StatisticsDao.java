@@ -9,6 +9,7 @@ import cn.edu.fudan.codetracker.constants.PublicConstants;
 import cn.edu.fudan.codetracker.domain.ProjectInfoLevel;
 import cn.edu.fudan.codetracker.domain.resultmap.*;
 import cn.edu.fudan.codetracker.mapper.StatisticsMapper;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -36,11 +37,11 @@ public class StatisticsDao implements PublicConstants {
             List<String> repos= statisticsMapper.getDistinctRepoUuid(beginDate, endDate, developer);
             if(repos.size() > 0){
                 for(String repo : repos){
-                    validLineInfos.addAll(getValidLineInfoByRepo(repo, beginDate, endDate));
+                    validLineInfos.addAll(getValidLineInfoByRepo(repo, beginDate, endDate, developer));
                 }
             }
         }else{
-            validLineInfos.addAll(getValidLineInfoByRepo(repoUuid, beginDate, endDate));
+            validLineInfos.addAll(getValidLineInfoByRepo(repoUuid, beginDate, endDate, developer));
         }
         return validLineInfos;
     }
@@ -52,12 +53,12 @@ public class StatisticsDao implements PublicConstants {
      * @param endDate
      * @return
      */
-    private List<ValidLineInfo> getValidLineInfoByRepo(String repoUuid, String beginDate, String endDate){
+    private List<ValidLineInfo> getValidLineInfoByRepo(String repoUuid, String beginDate, String endDate, String developer){
         List<ValidLineInfo> validLineInfos = new ArrayList<>();
-        List<ValidLineInfo> classInfos= statisticsMapper.getValidLineInfoByClass(repoUuid, beginDate, endDate);
-        List<ValidLineInfo> methodInfos= statisticsMapper.getValidLineInfoByMethod(repoUuid, beginDate, endDate);
-        List<ValidLineInfo> fieldInfos= statisticsMapper.getValidLineInfoByField(repoUuid, beginDate, endDate);
-        List<ValidLineInfo> statementInfos= statisticsMapper.getValidLineInfoByStatement(repoUuid, beginDate, endDate);
+        List<ValidLineInfo> classInfos= statisticsMapper.getValidLineInfoByClass(repoUuid, beginDate, endDate, developer);
+        List<ValidLineInfo> methodInfos= statisticsMapper.getValidLineInfoByMethod(repoUuid, beginDate, endDate, developer);
+        List<ValidLineInfo> fieldInfos= statisticsMapper.getValidLineInfoByField(repoUuid, beginDate, endDate, developer);
+        List<ValidLineInfo> statementInfos= statisticsMapper.getValidLineInfoByStatement(repoUuid, beginDate, endDate, developer);
         if(classInfos != null && classInfos.size() > 0){
             validLineInfos.addAll(classInfos);
         }
@@ -289,8 +290,13 @@ public class StatisticsDao implements PublicConstants {
         return map;
     }
 
-    public String getFirstCommitter(String metaUuid){
-
+    public Map<String, Map<String, String>> getFirstCommitter(){
+      Map<String, Map<String, String>> map= new HashMap<>();
+      map.putAll(statisticsMapper.getStatementFirstCommitter());
+      map.putAll(statisticsMapper.getFieldFirstCommitter());
+      map.putAll(statisticsMapper.getMethodFirstCommitter());
+      map.putAll(statisticsMapper.getClassFirstCommitter());
+      return map;
     }
 
     private long calBetweenDaysWithRange(String beginStr, String endStr, String beginDate, String endDate) {

@@ -18,6 +18,9 @@
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_class where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
+        </if>
         and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_class_uuid,commit_date desc;
     </select>
 
@@ -34,6 +37,9 @@
         select uuid,repo_uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_method where repo_uuid = #{repoUuid} order by commit_date limit 1)
+        </if>
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
         </if>
         and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_method_uuid,commit_date desc;
     </select>
@@ -52,6 +58,9 @@
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_field where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
+        </if>
         and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_field_uuid,commit_date desc;
     </select>
 
@@ -68,6 +77,9 @@
         select uuid,repo_uuid,committer,meta_statement_uuid,change_relation,commit_date from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1)
+        </if>
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
         </if>
         and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
     </select>
@@ -252,20 +264,20 @@
     </select>
 
     <!--获取语句的首个提交者-->
-    <select id="getStatementFirstCommitter" parameterType="String" resultType="java.lang.String">
-        select committer from raw_statement where change_relation="ADD" and meta_statement_uuid=#{metaUuid};
+    <select id="getStatementFirstCommitter" parameterType="String" resultType="java.util.Map">
+        select distinct meta_statement_uuid, committer from raw_statement where change_relation="ADD";
     </select>
 
-    <select id="getMethodFirstCommitter" parameterType="String" resultType="java.lang.String">
-        select committer from raw_method where change_relation="ADD" and meta_method_uuid=#{metaUuid};
+    <select id="getMethodFirstCommitter" parameterType="String" resultType="java.util.Map">
+        select distinct meta_method_uuid, committer from raw_method where change_relation="ADD";
     </select>
 
-    <select id="getFieldFirstCommitter" parameterType="String" resultType="java.lang.String">
-        select committer from raw_field where change_relation="ADD" and meta_field_uuid=#{metaUuid};
+    <select id="getFieldFirstCommitter" parameterType="String" resultType="java.util.Map">
+        select distinct meta_field_uuid, committer from raw_field where change_relation="ADD";
     </select>
 
-    <select id="getClassFirstCommitter" parameterType="String" resultType="java.lang.String">
-        select committer from raw_class where change_relation="ADD" and meta_class_uuid=#{metaUuid};
+    <select id="getClassFirstCommitter" parameterType="String" resultType="java.util.Map">
+        select distinct meta_class_uuid, committer from raw_class where change_relation="ADD";
     </select>
 
 </mapper>

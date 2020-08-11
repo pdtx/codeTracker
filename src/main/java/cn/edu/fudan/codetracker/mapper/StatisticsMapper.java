@@ -5,29 +5,32 @@ package cn.edu.fudan.codetracker.mapper;
  * @create: 2019-06-06 16:41
  */
 import cn.edu.fudan.codetracker.domain.resultmap.*;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface StatisticsMapper {
     /**
      * get valid line info by class
      */
-    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
     /**
      * get valid line info by method
      */
-    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
     /**
      * get valid line info by field
      */
-    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
     /**
      * get valid line info by statement
      */
-    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
 
 
     /**
@@ -96,5 +99,20 @@ public interface StatisticsMapper {
      */
     List<TempMostInfo> getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
+    /**
+     * 获取语句的首个提交者
+     * @return key: meta_uuid, value: committer
+     */
+    @MapKey("meta_statement_uuid")
+    Map<String, Map<String, String>> getStatementFirstCommitter();
+
+    @MapKey("meta_field_uuid")
+    Map<String, Map<String, String>> getFieldFirstCommitter();
+
+    @MapKey("meta_method_uuid")
+    Map<String, Map<String, String>> getMethodFirstCommitter();
+
+    @MapKey("meta_class_uuid")
+    Map<String, Map<String, String>> getClassFirstCommitter();
 
 }

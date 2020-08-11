@@ -145,6 +145,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
     public Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch, String developer) {
         Map<String, Map<String,Map<String,Integer>>> result = new HashMap<>(16);
         List<ValidLineInfo> validLineInfos =statisticsDao.getValidLineInfo(repoUuid,beginDate,endDate, developer);
+        Map<String, Map<String, String>> firstCommitterMap= statisticsDao.getFirstCommitter();
         Map<String,ValidLineInfo> deleteMap = new HashMap<>();
         for (ValidLineInfo line: validLineInfos) {
             String changeRelation = line.getChangeRelation();
@@ -154,7 +155,8 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
             }else{
                 map = new HashMap<>();
                 map.put(ADD,0);
-                map.put(DELETE,0);
+                map.put(DELETE_OTHERS, 0);
+                map.put(DELETE_SELF, 0);
                 map.put(CHANGE,0);
                 if(!result.containsKey(line.getRepoUuid())){
                     Map<String, Map<String, Integer>> developerMap= new HashMap<>();
@@ -179,16 +181,24 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
             }
             result.get(line.getRepoUuid()).put(line.getCommitter(),map);
         }
+        String lastMetaUuid= null;
+        String firstCommitter= null;
         for (ValidLineInfo validLineInfo : deleteMap.values()) {
             Map<String,Integer> map;
-            // 获取语句metaUuid, 获取该句add 的committer
-
+            //
+            if(lastMetaUuid == null || !lastMetaUuid.equals(validLineInfo.getMetaUuid())){
+                lastMetaUuid= validLineInfo.getMetaUuid();
+                if(firstCommitterMap.get(lastMetaUuid) != null){
+                    firstCommitter= firstCommitterMap.get(lastMetaUuid).get("committer");
+                }
+            }
             if(result.keySet().contains(validLineInfo.getRepoUuid()) && result.get(validLineInfo.getRepoUuid()).containsKey(validLineInfo.getCommitter())){
                 map= result.get(validLineInfo.getRepoUuid()).get(validLineInfo.getCommitter());
             }else{
                 map = new HashMap<>();
                 map.put(ADD,0);
-                map.put(DELETE,0);
+                map.put(DELETE_OTHERS, 0);
+                map.put(DELETE_SELF, 0);
                 map.put(CHANGE,0);
                 if(!result.containsKey(validLineInfo.getRepoUuid())){
                     Map<String, Map<String, Integer>> developerMap= new HashMap<>();
@@ -198,7 +208,11 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
                     result.get(validLineInfo.getRepoUuid()).put(validLineInfo.getCommitter(), map);
                 }
             }
-            map.put(DELETE, map.get(DELETE)+1);
+            if(firstCommitter != null && firstCommitter.equals(validLineInfo.getCommitter())){
+                map.put(DELETE_SELF, map.get(DELETE_SELF)+ 1);
+            }else{
+                map.put(DELETE_OTHERS, map.get(DELETE_OTHERS)+ 1);
+            }
             result.get(validLineInfo.getRepoUuid()).put(validLineInfo.getCommitter(),map);
         }
         return result;
