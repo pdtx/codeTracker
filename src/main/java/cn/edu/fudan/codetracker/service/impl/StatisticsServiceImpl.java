@@ -27,7 +27,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
     @Override
     public Map<String, Map<String,Integer>> getValidLineCount(String repoUuid, String branch, String beginDate, String endDate, String developer) {
-        Map<String, Map<String,Integer>> map = getValidLineMap(repoUuid, beginDate, endDate);
+        Map<String, Map<String,Integer>> map = getValidLineMap(repoUuid, beginDate, endDate, developer);
         Map<String, Integer> developerMap= new TreeMap<>();
         for(String repo : map.keySet()){
             Integer sum= 0;
@@ -45,12 +45,8 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
         return map;
     }
 
-    private Map<String, Map<String,Integer>> getValidLineMap(String repoUuid, String beginDate, String endDate) {
-        List<ValidLineInfo> list = new ArrayList<>();
-        list.addAll(statisticsDao.getValidLineInfo(CLASS, repoUuid, beginDate, endDate, false));
-        list.addAll(statisticsDao.getValidLineInfo(METHOD, repoUuid, beginDate, endDate, false));
-        list.addAll(statisticsDao.getValidLineInfo(FIELD, repoUuid, beginDate, endDate, false));
-        list.addAll(statisticsDao.getValidLineInfo(STATEMENT, repoUuid, beginDate, endDate, false));
+    private Map<String, Map<String,Integer>> getValidLineMap(String repoUuid, String beginDate, String endDate, String developer) {
+        List<ValidLineInfo> list = statisticsDao.getValidLineInfo(repoUuid, beginDate, endDate, developer);
         Map<String, Map<String,Integer>> map = new TreeMap<>();
         String lastMetaUuid = "";
         for (ValidLineInfo validInfo: list) {
@@ -79,14 +75,12 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
     @Override
     public Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch){
-        Map<String, List<Long>> map = statisticsDao.getChangeStatementsInfo(beginDate, endDate, repoUuid, branch);
-        return getMeasureInfoFromList(map);
+        return getMeasureInfoFromList(statisticsDao.getChangeStatementsInfo(beginDate, endDate, repoUuid, branch));
     }
 
     @Override
     public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        Map<String,List<Long>> temp = statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch);
-        return getMeasureInfoFromList(temp);
+        return getMeasureInfoFromList(statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch));
     }
 
     /**
@@ -148,13 +142,9 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
 
     @Override
-    public Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch) {
-        Map<String, Map<String,Map<String,Integer>>> result = new HashMap<>();
-        List<ValidLineInfo> validLineInfos = new ArrayList<>();
-        validLineInfos.addAll(statisticsDao.getValidLineInfo(CLASS,repoUuid,beginDate,endDate, false));
-        validLineInfos.addAll(statisticsDao.getValidLineInfo(METHOD,repoUuid,beginDate,endDate, false));
-        validLineInfos.addAll(statisticsDao.getValidLineInfo(FIELD,repoUuid,beginDate,endDate, false));
-        validLineInfos.addAll(statisticsDao.getValidLineInfo(STATEMENT,repoUuid,beginDate,endDate, false));
+    public Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch, String developer) {
+        Map<String, Map<String,Map<String,Integer>>> result = new HashMap<>(16);
+        List<ValidLineInfo> validLineInfos =statisticsDao.getValidLineInfo(repoUuid,beginDate,endDate, developer);
         Map<String,ValidLineInfo> deleteMap = new HashMap<>();
         for (ValidLineInfo line: validLineInfos) {
             String changeRelation = line.getChangeRelation();
@@ -191,6 +181,8 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
         }
         for (ValidLineInfo validLineInfo : deleteMap.values()) {
             Map<String,Integer> map;
+            // 获取语句metaUuid, 获取该句add 的committer
+
             if(result.keySet().contains(validLineInfo.getRepoUuid()) && result.get(validLineInfo.getRepoUuid()).containsKey(validLineInfo.getCommitter())){
                 map= result.get(validLineInfo.getRepoUuid()).get(validLineInfo.getCommitter());
             }else{
@@ -214,7 +206,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
     @Override
     public List<JSONObject> getTop5LiveStatements(String repoUuid, String beginDate, String endDate) {
-        Map<String,Map<String, Integer>> validLineMap = getValidLineMap(repoUuid, beginDate, endDate);
+        Map<String,Map<String, Integer>> validLineMap = getValidLineMap(repoUuid, beginDate, endDate, null);
         Map<String, Integer> map= validLineMap.get(repoUuid);
         SortedMap<Integer,List<String>> result = new TreeMap<Integer, List<String>>(new Comparator<Integer>() {
             @Override

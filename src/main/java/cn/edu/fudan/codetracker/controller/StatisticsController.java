@@ -31,17 +31,11 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/committer/line/valid"})
     public ResponseBean getValidLineInfo(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer){
         try{
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            Map<String, Map<String, Integer>> data = statisticsService.getValidLineCount(repoUuid, branch, begin, end, developer);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            Map<String, Map<String, Integer>> data = statisticsService.getValidLineCount(repoUuid, branch, dates.get(0), dates.get(1), developer);
             if(developer != null && repoUuid == null){
                 return new ResponseBean(200, "", data.get("total").get(developer));
-            }else if(developer != null){
+            }else if(developer !=   null){
                 return new ResponseBean(200, "", data.get(repoUuid).get(developer));
             }
             if(repoUuid != null){
@@ -61,14 +55,8 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/lifecycle"})
     public ResponseBean getSurviveStatementStatistics(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(begin, end, repoUuid, branch);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(dates.get(0), dates.get(1), repoUuid, branch);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
             } else {
@@ -93,14 +81,8 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/changeInfo/lifecycle"})
     public ResponseBean getChangeStatementsLifecycle(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(begin, end, repoUuid, branch);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(dates.get(0), dates.get(1), repoUuid, branch);
             if(developer != null){
                 return new ResponseBean(200, "", data.get(developer));
             }
@@ -122,14 +104,8 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/statements"})
     public ResponseBean getAddAndDeleteStatements(@Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            Map<String, Map<String,Map<String,Integer>>> data = statisticsService.getAddDeleteStatementsNumber(begin,end,repoUuid,branch);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            Map<String, Map<String,Map<String,Integer>>> data = statisticsService.getAddDeleteStatementsNumber(dates.get(0),dates.get(1),repoUuid,branch,developer);
             if(repoUuid != null){
                 return new ResponseBean(200,"", data.get(repoUuid));
             }
@@ -143,14 +119,8 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/delete/info"})
     public ResponseBean getDeleteInfo(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            JSONObject data = statisticsService.getDeleteInfo(begin,end,repoUuid);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            JSONObject data = statisticsService.getDeleteInfo(dates.get(0),dates.get(1),repoUuid);
             if (developer == null) {
                 return new ResponseBean(200,"",data);
             } else {
@@ -177,14 +147,8 @@ public class StatisticsController {
     @GetMapping(value = {"/statistics/focus/file/num"})
     public ResponseBean getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate) {
         try {
-            if(beginDate == null || endDate == null){
-                beginDate= "1990-01-01";
-                Calendar calendar = Calendar.getInstance();
-                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
-            }
-            String begin = beginDate + " 00:00:00";
-            String end = endDate + " 24:00:00";
-            JSONObject data = statisticsService.getFocusFileNum(repoUuid, begin, end);
+            List<String> dates= handleParamDate(beginDate, endDate);
+            JSONObject data = statisticsService.getFocusFileNum(repoUuid, dates.get(0), dates.get(1));
             return new ResponseBean(200,"",data);
         } catch (Exception e) {
             return new ResponseBean(401,e.getMessage(),null);
@@ -210,6 +174,24 @@ public class StatisticsController {
     @Autowired
     public void setStatisticsService(StatisticsService statisticsService) {
         this.statisticsService = statisticsService;
+    }
+
+    /**
+     * 如果传入日期不存在，则获取全部日期的数据
+     * @param beginDate
+     * @param endDate
+     * @return
+     */
+    private List<String> handleParamDate(String beginDate, String endDate){
+        List<String> dates= new ArrayList<>(2);
+        if(beginDate == null || endDate == null){
+            beginDate= "1990-01-01";
+            Calendar calendar = Calendar.getInstance();
+            endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+        }
+        dates.add(beginDate+ " 00:00:00");
+        dates.add(endDate + " 24:00:00");
+        return dates;
     }
 
 }

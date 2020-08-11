@@ -29,9 +29,10 @@ public interface StatisticsService {
      * @param endDate
      * @param repoUuid
      * @param branch
+     * @param developer
      * @return
      */
-    Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch);
+    Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch, String developer);
 
     /**
      * 获取变更语句的年龄

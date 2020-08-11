@@ -15,19 +15,19 @@ public interface StatisticsMapper {
     /**
      * get valid line info by class
      */
-    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
+    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * get valid line info by method
      */
-    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
+    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * get valid line info by field
      */
-    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
+    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
     /**
      * get valid line info by statement
      */
-    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("asc") Boolean asc);
+    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
 
 
     /**
@@ -37,6 +37,15 @@ public interface StatisticsMapper {
     List<SurviveStatementInfo> getSurviveMethod(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     List<SurviveStatementInfo> getSurviveField(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
     List<SurviveStatementInfo> getSurviveClass(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+
+    /**
+     * （根据committer）获取所有repo
+     * @param beginDate
+     * @param endDate
+     * @param developer
+     * @return
+     */
+    List<String> getDistinctRepoUuid(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
 
     /**
      * 删除项目相关追溯数据

@@ -14,14 +14,11 @@
     </resultMap>
 
     <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
-        select uuid,repo_uuid,committer,meta_class_uuid,change_relation,commit_date from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        select uuid,repo_uuid,committer,meta_class_uuid,change_relation,commit_date from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_class where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
-        change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_class_uuid,commit_date
-        <if test="!asc">
-            desc
-        </if>;
+        and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_class_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoMethod" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -34,14 +31,11 @@
     </resultMap>
 
     <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
-        select uuid,repo_uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        select uuid,repo_uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_method where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
-        change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_method_uuid,commit_date
-        <if test="!asc">
-            desc
-        </if>;
+        and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_method_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoField" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -54,14 +48,11 @@
     </resultMap>
 
     <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
-        select uuid,repo_uuid,committer,meta_field_uuid,change_relation,commit_date from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and
+        select uuid,repo_uuid,committer,meta_field_uuid,change_relation,commit_date from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid} and
+            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_field where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
-         change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_field_uuid,commit_date
-        <if test="!asc">
-            desc
-        </if>;
+        and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_field_uuid,commit_date desc;
     </select>
 
     <resultMap id="ValidLineInfoStatement" type="cn.edu.fudan.codetracker.domain.resultmap.ValidLineInfo">
@@ -76,12 +67,9 @@
     <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
         select uuid,repo_uuid,committer,meta_statement_uuid,change_relation,commit_date from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1)
         </if>
-         and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date
-        <if test="!asc">
-            desc
-        </if>;
+        and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
     </select>
 
     <!--获取时间段内代码存活情况-->
@@ -96,7 +84,7 @@
         select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where meta_statement_uuid in (
         select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-           and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+           and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and isLogic = 1 order by meta_statement_uuid, commit_date;
     </select>
@@ -111,7 +99,7 @@
     <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
         select meta_method_uuid, committer, commit_date, change_relation from raw_method where meta_method_uuid in (select meta_method_uuid from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+            and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>
         )
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_method_uuid, commit_date;
@@ -127,7 +115,7 @@
     <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
         select meta_field_uuid, committer, commit_date, change_relation from raw_field where meta_field_uuid in (select meta_field_uuid from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} and branch = #{branch} order by commit_date limit 1) and repo_uuid = #{repoUuid} and branch = #{branch}
+            and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>
         )
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_field_uuid, commit_date;
@@ -255,6 +243,29 @@
         commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate};
     </select>
 
+    <!--获取所有相关代码库信息-->
+    <select id="getDistinctRepoUuid" parameterType="String" resultType="java.lang.String">
+        select distinct repo_uuid from raw_file where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+            <if test="developer != null and developer != ''">
+                and committer = #{developer}
+            </if>;
+    </select>
 
+    <!--获取语句的首个提交者-->
+    <select id="getStatementFirstCommitter" parameterType="String" resultType="java.lang.String">
+        select committer from raw_statement where change_relation="ADD" and meta_statement_uuid=#{metaUuid};
+    </select>
+
+    <select id="getMethodFirstCommitter" parameterType="String" resultType="java.lang.String">
+        select committer from raw_method where change_relation="ADD" and meta_method_uuid=#{metaUuid};
+    </select>
+
+    <select id="getFieldFirstCommitter" parameterType="String" resultType="java.lang.String">
+        select committer from raw_field where change_relation="ADD" and meta_field_uuid=#{metaUuid};
+    </select>
+
+    <select id="getClassFirstCommitter" parameterType="String" resultType="java.lang.String">
+        select committer from raw_class where change_relation="ADD" and meta_class_uuid=#{metaUuid};
+    </select>
 
 </mapper>

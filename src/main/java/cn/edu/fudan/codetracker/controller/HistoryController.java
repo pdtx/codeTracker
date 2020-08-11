@@ -8,11 +8,13 @@ import cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo;
 import cn.edu.fudan.codetracker.service.HistoryService;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -83,8 +85,13 @@ public class HistoryController {
      * 临时接口
      */
     @GetMapping(value = {"/statistics/committer/temp/focus"})
-    public ResponseBean getFocus(@RequestParam("committer") String committer, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate, @RequestParam("repoUuid") String repoUuid, @RequestParam("branch") String branch){
+    public ResponseBean getFocus(@RequestParam("committer") String committer, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch){
         try{
+            if(beginDate == null || endDate == null){
+                beginDate= "1990-01-01";
+                Calendar calendar = Calendar.getInstance();
+                endDate= calendar.get(Calendar.YEAR)+ "-"+ (calendar.get(Calendar.MONTH)+ 1)+ "-" + calendar.get(Calendar.DATE);
+            }
             String begin = beginDate + " 00:00:00";
             String end = endDate + " 24:00:00";
             List<TempMostInfo> data = historyService.getFocus(committer, begin, end, repoUuid, branch);

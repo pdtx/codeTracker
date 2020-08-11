@@ -70,7 +70,11 @@
     </resultMap>
 
     <select id="getPackageInfoMost" parameterType="String" resultMap="PackageInfoMost">
-        select r.meta_package_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from raw_package as r, meta_package as m  where r.meta_package_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_package_uuid order by quantity desc,m.package_name;
+        select r.meta_package_uuid, m.package_name, m.module_name, count(distinct(commitid)) as quantity from raw_package as r, meta_package as m  where r.meta_package_uuid=m.uuid and
+        <if test="repoUuid != null and repoUuid != ''">
+            r.repo_uuid = #{repoUuid} and r.branch = #{branch} and
+        </if>
+        r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_package_uuid order by quantity desc,m.package_name;
     </select>
 
     <resultMap id="FileInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -80,7 +84,11 @@
     </resultMap>
 
     <select id="getFileInfoMost" parameterType="String" resultMap="FileInfoMost">
-        select r.meta_file_uuid, r.file_name, count(distinct(commitid)) as quantity from raw_file as r, meta_file as m  where r.meta_file_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.package_name = #{packageName} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_file_uuid order by quantity desc,m.file_name;
+        select r.meta_file_uuid, r.file_name, count(distinct(commitid)) as quantity from raw_file as r, meta_file as m  where r.meta_file_uuid=m.uuid and
+        <if test="repoUuid != null and repoUuid != ''">
+            r.repo_uuid = #{repoUuid} and r.branch = #{branch} and
+        </if>
+        r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.package_name = #{packageName} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_file_uuid order by quantity desc,m.file_name;
     </select>
 
     <resultMap id="ClassInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -91,7 +99,11 @@
     </resultMap>
 
     <select id="getClassInfoMost" parameterType="String" resultMap="ClassInfoMost">
-        select r.meta_class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from raw_class as r, meta_class as m  where r.meta_class_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_class_uuid order by quantity desc,m.class_name;
+        select r.meta_class_uuid, m.class_name, m.file_path, count(distinct(commitid)) as quantity from raw_class as r, meta_class as m  where r.meta_class_uuid=m.uuid and
+        <if test="repoUuid != null and repoUuid != ''">
+            r.repo_uuid = #{repoUuid} and r.branch = #{branch} and
+        </if>
+        r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_class_uuid order by quantity desc,m.class_name;
     </select>
 
     <resultMap id="MethodInfoMost" type="cn.edu.fudan.codetracker.domain.resultmap.MostModifiedInfo">
@@ -101,7 +113,11 @@
     </resultMap>
 
     <select id="getMethodInfoMost" parameterType="String" resultMap="MethodInfoMost">
-        select r.meta_method_uuid, r.signature, count(distinct(commitid)) as quantity from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and r.repo_uuid = #{repoUuid} and r.branch = #{branch} and r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_method_uuid order by quantity desc,r.signature;
+        select r.meta_method_uuid, r.signature, count(distinct(commitid)) as quantity from raw_method as r, meta_method as m where r.meta_method_uuid=m.uuid and
+        <if test="repoUuid != null and repoUuid != ''">
+            r.repo_uuid = #{repoUuid} and r.branch = #{branch} and
+        </if>
+        r.commit_date &gt;= #{beginDate} and r.commit_date &lt;= #{endDate} and r.committer = #{committer} and m.file_path = #{filePath} and m.class_name = #{className} and r.change_relation in ("CHANGE","DELETE","SELF_CHANGE","MOVE") group by r.meta_method_uuid order by quantity desc,r.signature;
     </select>
 
 
