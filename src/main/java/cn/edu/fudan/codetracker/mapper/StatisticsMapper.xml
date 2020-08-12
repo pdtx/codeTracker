@@ -93,11 +93,13 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where meta_statement_uuid in (
-        select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where meta_statement_uuid in (select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
            and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
+        </if>
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and isLogic = 1 order by meta_statement_uuid, commit_date;
     </select>
 
@@ -112,8 +114,10 @@
         select meta_method_uuid, committer, commit_date, change_relation from raw_method where meta_method_uuid in (select meta_method_uuid from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>)
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
         </if>
-        )
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_method_uuid, commit_date;
     </select>
 
@@ -128,8 +132,10 @@
         select meta_field_uuid, committer, commit_date, change_relation from raw_field where meta_field_uuid in (select meta_field_uuid from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>)
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
         </if>
-        )
         and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_field_uuid, commit_date;
     </select>
 
@@ -144,8 +150,11 @@
         select meta_class_uuid, committer, commit_date, change_relation from raw_class where meta_class_uuid in (select meta_class_uuid from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
+        </if>)
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
         </if>
-        ) and change_relation != "CHANGE" order by meta_class_uuid, commit_date;
+        and change_relation != "CHANGE" order by meta_class_uuid, commit_date;
     </select>
 
 
@@ -221,13 +230,15 @@
     </resultMap>
 
     <select id="getDeleteInfo" parameterType="String" resultMap="DeleteStatements" >
-        select meta_statement_uuid,repo_uuid,committer,commit_date,change_relation from raw_statement where
-        meta_statement_uuid in (select meta_statement_uuid from raw_statement where
+        select meta_statement_uuid,repo_uuid,committer,commit_date,change_relation from raw_statement where change_relation in ("ADD","DELETE") and
+        meta_statement_uuid in (select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "DELETE"
         <if test="repoUuid != null and repoUuid != ''">
-            repo_uuid = #{repoUuid} and
+            and repo_uuid = #{repoUuid}
         </if>
-        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "DELETE")
-        and change_relation in ("ADD","DELETE") order by meta_statement_uuid,commit_date desc;
+        <if test="developer != null and developer !=''">
+            and committer= #{developer}
+        </if>)
+        order by meta_statement_uuid,commit_date desc;
     </select>
 
     <!--获取修改信息-->
@@ -264,20 +275,44 @@
     </select>
 
     <!--获取语句的首个提交者-->
-    <select id="getStatementFirstCommitter" parameterType="String" resultType="java.util.Map">
-        select distinct meta_statement_uuid, committer from raw_statement where change_relation="ADD";
+    <select id="getStatementFirstCommitter" parameterType="java.util.List" resultType="java.util.Map">
+        select distinct meta_statement_uuid, committer from raw_statement where change_relation="ADD"
+        <if test="metaList != null and metaList.size()> 0">
+            and meta_statement_uuid in
+            <foreach collection="metaList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if> ;
     </select>
 
-    <select id="getMethodFirstCommitter" parameterType="String" resultType="java.util.Map">
-        select distinct meta_method_uuid, committer from raw_method where change_relation="ADD";
+    <select id="getMethodFirstCommitter" parameterType="java.util.List" resultType="java.util.Map">
+        select distinct meta_method_uuid, committer from raw_method where change_relation="ADD"
+        <if test="metaList != null and metaList.size()> 0">
+            and meta_method_uuid in
+            <foreach collection="metaList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>;
     </select>
 
-    <select id="getFieldFirstCommitter" parameterType="String" resultType="java.util.Map">
-        select distinct meta_field_uuid, committer from raw_field where change_relation="ADD";
+    <select id="getFieldFirstCommitter" parameterType="java.util.List" resultType="java.util.Map">
+        select distinct meta_field_uuid, committer from raw_field where change_relation="ADD"
+        <if test="metaList != null and metaList.size()> 0">
+            and meta_field_uuid in
+            <foreach collection="metaList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>;
     </select>
 
-    <select id="getClassFirstCommitter" parameterType="String" resultType="java.util.Map">
-        select distinct meta_class_uuid, committer from raw_class where change_relation="ADD";
+    <select id="getClassFirstCommitter" parameterType="java.util.List" resultType="java.util.Map">
+        select distinct meta_class_uuid, committer from raw_class where change_relation="ADD"
+        <if test="metaList != null and metaList.size()> 0">
+            and meta_class_uuid in
+            <foreach collection="metaList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>;
     </select>
 
 </mapper>

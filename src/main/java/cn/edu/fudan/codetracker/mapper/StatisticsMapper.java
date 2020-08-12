@@ -36,10 +36,10 @@ public interface StatisticsMapper {
     /**
      * 获取时间段内存活代码情况
      */
-    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    List<SurviveStatementInfo> getSurviveMethod(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    List<SurviveStatementInfo> getSurviveField(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
-    List<SurviveStatementInfo> getSurviveClass(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch);
+    List<SurviveStatementInfo> getSurviveStatement(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer);
+    List<SurviveStatementInfo> getSurviveMethod(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer);
+    List<SurviveStatementInfo> getSurviveField(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer);
+    List<SurviveStatementInfo> getSurviveClass(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer);
 
     /**
      * （根据committer）获取所有repo
@@ -74,9 +74,10 @@ public interface StatisticsMapper {
      * @param beginDate
      * @param endDate
      * @param repoUuid
+     * @param developer
      * @return
      */
-    List<SurviveStatementInfo> getDeleteInfo(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid);
+    List<SurviveStatementInfo> getDeleteInfo(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("developer") String developer);
 
 
     /**
@@ -104,15 +105,15 @@ public interface StatisticsMapper {
      * @return key: meta_uuid, value: committer
      */
     @MapKey("meta_statement_uuid")
-    Map<String, Map<String, String>> getStatementFirstCommitter();
+    Map<String, Map<String, String>> getStatementFirstCommitter(@Param("metaList") List<String> metaList);
 
     @MapKey("meta_field_uuid")
-    Map<String, Map<String, String>> getFieldFirstCommitter();
+    Map<String, Map<String, String>> getFieldFirstCommitter(@Param("metaList") List<String> metaList);
 
     @MapKey("meta_method_uuid")
-    Map<String, Map<String, String>> getMethodFirstCommitter();
+    Map<String, Map<String, String>> getMethodFirstCommitter(@Param("metaList") List<String> metaList);
 
     @MapKey("meta_class_uuid")
-    Map<String, Map<String, String>> getClassFirstCommitter();
+    Map<String, Map<String, String>> getClassFirstCommitter(@Param("metaList") List<String> metaList);
 
 }

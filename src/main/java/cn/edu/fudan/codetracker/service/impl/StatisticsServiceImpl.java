@@ -74,13 +74,13 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
     }
 
     @Override
-    public Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch){
-        return getMeasureInfoFromList(statisticsDao.getChangeStatementsInfo(beginDate, endDate, repoUuid, branch));
+    public Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch, String developer){
+        return getMeasureInfoFromList(statisticsDao.getChangeStatementsInfo(beginDate, endDate, repoUuid, branch, developer));
     }
 
     @Override
-    public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        return getMeasureInfoFromList(statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch));
+    public Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch, String developer) {
+        return getMeasureInfoFromList(statisticsDao.getSurviveStatementStatistics(beginDate, endDate, repoUuid, branch, developer));
     }
 
     /**
@@ -145,7 +145,6 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
     public Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch, String developer) {
         Map<String, Map<String,Map<String,Integer>>> result = new HashMap<>(16);
         List<ValidLineInfo> validLineInfos =statisticsDao.getValidLineInfo(repoUuid,beginDate,endDate, developer);
-        Map<String, Map<String, String>> firstCommitterMap= statisticsDao.getFirstCommitter();
         Map<String,ValidLineInfo> deleteMap = new HashMap<>();
         for (ValidLineInfo line: validLineInfos) {
             String changeRelation = line.getChangeRelation();
@@ -183,9 +182,11 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
         }
         String lastMetaUuid= null;
         String firstCommitter= null;
+        List<String> deleteMetaInfoList= new ArrayList<>(deleteMap.keySet());
+        Map<String, Map<String, String>> firstCommitterMap= statisticsDao.getFirstCommitter(deleteMetaInfoList);
         for (ValidLineInfo validLineInfo : deleteMap.values()) {
             Map<String,Integer> map;
-            //
+            // 获取每个删除行的添加者
             if(lastMetaUuid == null || !lastMetaUuid.equals(validLineInfo.getMetaUuid())){
                 lastMetaUuid= validLineInfo.getMetaUuid();
                 if(firstCommitterMap.get(lastMetaUuid) != null){
@@ -258,11 +259,11 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
 
     @Override
-    public JSONObject getDeleteInfo(String beginDate,String endDate,String repoUuid) {
+    public JSONObject getDeleteInfo(String beginDate,String endDate,String repoUuid, String developer) {
         JSONObject jsonObject = new JSONObject();
-        Map<String,List<Long>> resultMap = statisticsDao.getDeleteInfo(beginDate, endDate, repoUuid);
-        for (String developer: resultMap.keySet()) {
-            List<Long> list = resultMap.get(developer);
+        Map<String,List<Long>> resultMap = statisticsDao.getDeleteInfo(beginDate, endDate, repoUuid, developer);
+        for (String committer: resultMap.keySet()) {
+            List<Long> list = resultMap.get(committer);
             Long total = 0L;
             Long max = 0L;
             for (int i = 0; i < list.size() ; i++) {
@@ -273,7 +274,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
             JSONObject person = new JSONObject();
             person.put(MAX,max);
             person.put(AVERAGE,new BigDecimal(average).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            jsonObject.put(developer,person);
+            jsonObject.put(committer,person);
         }
         return jsonObject;
     }

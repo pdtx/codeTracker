@@ -56,7 +56,7 @@ public class StatisticsController {
     public ResponseBean getSurviveStatementStatistics(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
             List<String> dates= handleParamDate(beginDate, endDate);
-            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(dates.get(0), dates.get(1), repoUuid, branch);
+            Map<String,Map<String,Double>> data = statisticsService.getSurviveStatementStatistics(dates.get(0), dates.get(1), repoUuid, branch, developer);
             if (developer == null) {
                 return new ResponseBean(200, "", data);
             } else {
@@ -82,7 +82,7 @@ public class StatisticsController {
     public ResponseBean getChangeStatementsLifecycle(@Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("repoUuid") String repoUuid, @Param("branch") String branch, @Param("developer") String developer){
         try{
             List<String> dates= handleParamDate(beginDate, endDate);
-            Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(dates.get(0), dates.get(1), repoUuid, branch);
+            Map<String, Map<String, Double>> data = statisticsService.getChangeStatementsLifecycle(dates.get(0), dates.get(1), repoUuid, branch, developer);
             if(developer != null){
                 return new ResponseBean(200, "", data.get(developer));
             }
@@ -120,7 +120,7 @@ public class StatisticsController {
     public ResponseBean getDeleteInfo(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
             List<String> dates= handleParamDate(beginDate, endDate);
-            JSONObject data = statisticsService.getDeleteInfo(dates.get(0),dates.get(1),repoUuid);
+            JSONObject data = statisticsService.getDeleteInfo(dates.get(0),dates.get(1),repoUuid,developer);
             if (developer == null) {
                 return new ResponseBean(200,"",data);
             } else {

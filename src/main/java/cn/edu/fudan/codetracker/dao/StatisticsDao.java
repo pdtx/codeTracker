@@ -82,12 +82,12 @@ public class StatisticsDao implements PublicConstants {
      * @param branch
      * @return
      */
-    private List<SurviveStatementInfo> getSurviveStatemtnInfo(String beginDate, String endDate, String repoUuid, String branch){
+    private List<SurviveStatementInfo> getSurviveStatemtnInfo(String beginDate, String endDate, String repoUuid, String branch, String developer){
         List<SurviveStatementInfo> surviveStatementInfos = new ArrayList<>();
-        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch);
-        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch);
-        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch);
-        List<SurviveStatementInfo> listClass = statisticsMapper.getSurviveClass(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch, developer);
+        List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch, developer);
+        List<SurviveStatementInfo> listField = statisticsMapper.getSurviveField(beginDate, endDate, repoUuid, branch, developer);
+        List<SurviveStatementInfo> listClass = statisticsMapper.getSurviveClass(beginDate, endDate, repoUuid, branch, developer);
         if (listStatement != null && listStatement.size() != 0) {
             surviveStatementInfos.addAll(listStatement);
         }
@@ -107,8 +107,8 @@ public class StatisticsDao implements PublicConstants {
     /**
      * 统计存活周期
      */
-    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch) {
-        List<SurviveStatementInfo> surviveStatementInfos= getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch);
+    public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch, String developer) {
+        List<SurviveStatementInfo> surviveStatementInfos= getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch, developer);
         committerMap = new HashMap<>();
         SurviveStatementInfo lastSurviveStatement = null;
         for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
@@ -171,9 +171,9 @@ public class StatisticsDao implements PublicConstants {
     /**
      * 获取修改代码的年龄，修改包括DELETE和SELF_CHANGE
      */
-    public Map<String, List<Long>> getChangeStatementsInfo(String beginDate, String endDate, String repoUuid, String branch){
+    public Map<String, List<Long>> getChangeStatementsInfo(String beginDate, String endDate, String repoUuid, String branch, String developer){
         Map<String, List<Long>> result = new HashMap<>();
-        List<SurviveStatementInfo> list = getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch);
+        List<SurviveStatementInfo> list = getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch, developer);
         SurviveStatementInfo lastStatement = null;
         for(SurviveStatementInfo line : list){
             long days = 0;
@@ -232,8 +232,8 @@ public class StatisticsDao implements PublicConstants {
     }
 
 
-    public Map<String,List<Long>> getDeleteInfo(String beginDate,String endDate,String repoUuid) {
-        List<SurviveStatementInfo> list = statisticsMapper.getDeleteInfo(beginDate, endDate, repoUuid);
+    public Map<String,List<Long>> getDeleteInfo(String beginDate,String endDate,String repoUuid, String developer) {
+        List<SurviveStatementInfo> list = statisticsMapper.getDeleteInfo(beginDate, endDate, repoUuid, developer);
         Map<String,List<Long>> map = new HashMap<>();
         SurviveStatementInfo lastStat = null;
         for (SurviveStatementInfo stat: list) {
@@ -290,12 +290,12 @@ public class StatisticsDao implements PublicConstants {
         return map;
     }
 
-    public Map<String, Map<String, String>> getFirstCommitter(){
+    public Map<String, Map<String, String>> getFirstCommitter(List<String> metaList){
       Map<String, Map<String, String>> map= new HashMap<>();
-      map.putAll(statisticsMapper.getStatementFirstCommitter());
-      map.putAll(statisticsMapper.getFieldFirstCommitter());
-      map.putAll(statisticsMapper.getMethodFirstCommitter());
-      map.putAll(statisticsMapper.getClassFirstCommitter());
+      map.putAll(statisticsMapper.getStatementFirstCommitter(metaList));
+      map.putAll(statisticsMapper.getFieldFirstCommitter(metaList));
+      map.putAll(statisticsMapper.getMethodFirstCommitter(metaList));
+      map.putAll(statisticsMapper.getClassFirstCommitter(metaList));
       return map;
     }
 

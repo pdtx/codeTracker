@@ -16,7 +16,7 @@ public interface StatisticsService {
     /**
      * 统计存活周期
      */
-    Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch);
+    Map<String,Map<String,Double>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch, String developer);
 
     /**
      * 删除操作
@@ -40,18 +40,20 @@ public interface StatisticsService {
      * @param endDate
      * @param repoUuid
      * @param branch
+     * @param developer
      * @return
      */
-    Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch);
+    Map<String, Map<String, Double>> getChangeStatementsLifecycle(String beginDate, String endDate, String repoUuid, String branch, String developer);
 
     /**
      * 获取删除代码年代信息 max average
      * @param beginDate
      * @param endDate
      * @param repoUuid
+     * @param developer
      * @return
      */
-    JSONObject getDeleteInfo(String beginDate, String endDate, String repoUuid);
+    JSONObject getDeleteInfo(String beginDate, String endDate, String repoUuid, String developer);
 
     /**
      * 获取存活语句数排名前五的开发者信息
