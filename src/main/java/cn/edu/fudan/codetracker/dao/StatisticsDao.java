@@ -28,37 +28,16 @@ public class StatisticsDao implements PublicConstants {
     }
 
     /**
-     * get valid line info
-     */
-    public List<ValidLineInfo> getValidLineInfo(String repoUuid, String beginDate, String endDate, String developer) {
-        List<ValidLineInfo> validLineInfos = new ArrayList<>();
-        if(repoUuid == null){
-            // 获取developer相关repo_uuid或者全部repo_uuid
-            List<String> repos= statisticsMapper.getDistinctRepoUuid(beginDate, endDate, developer);
-            if(repos.size() > 0){
-                for(String repo : repos){
-                    validLineInfos.addAll(getValidLineInfoByRepo(repo, beginDate, endDate, developer));
-                }
-            }
-        }else{
-            validLineInfos.addAll(getValidLineInfoByRepo(repoUuid, beginDate, endDate, developer));
-        }
-        return validLineInfos;
-    }
-
-    /**
      * 获取所有statement, method, field, class的有效变更信息
-     * @param repoUuid
-     * @param beginDate
-     * @param endDate
      * @return
      */
-    private List<ValidLineInfo> getValidLineInfoByRepo(String repoUuid, String beginDate, String endDate, String developer){
+    public List<ValidLineInfo> getValidLineInfoByRepo(String repoUuid, String beginDate, String endDate, String developer){
+        Map<String, Object> paramMap= setParamMap(repoUuid, beginDate, endDate, developer);
         List<ValidLineInfo> validLineInfos = new ArrayList<>();
-        List<ValidLineInfo> classInfos= statisticsMapper.getValidLineInfoByClass(repoUuid, beginDate, endDate, developer);
-        List<ValidLineInfo> methodInfos= statisticsMapper.getValidLineInfoByMethod(repoUuid, beginDate, endDate, developer);
-        List<ValidLineInfo> fieldInfos= statisticsMapper.getValidLineInfoByField(repoUuid, beginDate, endDate, developer);
-        List<ValidLineInfo> statementInfos= statisticsMapper.getValidLineInfoByStatement(repoUuid, beginDate, endDate, developer);
+        List<ValidLineInfo> classInfos= statisticsMapper.getValidLineInfoByClass(paramMap);
+        List<ValidLineInfo> methodInfos= statisticsMapper.getValidLineInfoByMethod(paramMap);
+        List<ValidLineInfo> fieldInfos= statisticsMapper.getValidLineInfoByField(paramMap);
+        List<ValidLineInfo> statementInfos= statisticsMapper.getValidLineInfoByStatement(paramMap);
         if(classInfos != null && classInfos.size() > 0){
             validLineInfos.addAll(classInfos);
         }
@@ -82,7 +61,7 @@ public class StatisticsDao implements PublicConstants {
      * @param branch
      * @return
      */
-    private List<SurviveStatementInfo> getSurviveStatemtnInfo(String beginDate, String endDate, String repoUuid, String branch, String developer){
+    private List<SurviveStatementInfo> getSurviveStatementInfo(String beginDate, String endDate, String repoUuid, String branch, String developer){
         List<SurviveStatementInfo> surviveStatementInfos = new ArrayList<>();
         List<SurviveStatementInfo> listStatement = statisticsMapper.getSurviveStatement(beginDate, endDate, repoUuid, branch, developer);
         List<SurviveStatementInfo> listMethod = statisticsMapper.getSurviveMethod(beginDate, endDate, repoUuid, branch, developer);
@@ -108,7 +87,7 @@ public class StatisticsDao implements PublicConstants {
      * 统计存活周期
      */
     public Map<String,List<Long>> getSurviveStatementStatistics(String beginDate, String endDate, String repoUuid, String branch, String developer) {
-        List<SurviveStatementInfo> surviveStatementInfos= getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch, developer);
+        List<SurviveStatementInfo> surviveStatementInfos= getSurviveStatementInfo(beginDate, endDate, repoUuid, branch, developer);
         committerMap = new HashMap<>();
         SurviveStatementInfo lastSurviveStatement = null;
         for (SurviveStatementInfo surviveStatementInfo : surviveStatementInfos) {
@@ -173,7 +152,7 @@ public class StatisticsDao implements PublicConstants {
      */
     public Map<String, List<Long>> getChangeStatementsInfo(String beginDate, String endDate, String repoUuid, String branch, String developer){
         Map<String, List<Long>> result = new HashMap<>();
-        List<SurviveStatementInfo> list = getSurviveStatemtnInfo(beginDate, endDate, repoUuid, branch, developer);
+        List<SurviveStatementInfo> list = getSurviveStatementInfo(beginDate, endDate, repoUuid, branch, developer);
         SurviveStatementInfo lastStatement = null;
         for(SurviveStatementInfo line : list){
             long days = 0;
@@ -318,8 +297,23 @@ public class StatisticsDao implements PublicConstants {
         }
     }
 
-    public List<TempMostInfo> getFocusFiles(String repoUuid, String beginDate, String endDate) {
-        return statisticsMapper.getFocusFileNum(repoUuid, beginDate, endDate);
+    public List<TempMostInfo> getFocusFiles(String repoUuid, String beginDate, String endDate, String developer) {
+        Map<String, Object> paramMap= setParamMap(repoUuid, beginDate, endDate, developer);
+        return statisticsMapper.getFocusFileNum(paramMap);
+    }
+
+    private Map<String, Object> setParamMap(String repoUuid, String beginDate, String endDate, String developer){
+        Map<String, Object> paramMap= new HashMap<>(8);
+        paramMap.put("beginDate", beginDate);
+        paramMap.put("endDate", endDate);
+        paramMap.put("developer", developer);
+        if(repoUuid == null){
+            List<String> repos= statisticsMapper.getDistinctRepoUuid(beginDate, endDate, developer);
+            paramMap.put("repoUuidList", repos);
+        }else{
+            paramMap.put("repoUuid", repoUuid);
+        }
+        return paramMap;
     }
 
 }

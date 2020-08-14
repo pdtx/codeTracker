@@ -46,7 +46,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
     }
 
     private Map<String, Map<String,Integer>> getValidLineMap(String repoUuid, String beginDate, String endDate, String developer) {
-        List<ValidLineInfo> list = statisticsDao.getValidLineInfo(repoUuid, beginDate, endDate, developer);
+        List<ValidLineInfo> list= statisticsDao.getValidLineInfoByRepo(repoUuid, beginDate, endDate, developer);
         Map<String, Map<String,Integer>> map = new TreeMap<>();
         String lastMetaUuid = "";
         for (ValidLineInfo validInfo: list) {
@@ -144,7 +144,7 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
     @Override
     public Map<String, Map<String,Map<String,Integer>>> getAddDeleteStatementsNumber(String beginDate, String endDate, String repoUuid, String branch, String developer) {
         Map<String, Map<String,Map<String,Integer>>> result = new HashMap<>(16);
-        List<ValidLineInfo> validLineInfos =statisticsDao.getValidLineInfo(repoUuid,beginDate,endDate, developer);
+        List<ValidLineInfo> validLineInfos= statisticsDao.getValidLineInfoByRepo(repoUuid, beginDate, endDate, developer);
         Map<String,ValidLineInfo> deleteMap = new HashMap<>();
         for (ValidLineInfo line: validLineInfos) {
             String changeRelation = line.getChangeRelation();
@@ -281,12 +281,8 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
 
 
     @Override
-    public JSONObject getFocusFileNum(String repoUuid, String beginDate, String endDate) {
-        return getFileCount(repoUuid, beginDate, endDate);
-    }
-
-    private JSONObject getFileCount(String repoUuid, String beginDate, String endDate) {
-        List<TempMostInfo> list = statisticsDao.getFocusFiles(repoUuid, beginDate, endDate);
+    public JSONObject getFocusFileNum(String repoUuid, String beginDate, String endDate, String developer) {
+        List<TempMostInfo> list = statisticsDao.getFocusFiles(repoUuid, beginDate, endDate, developer);
         JSONObject jsonObject = new JSONObject();
         Map<String,Set<String>> map = new HashMap<>();
         Set<String> total = new HashSet<>();
@@ -301,21 +297,14 @@ public class StatisticsServiceImpl implements StatisticsService, PublicConstants
             }
             total.add(info.getName());
         }
-        JSONObject developer = new JSONObject();
+        JSONObject committerInfo = new JSONObject();
         for (String key: map.keySet()) {
-            developer.put(key,map.get(key).size());
+            committerInfo.put(key,map.get(key).size());
         }
         jsonObject.put("total", total.size());
-        jsonObject.put("developer", developer);
+        jsonObject.put("developer", committerInfo);
         return jsonObject;
     }
-
-    @Override
-    public JSONObject getFileNum(String repoUuid, String beginDate, String endDate) {
-        JSONObject jsonObject = getFileCount(repoUuid, beginDate, endDate).getJSONObject("developer");
-        return jsonObject;
-    }
-
 
     @Override
     public JSONObject getChangeInfo(String beginDate,String endDate,String repoUuid) {

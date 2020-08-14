@@ -145,10 +145,10 @@ public class StatisticsController {
 
 
     @GetMapping(value = {"/statistics/focus/file/num"})
-    public ResponseBean getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate) {
+    public ResponseBean getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer) {
         try {
             List<String> dates= handleParamDate(beginDate, endDate);
-            JSONObject data = statisticsService.getFocusFileNum(repoUuid, dates.get(0), dates.get(1));
+            JSONObject data = statisticsService.getFocusFileNum(repoUuid, dates.get(0), dates.get(1), developer);
             return new ResponseBean(200,"",data);
         } catch (Exception e) {
             return new ResponseBean(401,e.getMessage(),null);

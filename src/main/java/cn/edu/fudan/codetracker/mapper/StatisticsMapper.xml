@@ -13,10 +13,19 @@
         <result property="commitDate" column="commit_date"/>
     </resultMap>
 
-    <select id="getValidLineInfoByClass" parameterType="String" resultMap="ValidLineInfoClass">
+    <select id="getValidLineInfoByClass" parameterType="java.util.Map" resultMap="ValidLineInfoClass">
         select uuid,repo_uuid,committer,meta_class_uuid,change_relation,commit_date from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_class where repo_uuid = #{repoUuid} order by commit_date limit 1)
+            and commit_date != (select commit_date from raw_class where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+        </if>
+        <if test="repoUuidList != null and repoUuidList.size()>0">
+            and repo_uuid in
+            <foreach collection="repoUuidList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <foreach collection="repoUuidList" index="index" item="item">
+                and commitid != (select commitid from raw_class where repo_uuid = #{item} order by commit_date limit 1)
+            </foreach>
         </if>
         <if test="developer != null and developer != ''">
             and committer= #{developer}
@@ -33,10 +42,19 @@
         <result property="commitDate" column="commit_date"/>
     </resultMap>
 
-    <select id="getValidLineInfoByMethod" parameterType="String" resultMap="ValidLineInfoMethod">
+    <select id="getValidLineInfoByMethod" parameterType="java.util.Map" resultMap="ValidLineInfoMethod">
         select uuid,repo_uuid,committer,meta_method_uuid,change_relation,commit_date from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_method where repo_uuid = #{repoUuid} order by commit_date limit 1)
+            and commit_date != (select commit_date from raw_method where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+        </if>
+        <if test="repoUuidList != null and repoUuidList.size()>0">
+            and repo_uuid in
+            <foreach collection="repoUuidList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <foreach collection="repoUuidList" index="index" item="item">
+                and commitid != (select commitid from raw_method where repo_uuid = #{item} order by commit_date limit 1)
+            </foreach>
         </if>
         <if test="developer != null and developer != ''">
             and committer= #{developer}
@@ -53,10 +71,19 @@
         <result property="commitDate" column="commit_date"/>
     </resultMap>
 
-    <select id="getValidLineInfoByField" parameterType="String" resultMap="ValidLineInfoField">
+    <select id="getValidLineInfoByField" parameterType="java.util.Map" resultMap="ValidLineInfoField">
         select uuid,repo_uuid,committer,meta_field_uuid,change_relation,commit_date from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_field where repo_uuid = #{repoUuid} order by commit_date limit 1)
+            and commit_date != (select commit_date from raw_field where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+        </if>
+        <if test="repoUuidList != null and repoUuidList.size()>0">
+            and repo_uuid in
+            <foreach collection="repoUuidList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <foreach collection="repoUuidList" index="index" item="item">
+                and commitid != (select commitid from raw_field where repo_uuid = #{item} order by commit_date limit 1)
+            </foreach>
         </if>
         <if test="developer != null and developer != ''">
             and committer= #{developer}
@@ -73,15 +100,24 @@
         <result property="commitDate" column="commit_date"/>
     </resultMap>
 
-    <select id="getValidLineInfoByStatement" parameterType="String" resultMap="ValidLineInfoStatement">
+    <select id="getValidLineInfoByStatement" parameterType="java.util.Map" resultMap="ValidLineInfoStatement">
         select uuid,repo_uuid,committer,meta_statement_uuid,change_relation,commit_date from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
-            and repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1)
+            and commitid != (select commitid from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and repo_uuid = #{repoUuid}
+        </if>
+        <if test="repoUuidList != null and repoUuidList.size()>0">
+            and repo_uuid in
+            <foreach collection="repoUuidList" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <foreach collection="repoUuidList" index="index" item="item">
+                and commitid != (select commitid from raw_statement where repo_uuid = #{item} order by commit_date limit 1)
+            </foreach>
         </if>
         <if test="developer != null and developer != ''">
             and committer= #{developer}
         </if>
-        and isLogic = 1 and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
+        and change_relation in ("ADD","DELETE","SELF_CHANGE") and isLogic = 1 order by meta_statement_uuid,commit_date desc;
     </select>
 
     <!--获取时间段内代码存活情况-->
@@ -93,14 +129,15 @@
     </resultMap>
 
     <select id="getSurviveStatement" parameterType="String" resultMap="SurviveStatement">
-        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where meta_statement_uuid in (select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        select meta_statement_uuid, committer, commit_date, change_relation from raw_statement where change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE")
+        and meta_statement_uuid in (select meta_statement_uuid from raw_statement where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
            and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
         <if test="developer != null and developer != ''">
             and committer= #{developer}
         </if>
-        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") and isLogic = 1 order by meta_statement_uuid, commit_date;
+        and isLogic = 1 order by meta_statement_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveMethod" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -111,14 +148,15 @@
     </resultMap>
 
     <select id="getSurviveMethod" parameterType="String" resultMap="SurviveMethod">
-        select meta_method_uuid, committer, commit_date, change_relation from raw_method where meta_method_uuid in (select meta_method_uuid from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        select meta_method_uuid, committer, commit_date, change_relation from raw_method where change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE")
+        and meta_method_uuid in (select meta_method_uuid from raw_method where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
         <if test="developer != null and developer != ''">
             and committer= #{developer}
         </if>
-        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_method_uuid, commit_date;
+        order by meta_method_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveField" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -129,14 +167,15 @@
     </resultMap>
 
     <select id="getSurviveField" parameterType="String" resultMap="SurviveField">
-        select meta_field_uuid, committer, commit_date, change_relation from raw_field where meta_field_uuid in (select meta_field_uuid from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        select meta_field_uuid, committer, commit_date, change_relation from raw_field where change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE")
+        and meta_field_uuid in (select meta_field_uuid from raw_field where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
         <if test="developer != null and developer != ''">
             and committer= #{developer}
         </if>
-        and change_relation in ("ADD","SELF_CHANGE","DELETE","MOVE") order by meta_field_uuid, commit_date;
+        order by meta_field_uuid, commit_date;
     </select>
 
     <resultMap id="SurviveClass" type="cn.edu.fudan.codetracker.domain.resultmap.SurviveStatementInfo">
@@ -147,14 +186,15 @@
     </resultMap>
 
     <select id="getSurviveClass" parameterType="String" resultMap="SurviveClass">
-        select meta_class_uuid, committer, commit_date, change_relation from raw_class where meta_class_uuid in (select meta_class_uuid from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        select meta_class_uuid, committer, commit_date, change_relation from raw_class where change_relation != "CHANGE"
+        and meta_class_uuid in (select meta_class_uuid from raw_class where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
         <if test="repoUuid != null and repoUuid != ''">
             and repo_uuid = #{repoUuid} and branch = #{branch}
         </if>)
         <if test="developer != null and developer != ''">
             and committer= #{developer}
         </if>
-        and change_relation != "CHANGE" order by meta_class_uuid, commit_date;
+        order by meta_class_uuid, commit_date;
     </select>
 
 
@@ -243,13 +283,13 @@
 
     <!--获取修改信息-->
     <select id="getChangeInfo" parameterType="String" resultMap="DeleteStatements" >
-        select meta_statement_uuid,repo_uuid, committer,commit_date,change_relation from raw_statement where
-        meta_statement_uuid in (select meta_statement_uuid from raw_statement where
+        select meta_statement_uuid,repo_uuid, committer,commit_date,change_relation from raw_statement where change_relation in ("ADD","DELETE","SELF_CHANGE")
+        and meta_statement_uuid in (select meta_statement_uuid from raw_statement where
+        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "SELF_CHANGE"
         <if test="repoUuid != null and repoUuid != ''">
-            repo_uuid = #{repoUuid} and
-        </if>
-        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate} and change_relation = "SELF_CHANGE")
-        and change_relation in ("ADD","DELETE","SELF_CHANGE") order by meta_statement_uuid,commit_date desc;
+            and repo_uuid = #{repoUuid}
+        </if>)
+        order by meta_statement_uuid,commit_date desc;
     </select>
 
     <resultMap id="FocusFiles" type="cn.edu.fudan.codetracker.domain.resultmap.TempMostInfo">
@@ -258,12 +298,25 @@
         <result property="committer" column="committer"/>
     </resultMap>
 
-    <select id="getFocusFileNum" parameterType="String" resultMap="FocusFiles">
-        select uuid, file_name, committer from raw_file where
-        <if test="repoUuid != null and repoUuid != ''">
-            repo_uuid = #{repoUuid} and commit_date != (select commit_date from raw_statement where repo_uuid = #{repoUuid} order by commit_date limit 1) and
-        </if>
-        commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate};
+    <select id="getFocusFileNum" parameterType="java.util.Map" resultMap="FocusFiles">
+        select uuid, file_name, committer from raw_file where commit_date &gt;= #{beginDate} and commit_date &lt;= #{endDate}
+        <choose>
+            <when test="repoUuid != null and repoUuid != ''">
+                and repo_uuid = #{repoUuid} and commitid != (select commitid from raw_file where repo_uuid = #{repoUuid} order by commit_date limit 1)
+            </when>
+            <when test="repoUuidList != null and repoUuidList.size()> 0">
+                and repo_uuid in
+                <foreach collection="repoUuidList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+                <foreach collection="repoUuidList" index="index" item="item">
+                    and commitid != (select commitid from raw_file where repo_uuid = #{item} order by commit_date limit 1)
+                </foreach>
+            </when>
+        </choose>
+        <if test="developer != null and developer != ''">
+            and committer= #{developer}
+        </if>;
     </select>
 
     <!--获取所有相关代码库信息-->
@@ -274,7 +327,7 @@
             </if>;
     </select>
 
-    <!--获取语句的首个提交者-->
+    <!--获取语句的首次提交者-->
     <select id="getStatementFirstCommitter" parameterType="java.util.List" resultType="java.util.Map">
         select distinct meta_statement_uuid, committer from raw_statement where change_relation="ADD"
         <if test="metaList != null and metaList.size()> 0">

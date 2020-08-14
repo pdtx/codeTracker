@@ -80,19 +80,9 @@ public interface StatisticsService {
      * @param repoUuid
      * @param beginDate
      * @param endDate
+     * @param developer
      * @return
      */
-    JSONObject getFocusFileNum(String repoUuid, String beginDate, String endDate);
-
-    /**
-     * 修改文件个数 前端接口
-     * @param repoUuid
-     * @param beginDate
-     * @param endDate
-     * @return
-     */
-    JSONObject getFileNum(String repoUuid, String beginDate, String endDate);
-
-
+    JSONObject getFocusFileNum(String repoUuid, String beginDate, String endDate, String developer);
 
 }

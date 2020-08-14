@@ -18,19 +18,19 @@ public interface StatisticsMapper {
     /**
      * get valid line info by class
      */
-    List<ValidLineInfo> getValidLineInfoByClass(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
+    List<ValidLineInfo> getValidLineInfoByClass(Map<String, Object> map);
     /**
      * get valid line info by method
      */
-    List<ValidLineInfo> getValidLineInfoByMethod(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
+    List<ValidLineInfo> getValidLineInfoByMethod(Map<String, Object> map);
     /**
      * get valid line info by field
      */
-    List<ValidLineInfo> getValidLineInfoByField(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
+    List<ValidLineInfo> getValidLineInfoByField(Map<String, Object> map);
     /**
      * get valid line info by statement
      */
-    List<ValidLineInfo> getValidLineInfoByStatement(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate, @Param("developer") String developer);
+    List<ValidLineInfo> getValidLineInfoByStatement(Map<String, Object> map);
 
 
     /**
@@ -93,12 +93,9 @@ public interface StatisticsMapper {
 
     /**
      * 获取工作焦点文件信息 计算文件数
-     * @param repoUuid
-     * @param beginDate
-     * @param endDate
      * @return
      */
-    List<TempMostInfo> getFocusFileNum(@Param("repoUuid") String repoUuid, @Param("beginDate") String beginDate, @Param("endDate") String endDate);
+    List<TempMostInfo> getFocusFileNum(Map<String, Object> map);
 
     /**
      * 获取语句的首个提交者
